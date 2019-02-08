@@ -65,4 +65,11 @@ public final class Constants {
     // analog inputs
     public final static int ELEVATOR_ENCODER_PORT = 0;
     public final static int CLIMBER_ENCODER_PORT = 1;
+
+    // digital inputs
+    public final static int DRIVEBASE_LEFT_ENCODER_PORT_A = 0;
+    public final static int DRIVEBASE_LEFT_ENCODER_PORT_B = 1;
+
+    public final static int DRIVEBASE_RIGHT_ENCODER_PORT_A = 2;
+    public final static int DRIVEBASE_RIGHT_ENCODER_PORT_B = 3;
 }

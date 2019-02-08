@@ -4,8 +4,13 @@ import frc.robot.Constants;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+
 public class Drivebase {
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
+
+    private final Encoder leftEncoder, rightEncoder;
 
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -23,6 +28,10 @@ public class Drivebase {
         //he bac
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
+
+        leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
+        rightEncoder = new Encoder(Constants.DRIVEBASE_RIGHT_ENCODER_PORT_A, Constants.DRIVEBASE_RIGHT_ENCODER_PORT_B, false, EncodingType.k4X);
+
     }
 
     public void driveLeft(final double val){
