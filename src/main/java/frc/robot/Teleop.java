@@ -8,8 +8,8 @@ import frc.robot.components.Intake;
 import frc.robot.Titan;
 
 public class Teleop{
-    //private Climber climber;
-    private Drivebase drivebase;
+    private Climber climber;
+    //private Drivebase drivebase;
     //private Elevator elevator;
     //private Arm arm;
     //private Intake intake;
@@ -18,7 +18,7 @@ public class Teleop{
     private Titan.LogitechExtreme3D operator;
 
     public Teleop(){
-        //climber = new Climber();
+        climber = new Climber();
         //drivebase = new Drivebase();
         //elevator = new Elevator();
         //arm = new Arm();
@@ -27,15 +27,16 @@ public class Teleop{
         driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
         driver.setDeadzone(Constants.DRIVER_JOYSTICK_DEADZONE);
 
-        operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
-        operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
+        //operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
+        //operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
     }
 
     public void periodic(){
-        drivebase.drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
-        /*
-        climber.climb(driver.getRawButton(Titan.Xbox.Button.BUMPER_L) ? Constants.CLIMBER_SPEED : 0.0);
-    
+        //System.out.println(elevator.getEncoderPosition());
+        //drivebase.drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
+        climber.climb(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y));
+        //climber.climb(driver.getRawButton(Titan.Xbox.Button.BUMPER_L) ? Constants.CLIMBER_SPEED : 0.0);
+    /*
         final boolean braked = operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER);
         elevator.elevate(braked ? 0.0 : operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y));
         elevator.setBrake(braked);
