@@ -1,6 +1,8 @@
 package frc.robot.components;
 
 import frc.robot.Constants;
+import frc.robot.TitanNavx;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
@@ -11,6 +13,8 @@ public class Drivebase {
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
 
     private final Encoder leftEncoder, rightEncoder;
+
+    private final TitanNavx navx = new TitanNavx();
 
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -47,5 +51,9 @@ public class Drivebase {
     public void drive(final double left, final double right){
         driveLeft(left);
         driveRight(right);
+    }
+
+    public TitanNavx getNavx(){
+        return navx;
     }
 }
