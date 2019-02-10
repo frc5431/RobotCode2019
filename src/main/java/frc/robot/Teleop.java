@@ -11,18 +11,51 @@ public class Teleop{
     private Titan.Xbox driver;
     private Titan.LogitechExtreme3D operator;
 
+    private Titan.Toggle wrist;
+
     public Teleop(){
         driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
         driver.setDeadzone(Constants.DRIVER_JOYSTICK_DEADZONE);
 
-        //operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
-        //operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
+        operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
+        operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
+
+        wrist = new Titan.Toggle();
     }
 
     public void periodic(final Robot robot){
-        //System.out.println(elevator.getEncoderPosition());
-        //drivebase.drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
+        //System.out.println(robot.getDrivebase().getLeftDistance());
+        robot.getDrivebase().drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
+        
+        robot.getClimber().climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT));
+        
+        robot.getElevator().elevate(operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y));
+
+        final Arm arm = robot.getArm();
+        if(operator.getPOV() == 0){
+          arm.pivot(Constants.ARM_PIVOT_SPEED);
+        }else if(operator.getPOV() == 180){
+          arm.pivot(-Constants.ARM_PIVOT_SPEED);
+        }else{
+          arm.pivot(0.0);
+        }
+
+        arm.wrist(wrist.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));
+
+        final Intake intake = robot.getIntake();
+        if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER)){
+          intake.roll(Constants.INTAKE_ROLLER_SPEED);
+        }else if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO)){
+          intake.roll(-Constants.INTAKE_ROLLER_SPEED);
+        }else{
+          intake.roll(0);
+        }
+
+        intake.actuateHatch(operator.getRawButton(Titan.LogitechExtreme3D.Button.FIVE));
+        intake.finger(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX));
+
         //robot.getClimber().climb(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y));
+        //robot.getElevator().elevate(driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
         //robot.getClimber().climb(driver.getRawButton(Titan.Xbox.Button.BUMPER_L) ? Constants.CLIMBER_SPEED : 0.0);
     /*
         final Elevator elevator = robot.getElevator();

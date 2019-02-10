@@ -102,11 +102,11 @@ public class Mimic {
 		public static void addStep(final Robot robot, final double driveVals[]) {
 			try {
                 //EDIT THIS
-				// final double lDistance = robot.getDrivebase().getLeftDistance();
-				// final double rDistance = robot.getDrivebase().getRightDistance();
-				// final double angle = robot.getDrivebase().getNavx().getAngle();
-				// final double leftPower = driveVals[0];
-				// final double rightPower = driveVals[1];
+				final double lDistance = robot.getDrivebase().getLeftDistance();
+				final double rDistance = robot.getDrivebase().getRightDistance();
+				final double angle = robot.getDrivebase().getNavx().getAngle();
+				final double leftPower = driveVals[0];
+				final double rightPower = driveVals[1];
 				// boolean home = robot.getTeleop().getLogitech().getRawButton(Titan.LogitechExtreme3D.Button.FIVE);
 				// final double elevatorHeight = robot.getElevator().getUpPos();
 				// final double intakeTilt = robot.getIntake().getTiltPosition();

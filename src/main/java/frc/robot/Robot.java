@@ -15,10 +15,10 @@ public class Robot extends TimedRobot {
   private Mode mode = Mode.DISABLED;
 
   private Climber climber;
-  //private Drivebase drivebase;
-  //private Elevator elevator;
-  //private Arm arm;
-  //private Intake intake;
+  private Drivebase drivebase;
+  private Elevator elevator;
+  private Arm arm;
+  private Intake intake;
 
   private Teleop teleop;
 
@@ -27,10 +27,10 @@ public class Robot extends TimedRobot {
     teleop = new Teleop();
 
     climber = new Climber();
-        //drivebase = new Drivebase();
-        //elevator = new Elevator();
-        //arm = new Arm();
-        //intake = new Intake();
+    drivebase = new Drivebase();
+    elevator = new Elevator();
+    arm = new Arm();
+    intake = new Intake();
   }
 
   @Override
@@ -74,23 +74,23 @@ public class Robot extends TimedRobot {
     return teleop;
   }
   
-  // public Arm getArm(){
-  //   return arm;
-  // }
+  public Arm getArm(){
+    return arm;
+  }
 
   public Climber getClimber(){
     return climber;
   }
 
-  // public Drivebase getDrivebase(){
-  //   return drivebase;
-  // }
+  public Drivebase getDrivebase(){
+     return drivebase;
+  }
 
-  // public Elevator getElevator(){
-  //   return elevator;
-  // }
+  public Elevator getElevator(){
+    return elevator;
+  }
 
-  // public Intake getIntake(){
-  //   return intake;
-  // }
+  public Intake getIntake(){
+    return intake;
+  }
 }
