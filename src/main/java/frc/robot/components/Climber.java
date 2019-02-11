@@ -18,14 +18,14 @@ public class Climber {
 
         right = new CANSparkMax(Constants.CLIMBER_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         right.setInverted(Constants.CLIMBER_RIGHT_INVERTED);
-        right.follow(left);
+        right.follow(left, Constants.CLIMBER_RIGHT_INVERTED);
         
         encoder = new AnalogInput(Constants.CLIMBER_ENCODER_PORT);
     }
 
     public void climb(final double val){
         left.set(val);
-        //right.set(val);
+        //right.set(0.0);
     }
 
     public double getEncoderPosition(){

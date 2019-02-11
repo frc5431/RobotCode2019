@@ -6,6 +6,7 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
+import frc.robot.components.Teleop;
 
 public class Robot extends TimedRobot {
   private static enum Mode{
@@ -22,6 +23,8 @@ public class Robot extends TimedRobot {
 
   private Teleop teleop;
 
+  private Titan.CommandQueue<Robot> commands;
+
   @Override
   public void robotInit() {
     teleop = new Teleop();
@@ -31,6 +34,8 @@ public class Robot extends TimedRobot {
     elevator = new Elevator();
     arm = new Arm();
     intake = new Intake();
+
+    commands = new Titan.CommandQueue<>();
   }
 
   @Override
@@ -46,6 +51,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     teleop.periodic(this);
+    commands.update(this);
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -53,6 +59,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
+    commands.init(this);
     teleopInit();
   }
 
@@ -64,6 +71,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit(){
     mode = Mode.DISABLED;
+    commands.clear();
   }
 
   public Mode getMode(){

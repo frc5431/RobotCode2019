@@ -6,6 +6,8 @@ public final class Constants {
     public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 0.3;
 
+    public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
+
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
     public final static double DRIVER_JOYSTICK_DEADZONE = 0.2;
@@ -18,28 +20,28 @@ public final class Constants {
     public final static int ELEVATOR_BRAKE_FORWARD_ID = 0;
     public final static int ELEVATOR_BRAKE_REVERSE_ID = 1;
 
-    public final static int ARM_BRAKE_PCM_ID = 30;
-    public final static int ARM_BRAKE_ID = 2;
+    public final static int ARM_BRAKE_PCM_ID = 31;
+    public final static int ARM_BRAKE_ID = 0;
     
     public final static int ARM_WRIST_LEFT_PCM_ID = 30;
-    public final static int ARM_WRIST_LEFT_FORWARD_ID = 3;
-    public final static int ARM_WRIST_LEFT_REVERSE_ID = 4;
+    public final static int ARM_WRIST_LEFT_FORWARD_ID = 2;
+    public final static int ARM_WRIST_LEFT_REVERSE_ID = 3;
 
-    public final static int ARM_WRIST_RIGHT_PCM_ID = 31;
-    public final static int ARM_WRIST_RIGHT_FORWARD_ID = 0;
-    public final static int ARM_WRIST_RIGHT_REVERSE_ID = 1;
+    public final static int ARM_WRIST_RIGHT_PCM_ID = 30;
+    public final static int ARM_WRIST_RIGHT_FORWARD_ID = 4;
+    public final static int ARM_WRIST_RIGHT_REVERSE_ID = 5;
     
     public final static int INTAKE_HATCH_LEFT_PCM_ID = 30;
-    public final static int INTAKE_HATCH_LEFT_FORWARD_ID = 5;
-    public final static int INTAKE_HATCH_LEFT_REVERSE_ID = 6;
+    public final static int INTAKE_HATCH_LEFT_FORWARD_ID = 6;
+    public final static int INTAKE_HATCH_LEFT_REVERSE_ID = 7;
 
     public final static int INTAKE_HATCH_RIGHT_PCM_ID = 31;
-    public final static int INTAKE_HATCH_RIGHT_FORWARD_ID = 5;
-    public final static int INTAKE_HATCH_RIGHT_REVERSE_ID = 6;
+    public final static int INTAKE_HATCH_RIGHT_FORWARD_ID = 1;
+    public final static int INTAKE_HATCH_RIGHT_REVERSE_ID = 2;
 
     public final static int INTAKE_FINGER_PCM_ID = 31;
-    public final static int INTAKE_FINGER_FORWARD_ID = 5;
-    public final static int INTAKE_FINGER_REVERSE_ID = 6;
+    public final static int INTAKE_FINGER_FORWARD_ID = 3;
+    public final static int INTAKE_FINGER_REVERSE_ID = 4;
 
     //motor controller definitions
 
@@ -48,19 +50,21 @@ public final class Constants {
     public final static boolean DRIVEBASE_FRONT_LEFT_INVERTED = false;
 
     public final static int DRIVEBASE_FRONT_RIGHT_ID = 7;
-    public final static boolean DRIVEBASE_FRONT_RIGHT_INVERTED = true;
+    public final static boolean DRIVEBASE_FRONT_RIGHT_INVERTED = false;
+
+    // NOTE: The back motor follows the front so keep that in mind when inverting
 
     public final static int DRIVEBASE_BACK_LEFT_ID = 5;
-    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = false;
+    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = true;
     
     public final static int DRIVEBASE_BACK_RIGHT_ID = 6;
     public final static boolean DRIVEBASE_BACK_RIGHT_INVERTED = true;
 
     public final static int CLIMBER_LEFT_ID = 8;
-    public final static boolean CLIMBER_LEFT_INVERTED = true;
+    public final static boolean CLIMBER_LEFT_INVERTED = false;
 
     public final static int CLIMBER_RIGHT_ID = 9;
-    public final static boolean CLIMBER_RIGHT_INVERTED = false;
+    public final static boolean CLIMBER_RIGHT_INVERTED = true;
 
     public final static int ARM_PIVOT_ID = 10;
     public final static boolean ARM_PIVOT_INVERTED = false;
@@ -69,11 +73,11 @@ public final class Constants {
     public final static int INTAKE_ROLLER_ID = 1;
     public final static boolean INTAKE_ROLLER_INVERTED = false;
 
-    public final static int ELEVATOR_LEFT_ID = 2;
-    public final static boolean ELEVATOR_LEFT_INVERTED = true;
+    public final static int ELEVATOR_BOTTOM_ID = 2;
+    public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
 
-    public final static int ELEVATOR_RIGHT_ID = 3;
-    public final static boolean ELEVATOR_RIGHT_INVERTED = false;
+    public final static int ELEVATOR_TOP_ID = 3;
+    public final static boolean ELEVATOR_TOP_INVERTED = false;
 
     // sensors
 

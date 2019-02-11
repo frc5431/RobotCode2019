@@ -21,7 +21,7 @@ public class Arm{
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
     
-        brakePad = new Solenoid(Constants.ARM_BRAKE_ID);
+        brakePad = new Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
 
         wristLeft = new DoubleSolenoid(Constants.ARM_WRIST_LEFT_PCM_ID, Constants.ARM_WRIST_LEFT_FORWARD_ID, Constants.ARM_WRIST_LEFT_REVERSE_ID);
         wristRight = new DoubleSolenoid(Constants.ARM_WRIST_RIGHT_PCM_ID, Constants.ARM_WRIST_RIGHT_FORWARD_ID, Constants.ARM_WRIST_RIGHT_REVERSE_ID);

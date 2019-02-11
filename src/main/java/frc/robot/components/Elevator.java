@@ -1,6 +1,5 @@
 package frc.robot.components;
 
-import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
@@ -12,24 +11,24 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 
 public class Elevator{
-    private final WPI_TalonSRX left, right;
+    private final WPI_TalonSRX bottom, top;
 
     private final DoubleSolenoid brakePad;
 
     private final DigitalInput carriageUp;
 
     public Elevator(){
-        left = new WPI_TalonSRX(Constants.ELEVATOR_LEFT_ID);
-        left.setInverted(Constants.ELEVATOR_LEFT_INVERTED);
-        left.configClearPositionOnLimitR(true, 0);
-        left.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
-        left.configForwardSoftLimitEnable(true);
-        left.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
-        left.configReverseSoftLimitEnable(true);
-        
-        right = new WPI_TalonSRX(Constants.ELEVATOR_RIGHT_ID);
-        right.setInverted(Constants.ELEVATOR_RIGHT_INVERTED);
-        right.set(ControlMode.Follower, left.getDeviceID());
+        bottom = new WPI_TalonSRX(Constants.ELEVATOR_BOTTOM_ID);
+        bottom.setInverted(Constants.ELEVATOR_BOTTOM_INVERTED);
+        bottom.configClearPositionOnLimitR(true, 0);
+        bottom.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
+        bottom.configForwardSoftLimitEnable(false);
+        bottom.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
+        bottom.configReverseSoftLimitEnable(false);
+
+        top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
+        top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
+        top.set(ControlMode.Follower, bottom.getDeviceID());
 
         brakePad = new DoubleSolenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_FORWARD_ID, Constants.ELEVATOR_BRAKE_REVERSE_ID);
     
@@ -38,7 +37,7 @@ public class Elevator{
 
     public void elevate(final double val){
         brake(val == 0);
-        left.set(val);
+        bottom.set(val);
         //right.set(val);
     }
 
@@ -47,15 +46,15 @@ public class Elevator{
     }
 
     public int getEncoderPosition(){
-        return left.getSensorCollection().getQuadraturePosition();
+        return bottom.getSensorCollection().getQuadraturePosition();
     }
 
     public boolean isUp(){
-        return left.getSensorCollection().isFwdLimitSwitchClosed();
+        return bottom.getSensorCollection().isFwdLimitSwitchClosed();
     }
 
     public boolean isDown(){
-        return left.getSensorCollection().isRevLimitSwitchClosed();
+        return bottom.getSensorCollection().isRevLimitSwitchClosed();
     }
 
     public boolean isCarriageUp(){

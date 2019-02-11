@@ -4,7 +4,6 @@ import frc.robot.Constants;
 import frc.robot.Titan;
 import frc.robot.TitanNavx;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
@@ -27,7 +26,7 @@ public class Drivebase {
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backLeft.setInverted(Constants.DRIVEBASE_BACK_LEFT_INVERTED);
-        backLeft.follow(frontLeft);
+        backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
 
         //he attac
         //he protec
@@ -35,7 +34,7 @@ public class Drivebase {
         //he bac
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
-        backRight.follow(frontRight);
+        backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
         leftEncoder.setMaxPeriod(Constants.DRIVEBASE_ENCODER_MAX_PERIOD);
@@ -98,6 +97,10 @@ public class Drivebase {
     public void setHome() {
 		reset();
 		//disableAllPID();
+    }
+
+    public final boolean hasTravelled(final double wantedDistance) {
+		return hasTravelled(wantedDistance, true);
     }
 
     public final boolean hasTravelled(final double wantedDistance, final boolean isLeft) {
