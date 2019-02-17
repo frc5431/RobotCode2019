@@ -2,6 +2,7 @@ package frc.robot;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 import java.util.EnumMap;
 import java.io.BufferedReader;
@@ -464,32 +465,21 @@ public final class Titan {
 		}
 	}
 
-	public static class SupplierCommand<T> extends Command<T> {
-		private final SpeedController controller;
-		private final double speed;
-		private final long durationMS;
-		private long startTime;
+	public static class ConsumerCommand<T> extends Command<T> {
+		private final Consumer<T> consumer;
 		
-		public SupplierCommand(final double speed, final long durationMS, final SpeedController controller) {
-			this.controller = controller;
-			this.speed = speed;
-			this.durationMS = durationMS;
+		public ConsumerCommand(final Consumer<T> consumer) {
+			this.consumer = consumer;
 		}
 
 		@Override
 		public void init(final T robot) {
-			startTime = System.currentTimeMillis();
+			consumer.accept(robot);
 		}
 
 		@Override
 		public CommandResult update(T robot) {
-			controller.set(speed);
-			
-			if (System.currentTimeMillis() >= startTime + durationMS) {
-				return CommandResult.COMPLETE;
-			}
-
-			return CommandResult.IN_PROGRESS;
+			return CommandResult.COMPLETE;
 		}
 
 		@Override
@@ -555,9 +545,9 @@ public final class Titan {
 			if(!isEmpty()){
 				final Command<T> command = peek();
 				command.done(robot);
+				clear();
 				return true;
 			}
-			clear();
 			return false;
 		}
 	}

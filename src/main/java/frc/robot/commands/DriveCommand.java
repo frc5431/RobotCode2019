@@ -2,42 +2,41 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import frc.robot.Titan;
-import frc.robot.Constants;
 
 public class DriveCommand extends Titan.Command<Robot> {
-    private final double distance, angle, speed;
+    // private final double distance, angle, speed;
 
-	public DriveCommand(final double dis) {
-		this(dis, 0.0);
-	}
+	// public DriveCommand(final double dis) {
+	// 	this(dis, 0.0);
+	// }
 
-	public DriveCommand(final double dis, final double ang) {
-		this(dis, ang, Constants.AUTO_ROBOT_DEFAULT_SPEED);
-	}
+	// public DriveCommand(final double dis, final double ang) {
+	// 	this(dis, ang, Constants.AUTO_ROBOT_DEFAULT_SPEED);
+	// }
 
-	public DriveCommand(final double dis, final double ang, final double spd) {
-		distance = dis;
-		angle = ang;
+	// public DriveCommand(final double dis, final double ang, final double spd) {
+	// 	distance = dis;
+	// 	angle = ang;
 
-		if (distance < 0)
-			speed = -spd;
-		else
-			speed = spd;
+	// 	if (distance < 0)
+	// 		speed = -spd;
+	// 	else
+	// 		speed = spd;
 
-		name = "DriveCommand";
-		properties = String.format("Distance %.2f : Heading %.2f", distance, angle);
-	}
+	// 	name = "DriveCommand";
+	// 	properties = String.format("Distance %.2f : Heading %.2f", distance, angle);
+	// }
 
-	public double getDistance() {
-		return distance;
-	}
+	// public double getDistance() {
+	// 	return distance;
+	// }
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if (robot.getDrivebase().hasTravelled(distance)) {
+		//if (robot.getDrivebase().hasTravelled(distance)) {
 			return CommandResult.COMPLETE;
-		}
-		return CommandResult.IN_PROGRESS;
+		//}
+		//return CommandResult.IN_PROGRESS;
 	}
 
 	@Override

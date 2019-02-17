@@ -25,6 +25,8 @@ public class Elevator{
 
     private frc.robot.ControlMode controlMode = frc.robot.ControlMode.MANUAL;
 
+    private boolean isBraking = true;
+
     public Elevator(){
         bottom = new WPI_TalonSRX(Constants.ELEVATOR_BOTTOM_ID);
         bottom.setInverted(Constants.ELEVATOR_BOTTOM_INVERTED);
@@ -54,6 +56,15 @@ public class Elevator{
         if(isCarriageUp() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(27000, 0);
         }
+
+        if(!isBraking){
+            if(lastBrake < 0){
+                lastBrake = System.currentTimeMillis();
+            }
+        }else{
+            lastBrake = -1;
+        }
+        brakePad.set(isBraking ? Value.kForward : Value.kReverse);
     }
 
     public void elevate(double val){
@@ -82,14 +93,7 @@ public class Elevator{
     }
 
     public void brake(final boolean braked){
-        if(!braked){
-            if(lastBrake < 0){
-                lastBrake = System.currentTimeMillis();
-            }
-        }else{
-            lastBrake = -1;
-        }
-        brakePad.set(braked ? Value.kForward : Value.kReverse);
+        isBraking = braked;
     }
 
     public frc.robot.ControlMode getControlMode(){

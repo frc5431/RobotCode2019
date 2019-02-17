@@ -1,19 +1,13 @@
 package frc.robot.commands;
 
 import frc.robot.Titan;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.PIDSourceType;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
 	private final double position, speed;
-	private PIDController pid = null;
-
-	private double speedOffset = 0.0;
+	//private PIDController pid = null;
 
 	public ElevateToCommand(final double position, final double spd) {
         this.position = position;
@@ -30,19 +24,23 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		if(pid == null){
-			return CommandResult.RESTART_COMMAND;
-		}
+		// if(pid == null){
+		// 	return CommandResult.RESTART_COMMAND;
+		// }
 
-		if (Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, 750)) {
+		if (Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, 750) || (position <= 0 && robot.getElevator().getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT)) {
 			robot.getElevator().elevate(0.0);
 			return CommandResult.COMPLETE;
 		}
 
+		final double error = Math.abs(position - robot.getElevator().getEncoderPosition());
+		final double speedOffset = Constants.AUTO_ROBOT_ELEVATOR_ACCELERATION * (Math.min(10000, error) / 10000);
+		System.out.println(speedOffset);
+
 		if(robot.getElevator().getEncoderPosition() > position){
-			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER /*+ speedOffset*/);
+			robot.getElevator().elevate(-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER /*+ speedOffset*/);
 		}else{
-			robot.getElevator().elevate(speed /*+ speedOffset*/);
+			robot.getElevator().elevate(speed + speedOffset);
 		}
 
 		return CommandResult.IN_PROGRESS;
@@ -50,42 +48,42 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 
 	@Override
 	public void init(final Robot robot) {
-		pid  = new PIDController(Constants.ELEVATOR_PID_P, Constants.ELEVATOR_PID_I, Constants.ELEVATOR_PID_D, new PIDSource(){
+		// pid  = new PIDController(Constants.ELEVATOR_PID_P, Constants.ELEVATOR_PID_I, Constants.ELEVATOR_PID_D, new PIDSource(){
 		
-			@Override
-			public void setPIDSourceType(final PIDSourceType pidSource) {
-				//do nothing
-			}
+		// 	@Override
+		// 	public void setPIDSourceType(final PIDSourceType pidSource) {
+		// 		//do nothing
+		// 	}
 		
-			@Override
-			public double pidGet() {
-				return robot.getElevator().getEncoderPosition();
-			}
+		// 	@Override
+		// 	public double pidGet() {
+		// 		return robot.getElevator().getEncoderPosition();
+		// 	}
 		
-			@Override
-			public PIDSourceType getPIDSourceType() {
-				return PIDSourceType.kDisplacement;
-			}
-		}, new PIDOutput(){
+		// 	@Override
+		// 	public PIDSourceType getPIDSourceType() {
+		// 		return PIDSourceType.kDisplacement;
+		// 	}
+		// }, new PIDOutput(){
 		
-			@Override
-			public void pidWrite(final double output) {
-				speedOffset = output;
-			}
-		});
-		pid.enable();
+		// 	@Override
+		// 	public void pidWrite(final double output) {
+		// 		speedOffset = output;
+		// 	}
+		// });
+		// pid.enable();
 
-		pid.setInputRange(0.0, 10000);
-		pid.setOutputRange(-1.0, 1.0);
-		pid.setSetpoint(position);
+		// pid.setInputRange(0.0, 10000);
+		// pid.setOutputRange(-1.0, 1.0);
+		// pid.setSetpoint(position);
 
 		robot.getElevator().setControlMode(ControlMode.AUTO);
 	}
 
 	@Override
 	public void done(final Robot robot) {
-		if(pid != null){
-			pid.disable();
-		}
+		// if(pid != null){
+		// 	pid.disable();
+		// }
 	}
 }

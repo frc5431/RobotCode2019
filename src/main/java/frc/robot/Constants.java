@@ -125,8 +125,12 @@ public final class Constants {
 
     //AUTONOMOUS SPEEDS
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
-    public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.6;
-    public final static double AUTO_ROBOT_ARM_SPEED = 0.4;
+
+    public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.4;
+    public final static double AUTO_ROBOT_ELEVATOR_ACCELERATION = 0.25;
+
+    public final static double AUTO_ROBOT_ARM_SPEED = 0.2;
+    public final static double AUTO_ROBOT_ARM_ACCELERATION = 0.1;
 
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.6;

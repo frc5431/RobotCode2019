@@ -93,6 +93,10 @@ public class Robot extends TimedRobot {
   public Teleop getTeleop(){
     return teleop;
   }
+
+  public Auton getAuton(){
+    return auton;
+  }
   
   public Arm getArm(){
     return arm;

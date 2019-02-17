@@ -32,7 +32,7 @@ public class Teleop{
     }
 
     public void periodic(final Robot robot){
-        System.out.println(robot.getElevator().isCarriageUp() + ", " + robot.getArm().getWristPosition() + ", " + robot.getElevator().getEncoderPosition());
+        System.out.println(robot.getArm().isWristing() + ", " + robot.getArm().getWristPosition() + ", " + robot.getElevator().getEncoderPosition());
         final Drivebase drivebase = robot.getDrivebase();
         drivebase.drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
         

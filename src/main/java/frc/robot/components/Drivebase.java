@@ -1,10 +1,9 @@
 package frc.robot.components;
 
 import frc.robot.Constants;
-import frc.robot.Titan;
-import frc.robot.TitanNavx;
+// import frc.robot.Titan;
+// import frc.robot.TitanNavx;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -16,8 +15,6 @@ public class Drivebase {
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
 
     private final Encoder leftEncoder, rightEncoder;
-
-    private final TitanNavx navx = new TitanNavx();
 
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -85,19 +82,19 @@ public class Drivebase {
         return rightEncoder.getDistance();
     }
 
-    public void resetNavx(){
-        navx.reset();
-        navx.resetDisplacement();
-        navx.resetYaw();
-    }
+    // public void resetNavx(){
+    //     navx.reset();
+    //     navx.resetDisplacement();
+    //     navx.resetYaw();
+    // }
 
-    public TitanNavx getNavx(){
-        return navx;
-    }
+    // public TitanNavx getNavx(){
+    //     return navx;
+    // }
 
     public void reset(){
         resetEncoders();
-        resetNavx();
+        //resetNavx();
     }
 
     public void setHome() {
@@ -122,7 +119,7 @@ public class Drivebase {
 		}*/
 	}
 	
-	public final boolean hasTurned(final double wantedAngle) {
-		return Titan.approxEquals(wantedAngle, navx.getAngle(), Constants.TURN_PRECISION);
-}
+// 	public final boolean hasTurned(final double wantedAngle) {
+// 		return Titan.approxEquals(wantedAngle, navx.getAngle(), Constants.TURN_PRECISION);
+// }
 }

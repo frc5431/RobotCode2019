@@ -1,18 +1,14 @@
 package frc.robot.commands;
 
 import frc.robot.Titan;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.PIDSourceType;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.ControlMode;
 
 public class ArmMoveToCommand extends Titan.Command<Robot>{
 	private final double position, speed;
-	private PIDController pid = null;
-	private double speedOffset = 0.0;
+	//private PIDController pid = null;
+	//private double speedOffset = 0.0;
 
 	public ArmMoveToCommand(final double position, final double spd) {
         this.position = position;
@@ -29,12 +25,12 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		if(pid == null){
-			return CommandResult.RESTART_COMMAND;
-		}
+		// if(pid == null){
+		// 	return CommandResult.RESTART_COMMAND;
+		// }
 
 		final double currentPos = robot.getArm().getWristPosition();
-		if (Titan.approxEquals(currentPos, position, 2)) {
+		if (Titan.approxEquals(currentPos, position, 5)) {
 			robot.getArm().pivot(0.0);
 			return CommandResult.COMPLETE;
 		}
@@ -47,10 +43,13 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// 	robot.getElevator().elevate(0.3);
 		// }
 
+		final double error = Math.abs(position - robot.getArm().getWristPosition());
+		final double speedOffset = Constants.AUTO_ROBOT_ARM_ACCELERATION * (Math.min(45, error) / 45);
+
 		if(robot.getArm().getWristPosition() > position){
-			robot.getArm().pivot(-speed/* + speedOffset*/);
+			robot.getArm().pivot(-(speed + speedOffset));
 		}else{
-			robot.getArm().pivot(speed/* + speedOffset*/);
+			robot.getArm().pivot(speed + speedOffset);
 		}
 
 		return CommandResult.IN_PROGRESS;
@@ -58,34 +57,34 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 
 	@Override
 	public void init(final Robot robot) {
-		pid  = new PIDController(Constants.ARM_PID_P, Constants.ARM_PID_I, Constants.ARM_PID_D, new PIDSource(){
+		// pid  = new PIDController(Constants.ARM_PID_P, Constants.ARM_PID_I, Constants.ARM_PID_D, new PIDSource(){
 		
-			@Override
-			public void setPIDSourceType(final PIDSourceType pidSource) {
-				//do nothing
-			}
+		// 	@Override
+		// 	public void setPIDSourceType(final PIDSourceType pidSource) {
+		// 		//do nothing
+		// 	}
 		
-			@Override
-			public double pidGet() {
-				return robot.getArm().getWristPosition();
-			}
+		// 	@Override
+		// 	public double pidGet() {
+		// 		return robot.getArm().getWristPosition();
+		// 	}
 		
-			@Override
-			public PIDSourceType getPIDSourceType() {
-				return PIDSourceType.kDisplacement;
-			}
-		}, new PIDOutput(){
+		// 	@Override
+		// 	public PIDSourceType getPIDSourceType() {
+		// 		return PIDSourceType.kDisplacement;
+		// 	}
+		// }, new PIDOutput(){
 		
-			@Override
-			public void pidWrite(final double output) {
-				speedOffset = output;
-			}
-		});
-		pid.enable();
+		// 	@Override
+		// 	public void pidWrite(final double output) {
+		// 		speedOffset = output;
+		// 	}
+		// });
+		// pid.enable();
 
-		pid.setInputRange(0.0, 360);
-		pid.setOutputRange(-1.0, 1.0);
-		pid.setSetpoint(position);
+		// pid.setInputRange(0.0, 360);
+		// pid.setOutputRange(-1.0, 1.0);
+		// pid.setSetpoint(position);
 
 		robot.getArm().setControlMode(ControlMode.AUTO);
 		//robot.getElevator().intakeFlipping = position > 180;
@@ -93,8 +92,8 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 
 	@Override
 	public void done(final Robot robot) {
-		if(pid != null){
-			pid.disable();
-		}
+		// if(pid != null){
+		// 	pid.disable();
+		// }
 	}
 }

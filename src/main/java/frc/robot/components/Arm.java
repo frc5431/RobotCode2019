@@ -22,7 +22,7 @@ public class Arm{
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
-    private boolean isWristing = true;
+    private boolean isWristing = true, isBraking = true;
 
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -40,16 +40,24 @@ public class Arm{
     public void periodic(final Robot robot){
         wristLeft.set(isWristing ? Value.kForward : Value.kReverse);
         wristRight.set(isWristing ? Value.kForward : Value.kReverse);
+
+        //solenoid is inverted
+        brakePad.set(!isBraking);
     }
 
-    public void pivot(final double val){
+    public void pivot(final double in){
+        double val = in;
+        if(getWristPosition() > 250 && in > 0){
+            val = 0;
+        }
         //if the value of the pivot is 0 (so stopped), automatically break
         brake(val == 0);
-        pivot.set(val /*+ (Math.signum(val) * 0.3 * Math.cos(Math.signum(val) * Math.toRadians(getWristPosition() - 90)))*/);
+        System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
+        pivot.set(Math.signum(val) * (Math.abs(val) + (0.3 * Math.abs(Math.cos(Math.toRadians(getWristPosition() - 90))))));
     }
 
     public void brake(final boolean val){
-        brakePad.set(!val);
+        isBraking = val;
     }
 
     public void wrist(final boolean val){
@@ -65,7 +73,11 @@ public class Arm{
     }
 
     public double getWristPosition(){
-        return (((wristEncoder.getAverageVoltage() / 5.0) * 360.0) - 74) % 360;
+        final double position = (((wristEncoder.getAverageVoltage() / 5.0) * 360.0) - 74) % 360;
+        if(position < 0){
+            return 360 + position;
+        }
+        return position;
     }
 
     public boolean isWristing(){
