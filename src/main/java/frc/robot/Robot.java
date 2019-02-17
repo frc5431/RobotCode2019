@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
@@ -7,6 +8,7 @@ import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
 import frc.robot.components.Teleop;
+import frc.robot.components.Auton;
 
 public class Robot extends TimedRobot {
   private static enum Mode{
@@ -21,13 +23,16 @@ public class Robot extends TimedRobot {
   private Arm arm;
   private Intake intake;
 
-  private Teleop teleop;
+  private Compressor compressor;
 
-  private Titan.CommandQueue<Robot> commands;
+  private Teleop teleop;
+  private Auton auton;
 
   @Override
   public void robotInit() {
-    teleop = new Teleop();
+    compressor = new Compressor(30);
+    compressor.setClosedLoopControl(false);
+    compressor.stop();
 
     climber = new Climber();
     drivebase = new Drivebase();
@@ -35,7 +40,8 @@ public class Robot extends TimedRobot {
     arm = new Arm();
     intake = new Intake();
 
-    commands = new Titan.CommandQueue<>();
+    teleop = new Teleop();
+    auton = new Auton();
   }
 
   @Override
@@ -46,12 +52,19 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     mode = Mode.TELEOP;
+    auton.init(this);
   }
 
   @Override
   public void teleopPeriodic() {
+    compressor.stop();
+
     teleop.periodic(this);
-    commands.update(this);
+    auton.periodic(this);
+
+    elevator.periodic(this);
+    intake.periodic(this);
+    arm.periodic(this);
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -59,7 +72,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
-    commands.init(this);
     teleopInit();
   }
 
@@ -71,7 +83,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit(){
     mode = Mode.DISABLED;
-    commands.clear();
+    auton.disabled(this);
   }
 
   public Mode getMode(){

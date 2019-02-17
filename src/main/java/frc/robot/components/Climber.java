@@ -2,6 +2,7 @@ package frc.robot.components;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 
@@ -15,10 +16,12 @@ public class Climber {
     public Climber(){
         left = new CANSparkMax(Constants.CLIMBER_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         left.setInverted(Constants.CLIMBER_LEFT_INVERTED);
+        left.setIdleMode(IdleMode.kBrake);
 
         right = new CANSparkMax(Constants.CLIMBER_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         right.setInverted(Constants.CLIMBER_RIGHT_INVERTED);
         right.follow(left, Constants.CLIMBER_RIGHT_INVERTED);
+        right.setIdleMode(IdleMode.kBrake);
         
         encoder = new AnalogInput(Constants.CLIMBER_ENCODER_PORT);
     }

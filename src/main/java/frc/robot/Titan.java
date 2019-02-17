@@ -247,6 +247,10 @@ public final class Titan {
 		public void setState(final boolean state) {
 			isToggled = state;
 		}
+
+		public boolean getState(){
+			return isToggled;
+		}
 	}
 
 	public static class Pot extends AnalogInput {
@@ -381,7 +385,7 @@ public final class Titan {
 		}
 	}
 	
-	public static class WaitCommand<T> extends Titan.Command<T> {
+	public static class WaitCommand<T> extends Command<T> {
 
 		private final long durationMS;
 		private long startTime;
@@ -411,7 +415,7 @@ public final class Titan {
 		}
 	}
 	
-	public static class ClearQueueCommand<T> extends Titan.Command<T>{
+	public static class ClearQueueCommand<T> extends Command<T>{
 
 		@Override
 		public void init(final T robot) {
@@ -427,13 +431,46 @@ public final class Titan {
 		}
 	}
 	
-	public static class SpeedCommand<T> extends Titan.Command<T> {
+	public static class SpeedCommand<T> extends Command<T> {
 		private final SpeedController controller;
 		private final double speed;
 		private final long durationMS;
 		private long startTime;
 		
 		public SpeedCommand(final double speed, final long durationMS, final SpeedController controller) {
+			this.controller = controller;
+			this.speed = speed;
+			this.durationMS = durationMS;
+		}
+
+		@Override
+		public void init(final T robot) {
+			startTime = System.currentTimeMillis();
+		}
+
+		@Override
+		public CommandResult update(T robot) {
+			controller.set(speed);
+			
+			if (System.currentTimeMillis() >= startTime + durationMS) {
+				return CommandResult.COMPLETE;
+			}
+
+			return CommandResult.IN_PROGRESS;
+		}
+
+		@Override
+		public void done(final T robot) {
+		}
+	}
+
+	public static class SupplierCommand<T> extends Command<T> {
+		private final SpeedController controller;
+		private final double speed;
+		private final long durationMS;
+		private long startTime;
+		
+		public SupplierCommand(final double speed, final long durationMS, final SpeedController controller) {
 			this.controller = controller;
 			this.speed = speed;
 			this.durationMS = durationMS;
@@ -512,6 +549,72 @@ public final class Titan {
 			}
 
 			return true;
+		}
+
+		public boolean done(final T robot){
+			if(!isEmpty()){
+				final Command<T> command = peek();
+				command.done(robot);
+				return true;
+			}
+			clear();
+			return false;
+		}
+	}
+
+	public static class ParallelCommandGroup<T> extends Command<T>{
+		private final List<CommandQueue<T>> queues = new ArrayList<>();
+
+		private boolean init = false;
+
+		public ParallelCommandGroup(){
+			name = "ParallelCommandGroup";
+			properties = "Runs a group of commands in parallel";
+		}
+
+		public void addCommand(final T robot, final Command<T> command){
+			final CommandQueue<T> newQueue = new CommandQueue<T>();
+			newQueue.add(command);
+			if(init){
+				newQueue.init(robot);
+			}
+			queues.add(newQueue);
+		}
+
+		public void addQueue(final T robot, final CommandQueue<T> queue){
+			if(init){
+				queue.init(robot);
+			}
+			queues.add(queue);
+		}
+
+		public void init(final T robot){
+			for(final CommandQueue<T> queue : queues){
+				queue.init(robot);
+			}
+			init = true;
+		}
+
+		public CommandResult update(final T robot){
+			final Iterator<CommandQueue<T>> queueIter = queues.iterator();
+			while(queueIter.hasNext()){
+				final CommandQueue<T> queue = queueIter.next();
+				if(!queue.update(robot)){
+					queueIter.remove();
+				}
+			}
+
+			if(queues.isEmpty()){
+				return CommandResult.COMPLETE;
+			}
+
+			return CommandResult.IN_PROGRESS;
+		}
+
+		public void done(final T robot){
+			for(final CommandQueue<T> queue : queues){
+				queue.done(robot);
+			}
 		}
 	}
 

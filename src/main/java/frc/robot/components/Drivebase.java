@@ -4,8 +4,10 @@ import frc.robot.Constants;
 import frc.robot.Titan;
 import frc.robot.TitanNavx;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
@@ -20,13 +22,16 @@ public class Drivebase {
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontLeft.setInverted(Constants.DRIVEBASE_FRONT_LEFT_INVERTED);
+        frontLeft.setIdleMode(IdleMode.kBrake);
         
         frontRight = new CANSparkMax(Constants.DRIVEBASE_FRONT_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontRight.setInverted(Constants.DRIVEBASE_FRONT_RIGHT_INVERTED);
+        frontRight.setIdleMode(IdleMode.kBrake);
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backLeft.setInverted(Constants.DRIVEBASE_BACK_LEFT_INVERTED);
         backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
+        backLeft.setIdleMode(IdleMode.kBrake);
 
         //he attac
         //he protec
@@ -35,6 +40,7 @@ public class Drivebase {
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
         backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
+        backRight.setIdleMode(IdleMode.kBrake);
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
         leftEncoder.setMaxPeriod(Constants.DRIVEBASE_ENCODER_MAX_PERIOD);

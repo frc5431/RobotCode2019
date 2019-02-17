@@ -50,5 +50,5 @@ public class DriveCommand extends Titan.Command<Robot> {
 	public void done(final Robot robot) {
 		//robot.getDrivebase().disableAllPID();
 		robot.getDrivebase().drive(0.0, 0.0);
-}
+	}
 }
