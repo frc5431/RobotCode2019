@@ -343,10 +343,10 @@ public final class Titan {
 		 * @return distance in cm*/
 		public double getDistance() {
 			if(get() < 1) {
-				return 0;
+				return -1;
 			}
 			
-			return ((getPeriod() * 1000000.0 / 10.0) * calibrationOffset) * 0.39370079;
+			return ((getPeriod() * 1000000.0 / 10.0) + calibrationOffset) * 0.39370079;
 		}
 	}
 

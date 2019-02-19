@@ -4,9 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.IdleMode;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
 import frc.robot.ControlMode;
@@ -16,7 +14,7 @@ public class Arm{
     final CANSparkMax pivot;
     final Solenoid brakePad;
 
-    final DoubleSolenoid wristLeft, wristRight;
+    final Solenoid wrist;
 
     final AnalogInput wristEncoder;
 
@@ -31,15 +29,13 @@ public class Arm{
     
         brakePad = new Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
 
-        wristLeft = new DoubleSolenoid(Constants.ARM_WRIST_LEFT_PCM_ID, Constants.ARM_WRIST_LEFT_FORWARD_ID, Constants.ARM_WRIST_LEFT_REVERSE_ID);
-        wristRight = new DoubleSolenoid(Constants.ARM_WRIST_RIGHT_PCM_ID, Constants.ARM_WRIST_RIGHT_FORWARD_ID, Constants.ARM_WRIST_RIGHT_REVERSE_ID);
+        wrist = new Solenoid(Constants.ARM_WRIST_PCM_ID, Constants.ARM_WRIST_ID);
     
         wristEncoder = new AnalogInput(Constants.WRIST_ENCODER_PORT);
     }
 
     public void periodic(final Robot robot){
-        wristLeft.set(isWristing ? Value.kForward : Value.kReverse);
-        wristRight.set(isWristing ? Value.kForward : Value.kReverse);
+        wrist.set(!isWristing);
 
         //solenoid is inverted
         brakePad.set(!isBraking);
@@ -52,7 +48,7 @@ public class Arm{
         }
         //if the value of the pivot is 0 (so stopped), automatically break
         brake(val == 0);
-        System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
+        // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
         pivot.set(Math.signum(val) * (Math.abs(val) + (0.3 * Math.abs(Math.cos(Math.toRadians(getWristPosition() - 90))))));
     }
 

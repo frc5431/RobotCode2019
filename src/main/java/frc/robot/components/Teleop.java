@@ -24,18 +24,17 @@ public class Teleop{
         operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
 
         wrist = new Titan.Toggle();
-        wrist.setState(true);
         fingers = new Titan.Toggle();
-        fingers.setState(true);
         hatch = new Titan.Toggle();
-        hatch.setState(true);
     }
 
     public void periodic(final Robot robot){
-        System.out.println(robot.getArm().isWristing() + ", " + robot.getArm().getWristPosition() + ", " + robot.getElevator().getEncoderPosition());
+        System.out.println(robot.getIntake().getHatchDistance() + ", " + robot.getArm().getWristPosition() + ", " + robot.getElevator().getEncoderPosition());
         final Drivebase drivebase = robot.getDrivebase();
-        drivebase.drive(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y), driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
-        
+        final double left = driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+        final double right = driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+        drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+
         final Climber climber = robot.getClimber();
         climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
         //robot.getElevator().elevate(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y));
@@ -83,7 +82,7 @@ public class Teleop{
 
         wrist.setState(robot.getArm().isWristing());
         arm.wrist(wrist.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));
-    
+        
         // final Intake intake = robot.getIntake();
         // if(operator.getRawButton(Titan.LogitechExtreme3D.Button.FIVE)){
         //   intake.roll(Constants.INTAKE_ROLLER_SPEED);

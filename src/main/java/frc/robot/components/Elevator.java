@@ -6,8 +6,7 @@ import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -15,11 +14,10 @@ import frc.robot.Robot;
 public class Elevator{
     private final WPI_TalonSRX bottom, top;
 
-    private final DoubleSolenoid brakePad;
+    private final Solenoid brakePad;
 
     private final DigitalInput carriageUp;
     private final DigitalInput elevatorDown1, elevatorDown2;
-    private final DigitalInput elevatorUp1, elevatorUp2;
 
     private long lastBrake = -1;
 
@@ -40,7 +38,7 @@ public class Elevator{
         top.set(ControlMode.Follower, bottom.getDeviceID());
         top.setNeutralMode(NeutralMode.Brake);
 
-        brakePad = new DoubleSolenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_FORWARD_ID, Constants.ELEVATOR_BRAKE_REVERSE_ID);
+        brakePad = new Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
 
         carriageUp = new DigitalInput(Constants.ELEVATOR_CARRIAGE_UP_PORT);
 
@@ -48,8 +46,6 @@ public class Elevator{
         elevatorDown2 = new DigitalInput(Constants.ELEVATOR_DOWN_2_PORT);
 
         //hi tauseef
-        elevatorUp1 = new DigitalInput(Constants.ELEVATOR_UP_1_PORT);
-        elevatorUp2 = new DigitalInput(Constants.ELEVATOR_UP_2_PORT);
     }
 
     public void periodic(final Robot robot){
@@ -64,7 +60,7 @@ public class Elevator{
         }else{
             lastBrake = -1;
         }
-        brakePad.set(isBraking ? Value.kForward : Value.kReverse);
+        brakePad.set(!isBraking);
     }
 
     public void elevate(double val){
@@ -107,11 +103,7 @@ public class Elevator{
     public int getEncoderPosition(){
         return bottom.getSensorCollection().getQuadraturePosition();
     }
-
-    public boolean isUp(){
-        return !elevatorUp1.get() || !elevatorUp2.get();
-    }
-
+    
     public boolean isElevatorDown(){
         return !elevatorDown1.get() || !elevatorDown2.get();
     }

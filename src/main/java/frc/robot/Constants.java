@@ -13,31 +13,32 @@ public final class Constants {
 
     //pneumatic definitions
     public final static int ELEVATOR_BRAKE_PCM_ID = 30;
-    public final static int ELEVATOR_BRAKE_FORWARD_ID = 0;
-    public final static int ELEVATOR_BRAKE_REVERSE_ID = 1;
+    public final static int ELEVATOR_BRAKE_ID = 0;
+    //public final static int ELEVATOR_BRAKE_REVERSE_ID = 1;
 
-    public final static int ARM_BRAKE_PCM_ID = 31;
-    public final static int ARM_BRAKE_ID = 0;
+    public final static int ARM_BRAKE_PCM_ID = 30;
+    public final static int ARM_BRAKE_ID = 7;
     
-    public final static int ARM_WRIST_LEFT_PCM_ID = 31;
-    public final static int ARM_WRIST_LEFT_FORWARD_ID = 6;
-    public final static int ARM_WRIST_LEFT_REVERSE_ID = 7;
+    public final static int ARM_WRIST_PCM_ID = 30;
+    public final static int ARM_WRIST_ID = 5;
+    //public final static int ARM_WRIST_LEFT_REVERSE_ID = 7;
 
-    public final static int ARM_WRIST_RIGHT_PCM_ID = 30;
-    public final static int ARM_WRIST_RIGHT_FORWARD_ID = 7;
-    public final static int ARM_WRIST_RIGHT_REVERSE_ID = 4;
+    //public final static int ARM_WRIST_RIGHT_REVERSE_ID = 4;
     
-    public final static int INTAKE_HATCH_LEFT_PCM_ID = 31;
-    public final static int INTAKE_HATCH_LEFT_FORWARD_ID = 4;
-    public final static int INTAKE_HATCH_LEFT_REVERSE_ID = 5;
+    public final static int INTAKE_HATCH_LEFT_PCM_ID = 30;
+    public final static int INTAKE_HATCH_LEFT_ID = 3;
 
     public final static int INTAKE_HATCH_RIGHT_PCM_ID = 30;
-    public final static int INTAKE_HATCH_RIGHT_FORWARD_ID = 5;
-    public final static int INTAKE_HATCH_RIGHT_REVERSE_ID = 3;
+    public final static int INTAKE_HATCH_RIGHT_ID = 4;
+    //public final static int INTAKE_HATCH_LEFT_REVERSE_ID = 5;
+
+    //public final static int INTAKE_HATCH_RIGHT_PCM_ID = 30;
+    //public final static int INTAKE_HATCH_RIGHT_ID = 5;
+    //public final static int INTAKE_HATCH_RIGHT_REVERSE_ID = 3;
 
     public final static int INTAKE_FINGER_PCM_ID = 30;
-    public final static int INTAKE_FINGER_FORWARD_ID = 6;
-    public final static int INTAKE_FINGER_REVERSE_ID = 2;
+    public final static int INTAKE_FINGER_ID = 6;
+    //public final static int INTAKE_FINGER_REVERSE_ID = 2;
 
     //motor controller definitions
 
@@ -86,8 +87,9 @@ public final class Constants {
     public final static int ELEVATOR_CARRIAGE_UP_PORT = 4;
     public final static int ELEVATOR_DOWN_1_PORT = 0;
     public final static int ELEVATOR_DOWN_2_PORT = 1;
-    public final static int ELEVATOR_UP_1_PORT = 2;
-    public final static int ELEVATOR_UP_2_PORT = 3;
+
+    public final static int INTAKE_HATCH_LIDAR_PORT = 2;
+    public final static int INTAKE_BALL_LIDAR_PORT = 5;
 
     // ENCODER INFORMATION
     public final static int DRIVEBASE_ENCODER_SAMPLES_TO_AVERAGE = 7;
@@ -115,8 +117,8 @@ public final class Constants {
     // SPEEDS
 
     // TELEOPERATED SPEEDS
-    public final static double ARM_PIVOT_UP_SPEED = 0.4;
-    public final static double ARM_PIVOT_DOWN_SPEED = 0.3;
+    public final static double ARM_PIVOT_UP_SPEED = 0.3;
+    public final static double ARM_PIVOT_DOWN_SPEED = 0.25;
     public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 1.0;
 
@@ -129,7 +131,7 @@ public final class Constants {
     public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.4;
     public final static double AUTO_ROBOT_ELEVATOR_ACCELERATION = 0.25;
 
-    public final static double AUTO_ROBOT_ARM_SPEED = 0.2;
+    public final static double AUTO_ROBOT_ARM_SPEED = 0.15;
     public final static double AUTO_ROBOT_ARM_ACCELERATION = 0.1;
 
     //AUTONOMOUS MULTIPLIERS
@@ -145,15 +147,6 @@ public final class Constants {
     // LIMITS
     public final static int ELEVATOR_TOP_LIMIT = 50000;
     public final static int ELEVATOR_BOTTOM_LIMIT = 600;
-
-    // PID
-    public final static double ELEVATOR_PID_P = 0.0;
-    public final static double ELEVATOR_PID_I = 0.0;
-    public final static double ELEVATOR_PID_D = 0.0;
-
-    public final static double ARM_PID_P = 0.0;
-    public final static double ARM_PID_I = 0.0;
-    public final static double ARM_PID_D = 0.0;
 
     // TURNING INFORMATION
     public final static double TURN_PRECISION = 1.0; // Make sure the turn is within the degree

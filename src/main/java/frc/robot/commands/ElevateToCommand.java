@@ -35,7 +35,6 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 
 		final double error = Math.abs(position - robot.getElevator().getEncoderPosition());
 		final double speedOffset = Constants.AUTO_ROBOT_ELEVATOR_ACCELERATION * (Math.min(10000, error) / 10000);
-		System.out.println(speedOffset);
 
 		if(robot.getElevator().getEncoderPosition() > position){
 			robot.getElevator().elevate(-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER /*+ speedOffset*/);

@@ -7,10 +7,10 @@ import java.util.ArrayList;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.Titan;
+import frc.robot.Titan.LogitechExtreme3D.Axis;
 import frc.robot.Titan.LogitechExtreme3D.Button;
 
 import frc.robot.commands.ElevateToCommand;
@@ -21,6 +21,20 @@ import frc.robot.commands.HatchOuttakeCommand;
 import frc.robot.commands.CarriageUpCommand;
 
 public class Auton {
+    private static enum Sequence {
+        FLOOR,
+        LOADING_STATION,
+        CARGO_SHIP,
+        ROCKET_FORWARD_1,
+        ROCKET_FORWARD_2,
+        ROCKET_FORWARD_3,
+        ROCKET_REVERSE_1,
+        ROCKET_REVERSE_2,
+        ROCKET_REVERSE_3,
+        STOW,
+        CLIMB
+    }
+
     private static enum IntakePosition{
         FORWARD, REVERSE
     };
@@ -28,7 +42,11 @@ public class Auton {
     private Titan.CommandQueue<Robot> commands;
     private Titan.LogitechExtreme3D buttonBoard;
 
-    private EnumMap<Titan.LogitechExtreme3D.Button, Supplier<List<Titan.Command<Robot>>>> sequences = new EnumMap<>(Titan.LogitechExtreme3D.Button.class);
+    private EnumMap<Sequence, Supplier<List<Titan.Command<Robot>>>> hatchSequences = new EnumMap<>(Sequence.class);
+    private EnumMap<Sequence, Supplier<List<Titan.Command<Robot>>>> ballSequences = new EnumMap<>(Sequence.class);
+    private EnumMap<Titan.LogitechExtreme3D.Button, Sequence> sequences = new EnumMap<>(Titan.LogitechExtreme3D.Button.class);
+
+    private boolean isControllingRoller = false, isControllingHatch = false;
 
     public Auton(){
         commands = new Titan.CommandQueue<>();
@@ -45,15 +63,15 @@ public class Auton {
             output.add(queue);
             if(Titan.approxEquals(robot.getArm().getWristPosition(), 175, 5)){
                 output.add(new ArmMoveToCommand(160, Constants.AUTO_ROBOT_ARM_SPEED));
-                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED + 0.1));
             }else{
                 final Titan.ParallelCommandGroup<Robot> queue2 = new Titan.ParallelCommandGroup<>();
-                queue2.addCommand(robot, new ArmMoveToCommand(250, Constants.AUTO_ROBOT_ARM_SPEED));
+                queue2.addCommand(robot, new ArmMoveToCommand(currentPosition == IntakePosition.FORWARD ? 160 : 255, Constants.AUTO_ROBOT_ARM_SPEED));
                 queue2.addCommand(robot, new WristCommand(true));
                 output.add(queue2);
-                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED));
-                output.add(new ArmMoveToCommand(150, Constants.AUTO_ROBOT_ARM_SPEED));    
+                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED + 0.1));
             }
+            output.add(new ArmMoveToCommand(pos == IntakePosition.FORWARD ? 150 : 255, Constants.AUTO_ROBOT_ARM_SPEED));    
         }
         output.add(new Titan.ConsumerCommand<Robot>((rob)->{
             commands.addAll(in.get());
@@ -101,7 +119,7 @@ public class Auton {
             final Titan.ParallelCommandGroup<Robot> queue2  = new Titan.ParallelCommandGroup<>();
             queue2.addCommand(robot, new WristCommand(false));
             //pls fix arm compensation code
-            queue2.addCommand(robot, new ArmMoveToCommand(95, Constants.AUTO_ROBOT_ARM_SPEED));
+            queue2.addCommand(robot, new ArmMoveToCommand(97, Constants.AUTO_ROBOT_ARM_SPEED));
             queue2.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
             commands.add(queue2);
             return commands;
@@ -116,9 +134,8 @@ public class Auton {
     }
 
     public void init(final Robot robot){
-
         //STOWING
-        sequences.put(Button.TRIGGER, ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
+        final Supplier<List<Titan.Command<Robot>>> stowSequence = ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> stowQueue = new Titan.ParallelCommandGroup<>();
             stowQueue.addCommand(robot, new WristCommand(true));
             stowQueue.addCommand(robot, new FingerCommand(true));
@@ -128,21 +145,49 @@ public class Auton {
                 stowQueue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
             }
             return List.of(stowQueue, new ArmMoveToCommand(180, 0.3));
-        }));
+        });
 
-        //FLOOR PICKUP
-        sequences.put(Button.FIVE, ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
+
+        hatchSequences.put(Sequence.STOW, stowSequence);
+        ballSequences.put(Sequence.STOW, stowSequence);
+
+        //FLOOR PICKUp
+        final Supplier<List<Titan.Command<Robot>>> floorPickup = ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-            queue.addCommand(robot, new WristCommand(true));
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
             queue.addCommand(robot, new ArmMoveToCommand(90, Constants.AUTO_ROBOT_ARM_SPEED));
-            queue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
-            return List.of(queue);
-        }));
+            if(robot.getElevator().getEncoderPosition() < 3000){
+                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                return List.of(queue, new WristCommand(true), new ElevateToCommand(0, 0.1
+                ));
+            }else{
+                queue.addCommand(robot, new WristCommand(true));
+                queue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                return List.of(queue);
+            }
+        });
+        hatchSequences.put(Sequence.FLOOR, floorPickup);
+        ballSequences.put(Sequence.FLOOR, floorPickup);
 
-        //CARGO SHIP BALL
-        sequences.put(Button.SIX, ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
+        final Supplier<List<Titan.Command<Robot>>> hatch1 = ()-> getHatchRocketSequence(robot, 0);
+
+        // FORWARD HATCH ROCKET 
+        hatchSequences.put(Sequence.ROCKET_FORWARD_1, hatch1);
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()-> getHatchRocketSequence(robot, 26000));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()-> getHatchRocketSequence(robot, 48000));
+
+        // FORWARD BALL ROCKET
+        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->getBallRocketSequence(robot, 0));
+        ballSequences.put(Sequence.ROCKET_FORWARD_2, ()->getBallRocketSequence(robot, 24000));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->getBallRocketSequence(robot, 48000));
+
+        // REVERSE BALL ROCKET
+        ballSequences.put(Sequence.ROCKET_REVERSE_2, ()-> getReverseBallRocketSequence(robot, 16500));
+        ballSequences.put(Sequence.ROCKET_REVERSE_3, ()-> getReverseBallRocketSequence(robot, 38500));
+
+        //CARGO SHIP
+        ballSequences.put(Sequence.CARGO_SHIP, ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new WristCommand(true));
             queue.addCommand(robot, new FingerCommand(true));
@@ -151,44 +196,102 @@ public class Auton {
             queue.addCommand(robot, new ElevateToCommand(28000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
             return List.of(queue);
         }));
+        hatchSequences.put(Sequence.CARGO_SHIP, hatch1);
 
-        // FORWARD BALL ROCKET
-        sequences.put(Button.TWELVE, ()->getBallRocketSequence(robot, 0.0));
-        sequences.put(Button.TEN, ()->getBallRocketSequence(robot, 24000));
-        sequences.put(Button.EIGHT, ()->getBallRocketSequence(robot, 48000));
+        // LOADING STATION
+        ballSequences.put(Sequence.LOADING_STATION, ()-> getHatchRocketSequence(robot, 11500));
+        hatchSequences.put(Sequence.LOADING_STATION, ()-> generateSequence(robot, IntakePosition.FORWARD, ()->{
+            final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+            queue.addCommand(robot, new WristCommand(false));
+            queue.addCommand(robot, new FingerCommand(true));
+            queue.addCommand(robot, new HatchOuttakeCommand(true));
+            return List.of(queue, new ArmMoveToCommand(120, Constants.AUTO_ROBOT_ARM_SPEED), new Titan.ConsumerCommand<Robot>((rob)->{
+                commands.addAll(stowSequence.get());
+            }));
+        }));
 
-        // sequences.put(Button.NINE, ()-> getReverseBallRocketSequence(robot, 16500));
-        // sequences.put(Button.SEVEN, ()-> getReverseBallRocketSequence(robot, 38500));
-        
-        // FORWARD HATCH ROCKET 
-        //1
-        sequences.put(Button.ELEVEN, ()-> getHatchRocketSequence(robot, 5800));
-        //2
-        sequences.put(Button.NINE, ()-> getHatchRocketSequence(robot, 28000));
-        //3
-        sequences.put(Button.SEVEN, ()-> getHatchRocketSequence(robot, 50000));
+        final Supplier<List<Titan.Command<Robot>>> climb = ()->generateSequence(robot, IntakePosition.REVERSE, ()->{
+            final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+            queue.addCommand(robot, new WristCommand(true));
+            queue.addCommand(robot, new FingerCommand(true));
+            queue.addCommand(robot, new HatchOuttakeCommand(true));
+            return List.of(queue, new ElevateToCommand(12000, Constants.AUTO_ROBOT_ELEVATOR_SPEED), new ArmMoveToCommand(255, Constants.AUTO_ROBOT_ARM_SPEED));
+        });
+        ballSequences.put(Sequence.CLIMB, climb);
+        hatchSequences.put(Sequence.CLIMB, climb);
 
+        // BUTTON MAPPINGS
+        sequences.put(Button.TRIGGER, Sequence.STOW);
 
-        // LOADING STATION BALL
-        sequences.put(Button.THREE, ()-> getHatchRocketSequence(robot, 11500));
+        sequences.put(Button.FIVE, Sequence.FLOOR);
+        sequences.put(Button.THREE, Sequence.LOADING_STATION);
+        sequences.put(Button.SIX, Sequence.CARGO_SHIP);
+
+        sequences.put(Button.TWELVE, Sequence.ROCKET_FORWARD_1);
+        sequences.put(Button.TEN, Sequence.ROCKET_FORWARD_2);
+        sequences.put(Button.EIGHT, Sequence.ROCKET_FORWARD_3);
+
+        sequences.put(Button.ELEVEN, Sequence.ROCKET_REVERSE_1);
+        sequences.put(Button.NINE, Sequence.ROCKET_REVERSE_2);
+        sequences.put(Button.SEVEN, Sequence.ROCKET_REVERSE_3);
+
+        sequences.put(Button.TWO, Sequence.CLIMB);
 
         commands.init(robot);
     }
 
     public void periodic(final Robot robot){
-        if(buttonBoard.getRawButton(Button.TRIGGER) || buttonBoard.getRawButton(Button.TWO)){
-            commands.done(robot);
-        }
+        final boolean isHatch = buttonBoard.getRawAxis(Axis.SLIDER) > 0;
 
         if(commands.isEmpty()){
-            for(final Map.Entry<Button, Supplier<List<Titan.Command<Robot>>>> e : sequences.entrySet()){
+            for(final Map.Entry<Button, Sequence> e : sequences.entrySet()){
                 if(buttonBoard.getRawButton(e.getKey())){
-                    commands.addAll(e.getValue().get());
+                    final Sequence seq = e.getValue();
+                    final Supplier<List<Titan.Command<Robot>>> selected = (isHatch ? hatchSequences : ballSequences).getOrDefault(seq, ()->List.of());
+                    commands.addAll(selected.get());
                     commands.init(robot);
                     break;
                 }
             }
         }
+
+        if(buttonBoard.getRawButton(Button.FOUR)){
+            if(isHatch){
+                isControllingHatch = true;
+                robot.getIntake().actuateHatch(false);
+            }
+        }else if(buttonBoard.getPOV() == 0){
+            if(isHatch){
+                isControllingHatch = true;
+                //if(robot.getIntake().getHatchDistance() < 30){
+                robot.getIntake().actuateHatch(false);
+                //}
+            } else{
+                isControllingRoller = true;
+                robot.getIntake().roll(-Constants.INTAKE_ROLLER_SPEED);
+            }
+            //up
+        }else if(buttonBoard.getPOV() == 180){
+            if(isHatch){
+                isControllingHatch = true;
+                robot.getIntake().finger(false);
+            } else{
+                isControllingRoller = true;
+                robot.getIntake().roll(Constants.INTAKE_ROLLER_SPEED);
+            }
+            //down
+        }else if(isControllingRoller){
+            isControllingRoller = false;
+            robot.getIntake().roll(0.0);
+        }else if(isControllingHatch){
+            isControllingHatch = false;
+            robot.getIntake().actuateHatch(true);
+            robot.getIntake().finger(true);
+        }
+
+        // if(buttonBoard.getRawButton(Button.TWO)){
+        //     commands.done(robot);
+        // }
 
         commands.update(robot);
     }

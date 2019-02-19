@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.components.Climber;
@@ -30,9 +31,19 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    CameraServer.getInstance().startAutomaticCapture(0);
+    CameraServer.getInstance().startAutomaticCapture(1);
+
     compressor = new Compressor(30);
     compressor.setClosedLoopControl(false);
     compressor.stop();
+
+    //elevator brake is 0
+    //arm brake is 7
+    //wrist is 6
+    //hatch left is 3
+    //hatch right is 4
+    //fingers is 5
 
     climber = new Climber();
     drivebase = new Drivebase();

@@ -4,15 +4,17 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.Titan;
 
 public class Intake{
     private final WPI_TalonSRX rollers;
 
-    private final DoubleSolenoid hatchLeft, hatchRight, finger;
+    private final Solenoid hatchLeft, hatchRight, finger;
+
+    private final Titan.Lidar hatchLidar, ballLidar;
 
     private boolean isHatching = true, isFingering = true;
 
@@ -21,16 +23,21 @@ public class Intake{
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        hatchLeft = new DoubleSolenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_FORWARD_ID, Constants.INTAKE_HATCH_LEFT_REVERSE_ID);
-        hatchRight = new DoubleSolenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_FORWARD_ID, Constants.INTAKE_HATCH_RIGHT_REVERSE_ID);
-        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
+        hatchLeft = new Solenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_ID);
+        hatchRight = new Solenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_ID);
+        finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
+
+        hatchLidar = new Titan.Lidar(Constants.INTAKE_HATCH_LIDAR_PORT);
+        hatchLidar.setCalibrationOffset(7);
+
+        ballLidar = new Titan.Lidar(Constants.INTAKE_BALL_LIDAR_PORT);
     }
 
     public void periodic(final Robot robot){
-        hatchLeft.set(isHatching ? Value.kForward : Value.kReverse);
-        hatchRight.set(isHatching ? Value.kForward : Value.kReverse);
+        hatchLeft.set(!isHatching);
+        hatchRight.set(!isHatching);
 
-        finger.set(isFingering ? Value.kForward : Value.kReverse);
+        finger.set(!isFingering);
     }
 
     public void roll(final double val){
@@ -51,5 +58,21 @@ public class Intake{
 
     public boolean isHatchOuttaking(){
         return isHatching;
+    }
+
+    public double getBallDistance(){
+        return ballLidar.getDistance();
+    }
+
+    public double getHatchDistance(){
+        return hatchLidar.getDistance();
+    }
+
+    public boolean isBallIn(){
+        return false;
+    }
+
+    public boolean canShootHatch(){
+        return true;
     }
 }
