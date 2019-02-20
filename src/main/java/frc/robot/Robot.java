@@ -35,8 +35,8 @@ public class Robot extends TimedRobot {
     CameraServer.getInstance().startAutomaticCapture(1);
 
     compressor = new Compressor(30);
-    compressor.setClosedLoopControl(false);
-    compressor.stop();
+    compressor.setClosedLoopControl(true);
+    //compressor.stop();
 
     //elevator brake is 0
     //arm brake is 7
@@ -68,7 +68,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    compressor.stop();
+    //compressor.stop();
 
     teleop.periodic(this);
     auton.periodic(this);

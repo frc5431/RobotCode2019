@@ -14,7 +14,7 @@ public class Intake{
 
     private final Solenoid hatchLeft, hatchRight, finger;
 
-    private final Titan.Lidar hatchLidar, ballLidar;
+    private final Titan.Lidar hatchLidar;
 
     private boolean isHatching = true, isFingering = true;
 
@@ -29,8 +29,6 @@ public class Intake{
 
         hatchLidar = new Titan.Lidar(Constants.INTAKE_HATCH_LIDAR_PORT);
         hatchLidar.setCalibrationOffset(7);
-
-        ballLidar = new Titan.Lidar(Constants.INTAKE_BALL_LIDAR_PORT);
     }
 
     public void periodic(final Robot robot){
@@ -58,10 +56,6 @@ public class Intake{
 
     public boolean isHatchOuttaking(){
         return isHatching;
-    }
-
-    public double getBallDistance(){
-        return ballLidar.getDistance();
     }
 
     public double getHatchDistance(){

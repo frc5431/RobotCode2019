@@ -28,7 +28,7 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		// 	return CommandResult.RESTART_COMMAND;
 		// }
 
-		if (Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, 750) || (position <= 0 && robot.getElevator().getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT)) {
+		if ((position > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, 750)) || (position <= 0 && robot.getElevator().getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT)) {
 			robot.getElevator().elevate(0.0);
 			return CommandResult.COMPLETE;
 		}

@@ -85,11 +85,13 @@ public final class Constants {
     // digital inputs
 
     public final static int ELEVATOR_CARRIAGE_UP_PORT = 4;
-    public final static int ELEVATOR_DOWN_1_PORT = 0;
-    public final static int ELEVATOR_DOWN_2_PORT = 1;
+    public final static int ELEVATOR_DOWN_1_PORT = 1;
+    //public final static int ELEVATOR_DOWN_2_PORT = 3;
 
     public final static int INTAKE_HATCH_LIDAR_PORT = 2;
-    public final static int INTAKE_BALL_LIDAR_PORT = 5;
+
+    public final static int ELEVATOR_CARRIAGE_DOWN_1_PORT = 0;
+    //public final static int ELEVATOR_CARRIAGE_DOWN_2_PORT = 5;
 
     // ENCODER INFORMATION
     public final static int DRIVEBASE_ENCODER_SAMPLES_TO_AVERAGE = 7;
@@ -117,8 +119,8 @@ public final class Constants {
     // SPEEDS
 
     // TELEOPERATED SPEEDS
-    public final static double ARM_PIVOT_UP_SPEED = 0.3;
-    public final static double ARM_PIVOT_DOWN_SPEED = 0.25;
+    public final static double ARM_PIVOT_UP_SPEED = 0.15;
+    public final static double ARM_PIVOT_DOWN_SPEED = 0.1;
     public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 1.0;
 
@@ -129,13 +131,13 @@ public final class Constants {
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
     public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.4;
-    public final static double AUTO_ROBOT_ELEVATOR_ACCELERATION = 0.25;
+    public final static double AUTO_ROBOT_ELEVATOR_ACCELERATION = 0.35;
 
     public final static double AUTO_ROBOT_ARM_SPEED = 0.15;
     public final static double AUTO_ROBOT_ARM_ACCELERATION = 0.1;
 
     //AUTONOMOUS MULTIPLIERS
-    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.6;
+    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.5;
 
     // to activate the clutch it runs these
     public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;

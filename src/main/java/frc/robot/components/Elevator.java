@@ -17,7 +17,8 @@ public class Elevator{
     private final Solenoid brakePad;
 
     private final DigitalInput carriageUp;
-    private final DigitalInput elevatorDown1, elevatorDown2;
+    private final DigitalInput carriageDown1;
+    private final DigitalInput elevatorDown1;
 
     private long lastBrake = -1;
 
@@ -43,7 +44,8 @@ public class Elevator{
         carriageUp = new DigitalInput(Constants.ELEVATOR_CARRIAGE_UP_PORT);
 
         elevatorDown1 = new DigitalInput(Constants.ELEVATOR_DOWN_1_PORT);
-        elevatorDown2 = new DigitalInput(Constants.ELEVATOR_DOWN_2_PORT);
+
+        carriageDown1 = new DigitalInput(Constants.ELEVATOR_CARRIAGE_DOWN_1_PORT);
 
         //hi tauseef
     }
@@ -51,6 +53,8 @@ public class Elevator{
     public void periodic(final Robot robot){
         if(isCarriageUp() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(27000, 0);
+        }else if(isCarriageDown()){
+            bottom.getSensorCollection().setQuadraturePosition(0, 0);
         }
 
         if(!isBraking){
@@ -69,7 +73,7 @@ public class Elevator{
             brake(true);
         }else{
             if(System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
-                if((getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && val > 0) || (getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT && val < 0)){
+                if((isCarriageDown() && val < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && val > 0) || (getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT && val < 0)){
                     val = 0;
                     brake(true);
                 }else{
@@ -103,12 +107,16 @@ public class Elevator{
     public int getEncoderPosition(){
         return bottom.getSensorCollection().getQuadraturePosition();
     }
-    
+
     public boolean isElevatorDown(){
-        return !elevatorDown1.get() || !elevatorDown2.get();
+        return !elevatorDown1.get();
     }
 
     public boolean isCarriageUp(){
         return !carriageUp.get();
+    }
+
+    public boolean isCarriageDown(){
+        return !carriageDown1.get();
     }
 }

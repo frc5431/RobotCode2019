@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import frc.robot.Constants;
+import frc.robot.ControlMode;
 import frc.robot.Robot;
 import frc.robot.Titan;
 import frc.robot.Titan.LogitechExtreme3D.Axis;
@@ -102,7 +103,7 @@ public class Auton {
             }
             subRoutine.add(new WristCommand(false));
             queue.addQueue(robot, subRoutine);
-            return List.of(queue, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED), new ArmMoveToCommand(174, Constants.AUTO_ROBOT_ARM_SPEED));
+            return List.of(queue, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED), new ArmMoveToCommand(178, Constants.AUTO_ROBOT_ARM_SPEED));
         });
     }
 
@@ -119,7 +120,7 @@ public class Auton {
             final Titan.ParallelCommandGroup<Robot> queue2  = new Titan.ParallelCommandGroup<>();
             queue2.addCommand(robot, new WristCommand(false));
             //pls fix arm compensation code
-            queue2.addCommand(robot, new ArmMoveToCommand(97, Constants.AUTO_ROBOT_ARM_SPEED));
+            queue2.addCommand(robot, new ArmMoveToCommand(95, Constants.AUTO_ROBOT_ARM_SPEED));
             queue2.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
             commands.add(queue2);
             return commands;
@@ -130,6 +131,23 @@ public class Auton {
         return generateSequence(robot, IntakePosition.REVERSE, ()->{
             final Titan.ParallelCommandGroup<Robot> queue1 = new Titan.ParallelCommandGroup<>();
             return List.of(queue1);
+        });
+    }
+
+    public List<Titan.Command<Robot>> getFloorIntake(final Robot robot, final double height){
+        return generateSequence(robot, IntakePosition.FORWARD, ()->{
+            final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+            queue.addCommand(robot, new FingerCommand(true));
+            queue.addCommand(robot, new HatchOuttakeCommand(true));
+            queue.addCommand(robot, new ArmMoveToCommand(87, Constants.AUTO_ROBOT_ARM_SPEED));
+            if(robot.getElevator().getEncoderPosition() < 3000){
+                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                return List.of(queue, new WristCommand(true), new ElevateToCommand(height, 0.1));
+            }else{
+                queue.addCommand(robot, new WristCommand(true));
+                queue.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                return List.of(queue);
+            }
         });
     }
 
@@ -151,31 +169,16 @@ public class Auton {
         hatchSequences.put(Sequence.STOW, stowSequence);
         ballSequences.put(Sequence.STOW, stowSequence);
 
-        //FLOOR PICKUp
-        final Supplier<List<Titan.Command<Robot>>> floorPickup = ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
-            final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-            queue.addCommand(robot, new FingerCommand(true));
-            queue.addCommand(robot, new HatchOuttakeCommand(true));
-            queue.addCommand(robot, new ArmMoveToCommand(90, Constants.AUTO_ROBOT_ARM_SPEED));
-            if(robot.getElevator().getEncoderPosition() < 3000){
-                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
-                return List.of(queue, new WristCommand(true), new ElevateToCommand(0, 0.1
-                ));
-            }else{
-                queue.addCommand(robot, new WristCommand(true));
-                queue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
-                return List.of(queue);
-            }
-        });
-        hatchSequences.put(Sequence.FLOOR, floorPickup);
-        ballSequences.put(Sequence.FLOOR, floorPickup);
+        //FLOOR PICKUP
+        hatchSequences.put(Sequence.FLOOR, ()-> getFloorIntake(robot, 1000));
+        ballSequences.put(Sequence.FLOOR, ()-> getFloorIntake(robot, 0));
 
         final Supplier<List<Titan.Command<Robot>>> hatch1 = ()-> getHatchRocketSequence(robot, 0);
 
         // FORWARD HATCH ROCKET 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, hatch1);
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()-> getHatchRocketSequence(robot, 26000));
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()-> getHatchRocketSequence(robot, 48000));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()-> getHatchRocketSequence(robot, 24000));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()-> getHatchRocketSequence(robot, 46000));
 
         // FORWARD BALL ROCKET
         ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->getBallRocketSequence(robot, 0));
@@ -183,7 +186,7 @@ public class Auton {
         ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->getBallRocketSequence(robot, 48000));
 
         // REVERSE BALL ROCKET
-        ballSequences.put(Sequence.ROCKET_REVERSE_2, ()-> getReverseBallRocketSequence(robot, 16500));
+        ballSequences.put(Sequence.ROCKET_REVERSE_2, ()-> getReverseBallRocketSequence(robot, 18000));
         ballSequences.put(Sequence.ROCKET_REVERSE_3, ()-> getReverseBallRocketSequence(robot, 38500));
 
         //CARGO SHIP
@@ -242,6 +245,14 @@ public class Auton {
 
     public void periodic(final Robot robot){
         final boolean isHatch = buttonBoard.getRawAxis(Axis.SLIDER) > 0;
+
+        if(buttonBoard.getRawButton(Button.TRIGGER)){
+            commands.clear();
+            robot.getArm().setControlMode(ControlMode.MANUAL);
+            robot.getElevator().setControlMode(ControlMode.MANUAL);
+            isControllingHatch = false;
+            isControllingRoller = false;
+        }
 
         if(commands.isEmpty()){
             for(final Map.Entry<Button, Sequence> e : sequences.entrySet()){
