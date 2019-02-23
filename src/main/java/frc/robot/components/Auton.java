@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import frc.robot.Constants;
 import frc.robot.ControlMode;
+import frc.robot.MimicPropertyValue;
 import frc.robot.Robot;
 import frc.robot.Titan;
 import frc.robot.Titan.LogitechExtreme3D.Axis;
@@ -19,6 +20,7 @@ import frc.robot.commands.ArmMoveToCommand;
 import frc.robot.commands.FingerCommand;
 import frc.robot.commands.WristCommand;
 import frc.robot.commands.HatchOuttakeCommand;
+import frc.robot.commands.OldMimicCommand;
 import frc.robot.commands.CarriageUpCommand;
 
 public class Auton {
@@ -49,9 +51,13 @@ public class Auton {
 
     private boolean isControllingRoller = false, isControllingHatch = false;
 
+    private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
+
     public Auton(){
         commands = new Titan.CommandQueue<>();
         buttonBoard = new Titan.LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
+
+        observer = new Titan.Mimic.Observer<>();
     }
 
     public List<Titan.Command<Robot>> generateSequence(final Robot robot, final IntakePosition pos, final Supplier<List<Titan.Command<Robot>>> in){
@@ -240,6 +246,13 @@ public class Auton {
 
         sequences.put(Button.TWO, Sequence.CLIMB);
 
+        if(robot.getMode() == Robot.Mode.AUTO){
+            commands.add(new OldMimicCommand(robot, "TEST"));
+        }else if(robot.getMode() == Robot.Mode.TEST){
+            robot.getDrivebase().setHome();
+            observer.prepare("TEST");
+        }
+
         commands.init(robot);
     }
 
@@ -305,10 +318,16 @@ public class Auton {
         // }
 
         commands.update(robot);
+
+        if(robot.getMode() == Robot.Mode.TEST){
+            observer.addStep(robot, MimicPropertyValue.class);
+        }
     }
 
     public void disabled(final Robot robot){
         commands.done(robot);
+
+        observer.save();
     }
 
     public Titan.CommandQueue<Robot> getCommands(){

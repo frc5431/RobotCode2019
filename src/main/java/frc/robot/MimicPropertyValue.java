@@ -2,6 +2,7 @@ package frc.robot;
 
 import java.util.function.Function;
 
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.Titan;
 
@@ -11,7 +12,8 @@ public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
 		ANGLE(Titan.Mimic.PropertyType.DOUBLE, (robot)->0/*robot.getDrivebase().getNavx().getAngle()*/),
 		LEFT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getTeleop().getDriver().getRawAxis(Titan.Xbox.Axis.LEFT_Y)),
 		RIGHT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getTeleop().getDriver().getRawAxis(Titan.Xbox.Axis.RIGHT_Y)),
-		HOME(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.START));
+		HOME(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.START)),
+		BATTERY(Titan.Mimic.PropertyType.DOUBLE, (robot)->RobotController.getBatteryVoltage());
 
 		private final Titan.Mimic.PropertyType type;
 		private final Function<Robot, Object> getter;
@@ -19,6 +21,7 @@ public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
 		private MimicPropertyValue(final Titan.Mimic.PropertyType type, final Function<Robot, Object> getter){
 			this.type = type;
 			this.getter = getter;
+			
 		}
 
 		public Titan.Mimic.PropertyType getType(){

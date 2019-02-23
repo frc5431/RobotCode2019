@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.components.Climber;
@@ -10,13 +9,16 @@ import frc.robot.components.Arm;
 import frc.robot.components.Intake;
 import frc.robot.components.Teleop;
 import frc.robot.components.Auton;
+import frc.robot.components.Dashboard;
 
 public class Robot extends TimedRobot {
-  private static enum Mode{
-    DISABLED, AUTO, TELEOP
+  public static enum Mode{
+    DISABLED, AUTO, TELEOP, TEST
   }
 
   private Mode mode = Mode.DISABLED;
+
+  private Compressor compressor;
 
   private Climber climber;
   private Drivebase drivebase;
@@ -24,16 +26,13 @@ public class Robot extends TimedRobot {
   private Arm arm;
   private Intake intake;
 
-  private Compressor compressor;
-
   private Teleop teleop;
   private Auton auton;
 
+  private Dashboard dashboard;
+
   @Override
   public void robotInit() {
-    CameraServer.getInstance().startAutomaticCapture(0);
-    CameraServer.getInstance().startAutomaticCapture(1);
-
     compressor = new Compressor(30);
     compressor.setClosedLoopControl(true);
     //compressor.stop();
@@ -53,12 +52,14 @@ public class Robot extends TimedRobot {
 
     teleop = new Teleop();
     auton = new Auton();
+  
+    dashboard = new Dashboard();
   }
 
   @Override
   public void robotPeriodic() {
+    dashboard.periodic(this);
   }
-
   
   @Override
   public void teleopInit() {
@@ -73,9 +74,11 @@ public class Robot extends TimedRobot {
     teleop.periodic(this);
     auton.periodic(this);
 
+    drivebase.periodic(this);
     elevator.periodic(this);
     intake.periodic(this);
     arm.periodic(this);
+    climber.periodic(this);
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -83,11 +86,22 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
-    teleopInit();
+    auton.init(this);
   }
 
   @Override
   public void autonomousPeriodic() {
+    teleopPeriodic();
+  }
+
+  @Override
+  public void testInit(){
+    mode = Mode.TEST;
+    auton.init(this);
+  }
+
+  @Override
+  public void testPeriodic(){
     teleopPeriodic();
   }
 
@@ -109,6 +123,10 @@ public class Robot extends TimedRobot {
     return auton;
   }
   
+  public Dashboard getDashboard(){
+    return dashboard;
+  }
+
   public Arm getArm(){
     return arm;
   }

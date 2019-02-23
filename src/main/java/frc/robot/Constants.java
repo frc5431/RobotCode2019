@@ -80,7 +80,6 @@ public final class Constants {
 
     // analog inputs
     public final static int WRIST_ENCODER_PORT = 3;
-    public final static int CLIMBER_ENCODER_PORT = 1;
 
     // digital inputs
 
@@ -116,6 +115,16 @@ public final class Constants {
 
     // values
 
+    // PID
+    public final static double AUTO_DISTANCE_P = 0.0063;
+	public final static double AUTO_DISTANCE_I = 0.0000000025; // 0.0003; //0.0022;
+    public final static double AUTO_DISTANCE_D = 0.000915; // 0.00031;
+
+    public final static double DRIVE_MIMICK_P = 0.016; //0.025
+	public final static double DRIVE_MIMICK_I = 0.00;
+	public final static double DRIVE_MIMICK_D = 0.060;
+    public final static double DRIVE_MIMICK_MIN_MAX = 0.35; //0.4
+
     // SPEEDS
 
     // TELEOPERATED SPEEDS
@@ -128,6 +137,8 @@ public final class Constants {
     public final static double ELEVATOR_DOWN_MULTIPLIER = 0.6;
 
     //AUTONOMOUS SPEEDS
+    public final static double AUTO_PATHFINDING_OVERRIDE_NEXT_STEP_SPEED = 0.2;
+
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
     public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.4;

@@ -6,11 +6,10 @@ import java.util.function.Consumer;
 
 import java.util.EnumMap;
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -630,8 +629,7 @@ public final class Titan {
 			public Object get(final R robot);
 		}
 	
-		public static final String mimicFile = "/media/sda1/%s.mimic";
-		public static final String formatString = "%.2f,%.2f,%.2f,%.4f,%.4f,%d,%.2f,%.2f,%.2f\n"; //LEFT ENCODER, RIGHT ENCODER, GYRO ANGLE, LEFT POWER, RIGHT POWER, HOME, ELEVATOR_HEIGHT, INTAKE_TILT, INTAKE_SPEED
+		public static final String DEFAULT_MIMIC_PATH = "/media/sda1/%s.mimic";
 		
 		public static class Step<PV extends Enum<PV> & PropertyValue<?>> {
 			public EnumMap<PV, Object> values;
@@ -642,6 +640,7 @@ public final class Titan {
 			
 			public Step(final String toParse, final Class<PV> clazz) {
 				try {
+					values = new EnumMap<>(clazz);
 					final String parts[] = toParse.split(",");
 					for(final PV key : clazz.getEnumConstants()){					
 						values.put(key, key.getType().convert(parts[key.ordinal()]));
@@ -650,28 +649,39 @@ public final class Titan {
 					Titan.ee("MimicParse", e);
 				}
 			}
+
+			public Object get(final PV value){
+				return values.get(value);
+			}
+
+			public double getDouble(final PV value){
+				return (double) get(value);
+			}
+
+			public boolean getBoolean(final PV value){
+				return (boolean) get(value);
+			}
 			
 			public String toString() {
 				final StringBuilder builder = new StringBuilder();
 				for(final Object obj : values.values()){
 					builder.append(obj.toString()).append(",");
 				}
+				builder.append(System.lineSeparator());
 				return builder.toString();
 			}
 		}
 		
 		public static class Observer<R, PV extends Enum<PV> & PropertyValue<R>> {
 			private FileOutputStream log = null;
-			private boolean saved = true;
 			
 			public void prepare(final String fileName) {
-				final String fName = String.format(mimicFile, fileName);
+				final String fName = String.format(DEFAULT_MIMIC_PATH, fileName);
 				try {
 					if(Files.deleteIfExists(new File(fName).toPath())) {
 						Titan.e("Deleted previous pathfinding data");
 					}
 					log = new FileOutputStream(fName);
-					saved = false;
 					Titan.l("Created new pathfinding file");
 				} catch (IOException e) {
 					Titan.ee("Mimic", e);
@@ -685,67 +695,50 @@ public final class Titan {
 						step.values.put(key, key.get(robot));
 					}
 	
-					if(!saved) log.write(step.toString().getBytes(StandardCharsets.US_ASCII));
+					if(log != null) log.write(step.toString().getBytes(StandardCharsets.US_ASCII));
 				} catch (Exception e) {
 					Titan.ee("Mimic", e);
 				}
 			}
 			
-			public void saveMimic() {
+			public void save() {
 				try {
-					if(log == null || saved) return;
+					if(log == null) return;
 					Titan.l("Finished observing");
 					log.flush();
 					log.close();
-					saved = true;
+					log = null;
 					Titan.l("Saved the mimic data");
 				} catch (IOException e) {
 					Titan.ee("Mimic", e);
 				}
 			}
 		}
-		
-		public class Repeater<PV extends Enum<PV> & PropertyValue<?>> {
-			private FileInputStream log = null;
-			private BufferedReader reader = null;
-			private final ArrayList<Step<PV>> pathData = new ArrayList<Step<PV>>();
-			
-			public void prepare(final String fileName, final Class<PV> clazz) {
-				final String fName = String.format(mimicFile, fileName);
-				try {
-					Titan.l("Loading the mimic file");
-					if(!Files.exists(new File(fName).toPath())) {
-						Titan.e("The requested mimic data was not found");
-					}
-					
-					log = new FileInputStream(fName);
-					InputStreamReader iReader = new InputStreamReader(log, StandardCharsets.US_ASCII);
-					reader = new BufferedReader(iReader);
-					pathData.clear(); //Clear all of the pathData
-					
-					String line;
-					while ((line = reader.readLine()) != null) {
-						try {
-							pathData.add(new Step<PV>(line, clazz));
-						} catch (Exception e) {
-							Titan.ee("MimicData", e);
-						}
-					}
-					
-					try {
-						reader.close();
-					} catch (Exception e) {
-						Titan.ee("Failed to close the mimic file", e);
-					}
-					Titan.l("Loaded the mimic file");
-				} catch (IOException e) {
-					Titan.ee("Mimic", e);
+
+		public static <PV extends Enum<PV> & PropertyValue<?>> ArrayList<Step<PV>> load(final String fileName, final Class<PV> clazz) {
+			final ArrayList<Step<PV>> pathData = new ArrayList<>();
+			final String fName = String.format(DEFAULT_MIMIC_PATH, fileName);
+			try (final BufferedReader reader = new BufferedReader(new FileReader(fName))) {
+				Titan.l("Loading the mimic file");
+				if(!Files.exists(new File(fName).toPath())) {
+					Titan.e("The requested mimic data was not found");
 				}
+				
+				String line;
+				while ((line = reader.readLine()) != null) {
+					try {
+						pathData.add(new Step<PV>(line, clazz));
+					} catch (Exception e) {
+						Titan.ee("MimicData", e);
+					}
+				}
+				
+				Titan.l("Loaded the mimic file");
+			} catch (IOException e) {
+				Titan.ee("Mimic", e);
 			}
-		
-			public ArrayList<Step<PV>> getData() {
-				return pathData;
-			}
+
+			return pathData;
 		}
 	}
 	

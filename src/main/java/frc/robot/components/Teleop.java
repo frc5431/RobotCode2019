@@ -29,16 +29,18 @@ public class Teleop{
     }
 
     public void periodic(final Robot robot){
-        //System.out.println(robot.getElevator().isCarriageDown() + ", " + robot.getElevator().isElevatorDown());
-        System.out.println(robot.getIntake().getHatchDistance() + ", " + robot.getArm().getWristPosition() + ", " + robot.getElevator().getEncoderPosition());
         final Drivebase drivebase = robot.getDrivebase();
         final double left = driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
         final double right = driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
-        drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+        if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
+          drivebase.disableAllPID();
+
+          drivebase.setControlMode(ControlMode.MANUAL);
+          drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+        }
 
         final Climber climber = robot.getClimber();
         climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
-        //robot.getElevator().elevate(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y));
         
         final Elevator elevator = robot.getElevator();
         final double elevPower = -operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y);
@@ -61,15 +63,6 @@ public class Teleop{
         fingers.setState(intake.isFingering());
         intake.finger(fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)));
 
-        //robot.getClimber().climb(driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y));
-        //robot.getElevator().elevate(driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y));
-        //robot.getClimber().climb(driver.getRawButton(Titan.Xbox.Button.BUMPER_L) ? Constants.CLIMBER_SPEED : 0.0);
-    
-        // final Elevator elevator = robot.getElevator();
-        // final boolean braked = operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER);
-        // elevator.elevate(braked ? 0.0 : operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y));
-        // elevator.setBrake(braked);
-    
         final Arm arm = robot.getArm();
         if(operator.getPOV() == 0){
           arm.setControlMode(ControlMode.MANUAL);
@@ -82,19 +75,7 @@ public class Teleop{
         }
 
         wrist.setState(robot.getArm().isWristing());
-        arm.wrist(wrist.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));
-        
-        // final Intake intake = robot.getIntake();
-        // if(operator.getRawButton(Titan.LogitechExtreme3D.Button.FIVE)){
-        //   intake.roll(Constants.INTAKE_ROLLER_SPEED);
-        // }else if(operator.getRawButton(Titan.LogitechExtreme3D.Button.THREE)){
-        //   intake.roll(-Constants.INTAKE_ROLLER_SPEED);
-        // }else{
-        //   intake.roll(0);
-        // }
-    
-        // intake.actuateHatch(operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO));
-        
+        arm.wrist(wrist.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));      
     }
 
     public Titan.Xbox getDriver(){
