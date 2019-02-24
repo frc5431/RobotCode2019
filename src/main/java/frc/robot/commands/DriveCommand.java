@@ -52,15 +52,16 @@ public class DriveCommand extends Titan.Command<Robot> {
 
 		//final double batteryMultiplier = battery / RobotController.getBatteryVoltage();
 		//System.out.println(left + ", " + right);
-		robot.getDrivebase().drive((Math.pow(left, 2) * Math.signum(left)), (Math.pow(right, 2) * Math.signum(right)));
+		robot.getDrivebase().drive(left, right);
+		//robot.getDrivebase().drive((Math.pow(left, 2) * Math.signum(left)), (Math.pow(right, 2) * Math.signum(right)));
 		//final double power = (step.leftPower + step.rightPower) / 2.0;
 		
 		// robot.getDrivebase().updateStepResults(power, step.angle);
-		if(robot.getDrivebase().isAtDistancePIDTarget() || /*robot.getDrivebase().hasTravelled(robot.getDrivebase().getLeftDistance(), robot.getDrivebase().getRightDistance()) ||*/ System.currentTimeMillis() > startTime + 100) {
+		//if(robot.getDrivebase().isAtDistancePIDTarget() || /*robot.getDrivebase().hasTravelled(robot.getDrivebase().getLeftDistance(), robot.getDrivebase().getRightDistance()) ||*/ System.currentTimeMillis() > startTime + 100) {
 			return CommandResult.COMPLETE;
-		}
+		//}
 
-		return CommandResult.IN_PROGRESS;
+		//return CommandResult.IN_PROGRESS;
 	}
 
 	@Override

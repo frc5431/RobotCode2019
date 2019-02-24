@@ -90,7 +90,6 @@ public class Drivebase {
     }, new PIDOutput() {
 		@Override
 		public void pidWrite(final double output) {
-            System.out.println("HELLO " + output);
             rightCorrection = output;
 		}
     }, 0.2);
@@ -142,11 +141,20 @@ public class Drivebase {
     }
 
     public void periodic(final Robot robot){
+        System.out.println("HI " + leftPower + ", " + leftCorrection + " = " + (leftPower + leftCorrection));
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
-        frontLeft.set(leftPower - leftCorrection);
-        frontRight.set(rightPower - rightCorrection);
+        frontLeft.set(leftPower + leftCorrection);
+        frontRight.set(rightPower + rightCorrection);
+    }
+
+    public double getLeftPower(){
+        return leftPower;
+    }
+
+    public double getRightPower(){
+        return rightPower;
     }
 
     public void driveLeft(final double val){
@@ -224,8 +232,14 @@ public class Drivebase {
     }
 
     public void setDistancePIDTarget(final double leftSetpoint, final double rightSetpoint){
+        //leftDistancePID.reset();
+        //rightDistancePID.reset();
+        
         leftDistancePID.setSetpoint(leftSetpoint);
         rightDistancePID.setSetpoint(rightSetpoint);
+
+       // leftDistancePID.enable();
+        //rightDistancePID.enable();
     }
 
     public boolean isAtDistancePIDTarget(){

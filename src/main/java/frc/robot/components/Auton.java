@@ -20,7 +20,8 @@ import frc.robot.commands.ArmMoveToCommand;
 import frc.robot.commands.FingerCommand;
 import frc.robot.commands.WristCommand;
 import frc.robot.commands.HatchOuttakeCommand;
-import frc.robot.commands.OldMimicCommand;
+import frc.robot.commands.MimicCommand;
+import frc.robot.commands.DriveCommand;
 import frc.robot.commands.CarriageUpCommand;
 
 public class Auton {
@@ -247,7 +248,8 @@ public class Auton {
         sequences.put(Button.TWO, Sequence.CLIMB);
 
         if(robot.getMode() == Robot.Mode.AUTO){
-            commands.add(new OldMimicCommand(robot, "TEST"));
+            commands.add(new MimicCommand(robot, "TEST"));
+            //commands.add(new DriveCommand(-0.3, -0.3, 115, 85, 12));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
             observer.prepare("TEST");

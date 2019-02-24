@@ -44,10 +44,10 @@ public final class Constants {
 
     //Spark MAX's
     public final static int DRIVEBASE_FRONT_LEFT_ID = 4;
-    public final static boolean DRIVEBASE_FRONT_LEFT_INVERTED = false;
+    public final static boolean DRIVEBASE_FRONT_LEFT_INVERTED = true;
 
     public final static int DRIVEBASE_FRONT_RIGHT_ID = 7;
-    public final static boolean DRIVEBASE_FRONT_RIGHT_INVERTED = true;
+    public final static boolean DRIVEBASE_FRONT_RIGHT_INVERTED = false;
 
     // NOTE: The back motor follows the front so keep that in mind when inverting
 
@@ -116,9 +116,16 @@ public final class Constants {
     // values
 
     // PID
-    public final static double AUTO_DISTANCE_P = 0.0063;
-	public final static double AUTO_DISTANCE_I = 0.0000000025; // 0.0003; //0.0022;
+    public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
+	public final static double AUTO_DISTANCE_I = 0.00000000025; // 0.0003; //0.0022;
     public final static double AUTO_DISTANCE_D = 0.000915; // 0.00031;
+
+    // public final static double AUTO_DISTANCE_P = 0.002;
+	// public final static double AUTO_DISTANCE_I = 0.0; // 0.0003; //0.0022;
+    // public final static double AUTO_DISTANCE_D = 0.0; // 0.00031;
+
+
+    // 115, 85
 
     public final static double DRIVE_MIMICK_P = 0.016; //0.025
 	public final static double DRIVE_MIMICK_I = 0.00;

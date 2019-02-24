@@ -30,8 +30,9 @@ public class Teleop{
 
     public void periodic(final Robot robot){
         final Drivebase drivebase = robot.getDrivebase();
-        final double left = driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-        final double right = driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+        // xbox controllers have inverted controls
+        final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+        final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
         if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
           drivebase.disableAllPID();
 
