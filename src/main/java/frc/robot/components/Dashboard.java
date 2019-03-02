@@ -16,7 +16,7 @@ public class Dashboard {
 
     public void periodic(final Robot robot){
         SmartDashboard.putNumber("HatchDistance", robot.getIntake().getHatchDistance());
-        SmartDashboard.putNumber("WristPosition", robot.getArm().getWristPosition());
+        SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());
         SmartDashboard.putNumber("ElevatorPosition", robot.getElevator().getEncoderPosition());
         SmartDashboard.putBoolean("CarriageDown", robot.getElevator().isCarriageDown());
         SmartDashboard.putBoolean("CarriageUp", robot.getElevator().isCarriageUp());

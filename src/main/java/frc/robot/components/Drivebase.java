@@ -3,8 +3,6 @@ package frc.robot.components;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.ControlMode;
-import frc.robot.Titan;
-import frc.robot.TitanNavx;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -271,10 +269,10 @@ public class Drivebase {
     //     drivePID.setSetpoint(angle);
     // }
 
-    public final boolean hasTravelled(final double leftDistance, final double rightDistance) {
-        return rightDistance < 0 ? getRightDistance() <= rightDistance : getRightDistance() >= rightDistance
-        && leftDistance < 0 ? getLeftDistance() <= leftDistance : getLeftDistance() >= leftDistance;
-    }
+    // public final boolean hasTravelled(final double leftDistance, final double rightDistance) {
+    //     return rightDistance < 0 ? getRightDistance() <= rightDistance : getRightDistance() >= rightDistance
+    //     && leftDistance < 0 ? getLeftDistance() <= leftDistance : getLeftDistance() >= leftDistance;
+    // }
 
     public ControlMode getControlMode(){
         return controlMode;

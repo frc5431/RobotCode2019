@@ -1,9 +1,11 @@
 package frc.robot.components;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Solenoid;
@@ -33,6 +35,18 @@ public class Elevator{
         bottom.configForwardSoftLimitEnable(false);
         bottom.configReverseSoftLimitEnable(false);
         bottom.setNeutralMode(NeutralMode.Brake);
+        
+        bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+
+        final double peakSensorVelocity = 9000;
+        //to calculate kF, move elevator to second stage, run at 100%, and print getSelectedSensorVelocity
+
+        // bottom.config_kP(0, Constants.kGains_Distanc.kP, 00);
+		// bottom.config_kI(0, Constants.kGains_Distanc.kI, 0);
+		// bottom.config_kD(0, Constants.kGains_Distanc.kD, 0);
+		// bottom.config_kF(0, 0, 0);
+		// bottom.config_IntegralZone(0, Constants.kGains_Distanc.kIzone, 0);
+        // bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
 
         top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
@@ -72,6 +86,7 @@ public class Elevator{
             bottom.set(0);
             brake(true);
         }else{
+            //in order to fix the brake issue, move the error checkng to outside the if statement
             if(System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
                 if((isCarriageDown() && val < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && val > 0) || (getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT && val < 0)){
                     val = 0;

@@ -605,6 +605,10 @@ public final class Titan {
 				queue.done(robot);
 			}
 		}
+
+		public boolean isEmpty(){
+			return queues.isEmpty();
+		}
 	}
 
 	public static class Mimic {

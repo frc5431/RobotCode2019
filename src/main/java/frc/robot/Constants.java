@@ -79,7 +79,8 @@ public final class Constants {
     // sensors
 
     // analog inputs
-    public final static int WRIST_ENCODER_PORT = 3;
+    public final static int ARM_ENCODER_PORT = 3;
+    public final static int ARM_ENCODER_CALIBRATION_OFFSET = 74;
 
     // digital inputs
 
@@ -148,11 +149,16 @@ public final class Constants {
 
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
-    public final static double AUTO_ROBOT_ELEVATOR_SPEED = 0.4;
-    public final static double AUTO_ROBOT_ELEVATOR_ACCELERATION = 0.35;
+    public final static double AUTO_ELEVATOR_SPEED = 0.4;
+    public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;
+    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 10000;
 
-    public final static double AUTO_ROBOT_ARM_SPEED = 0.15;
-    public final static double AUTO_ROBOT_ARM_ACCELERATION = 0.1;
+    public final static double AUTO_ELEVATOR_STAGE_1_STALL = 1.902 / 12.0;
+    public final static double AUTO_ELEVATOR_STAGE_2_STALL = 3.862 / 12.0;
+
+    public final static double AUTO_ARM_SPEED = 0.15;
+    public final static double AUTO_ARM_ACCELERATION = 0.1;
+    public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 45;
 
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.5;
@@ -168,6 +174,7 @@ public final class Constants {
     public final static int ELEVATOR_TOP_LIMIT = 50000;
     public final static int ELEVATOR_BOTTOM_LIMIT = 600;
 
-    // TURNING INFORMATION
-    public final static double TURN_PRECISION = 1.0; // Make sure the turn is within the degree
+    // TOLERANCES
+    public final static int ARM_ANGLE_TOLERANCE = 5;
+    public final static int ELEVATOR_POSITION_TOLERANCE = 750;
 }

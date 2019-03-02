@@ -29,8 +29,8 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// 	return CommandResult.RESTART_COMMAND;
 		// }
 
-		final double currentPos = robot.getArm().getWristPosition();
-		if (Titan.approxEquals(currentPos, position, 5)) {
+		final double currentPos = robot.getArm().getArmAngle();
+		if (Titan.approxEquals(currentPos, position, Constants.ARM_ANGLE_TOLERANCE)) {
 			robot.getArm().pivot(0.0);
 			return CommandResult.COMPLETE;
 		}
@@ -43,10 +43,10 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// 	robot.getElevator().elevate(0.3);
 		// }
 
-		final double error = Math.abs(position - robot.getArm().getWristPosition());
-		final double speedOffset = Constants.AUTO_ROBOT_ARM_ACCELERATION * (Math.min(45, error) / 45);
+		final double error = Math.abs(position - robot.getArm().getArmAngle());
+		final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
 
-		if(robot.getArm().getWristPosition() > position){
+		if(robot.getArm().getArmAngle() > position){
 			robot.getArm().pivot(-(speed + speedOffset));
 		}else{
 			robot.getArm().pivot(speed + speedOffset);

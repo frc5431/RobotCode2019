@@ -16,7 +16,7 @@ public class Arm{
 
     final Solenoid wrist;
 
-    final AnalogInput wristEncoder;
+    final AnalogInput armEncoder;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
@@ -31,7 +31,7 @@ public class Arm{
 
         wrist = new Solenoid(Constants.ARM_WRIST_PCM_ID, Constants.ARM_WRIST_ID);
     
-        wristEncoder = new AnalogInput(Constants.WRIST_ENCODER_PORT);
+        armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
     }
 
     public void periodic(final Robot robot){
@@ -43,13 +43,15 @@ public class Arm{
 
     public void pivot(final double in){
         double val = in;
-        if(getWristPosition() > 250 && in > 0){
+        if(getArmAngle() > 250 && in > 0){
             val = 0;
         }
         //if the value of the pivot is 0 (so stopped), automatically break
         brake(val == 0);
         // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
-        pivot.set(Math.signum(val) * (Math.abs(val) + (0.3 * Math.abs(Math.cos(Math.toRadians(getWristPosition() - 90))))));
+        // USE THIS FOR BETTER EQUATION:
+        // pivot.set(val + (0.3 * (Math.signum(val) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
+        pivot.set(Math.signum(val) * (Math.abs(val) + (0.3 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90))))));
     }
 
     public void brake(final boolean val){
@@ -68,8 +70,8 @@ public class Arm{
         controlMode = mode;
     }
 
-    public double getWristPosition(){
-        final double position = (((wristEncoder.getAverageVoltage() / 5.0) * 360.0) - 74) % 360;
+    public double getArmAngle(){
+        final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
         if(position < 0){
             return 360 + position;
         }

@@ -28,18 +28,20 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		// 	return CommandResult.RESTART_COMMAND;
 		// }
 
-		if ((position > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, 750)) || (position <= 0 && robot.getElevator().getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT)) {
+		if ((position > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, Constants.ELEVATOR_POSITION_TOLERANCE)) || (position <= 0 && robot.getElevator().getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT)) {
 			robot.getElevator().elevate(0.0);
 			return CommandResult.COMPLETE;
 		}
 
 		final double error = Math.abs(position - robot.getElevator().getEncoderPosition());
-		final double speedOffset = Constants.AUTO_ROBOT_ELEVATOR_ACCELERATION * (Math.min(10000, error) / 10000);
+		final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * (Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR);
+
+		//final double stallVoltage = robot.getElevator().isCarriageUp() ? Constants.AUTO_ELEVATOR_STAGE_2_STALL : Constants.AUTO_ELEVATOR_STAGE_1_STALL;
 
 		if(robot.getElevator().getEncoderPosition() > position){
-			robot.getElevator().elevate(-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER /*+ speedOffset*/);
+			robot.getElevator().elevate(-(speed + speedOffset) /* + stallVoltage */ * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER /*+ speedOffset*/);
 		}else{
-			robot.getElevator().elevate(speed + speedOffset);
+			robot.getElevator().elevate(speed + speedOffset/* + stallVoltage */);
 		}
 
 		return CommandResult.IN_PROGRESS;

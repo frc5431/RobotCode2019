@@ -21,7 +21,6 @@ import frc.robot.commands.FingerCommand;
 import frc.robot.commands.WristCommand;
 import frc.robot.commands.HatchOuttakeCommand;
 import frc.robot.commands.MimicCommand;
-import frc.robot.commands.DriveCommand;
 import frc.robot.commands.CarriageUpCommand;
 
 public class Auton {
@@ -39,7 +38,7 @@ public class Auton {
         CLIMB
     }
 
-    private static enum IntakePosition{
+    private static enum ArmDirection{
         FORWARD, REVERSE
     };
 
@@ -61,25 +60,97 @@ public class Auton {
         observer = new Titan.Mimic.Observer<>();
     }
 
-    public List<Titan.Command<Robot>> generateSequence(final Robot robot, final IntakePosition pos, final Supplier<List<Titan.Command<Robot>>> in){
+    public boolean isArmInStowPosition(final double armPos){
+        return Titan.approxEquals(armPos, 175, 5);
+    }
+
+    public boolean isElevatorInStage2(final int elevatorPos){
+        return elevatorPos > 29000;
+    }
+
+    public ArmDirection getArmDirection(final double armPos){
+        return armPos > 180 ? ArmDirection.REVERSE : ArmDirection.FORWARD;
+    }
+
+    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final int elevatorPos, final double armPos){
+        final List<Titan.Command<Robot>> out = new ArrayList<>();
+        final ArmDirection currentDirection = getArmDirection(robot.getArm().getArmAngle());
+        final ArmDirection targetDirection = getArmDirection(armPos);
+        if(currentDirection != targetDirection){
+            if(isArmInStowPosition(robot.getArm().getArmAngle())){
+                out.add(new ArmMoveToCommand(160, Constants.AUTO_ARM_SPEED));
+            }
+            if(isElevatorInStage2(robot.getElevator().getEncoderPosition()) && isElevatorInStage2(elevatorPos)){
+                final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+                queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+                out.add(queue);
+            }else{
+                if(!isElevatorInStage2(robot.getElevator().getEncoderPosition())){
+                    out.add(new CarriageUpCommand(Constants.AUTO_ELEVATOR_SPEED + 0.1));
+                }
+                final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+                if(isElevatorInStage2(elevatorPos)){
+                    queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                }
+                if(isArmInStowPosition(armPos)){
+                    queue.addCommand(robot, new ArmMoveToCommand(160, Constants.AUTO_ARM_SPEED));
+                }else{
+                    queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+                }
+                out.add(queue);
+                if(!isElevatorInStage2(elevatorPos)){
+                    out.add(new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                }
+            }
+        }else /* if target is in the same direction as current*/{
+
+            if(isArmInStowPosition(armPos) || (elevatorPos > 0 && isArmInStowPosition(robot.getArm().getArmAngle()))){
+                out.add(new ArmMoveToCommand(160, Constants.AUTO_ARM_SPEED));
+            }
+
+            final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
+            if(elevatorPos < 3000 && armPos < 100){
+                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ELEVATOR_SPEED));
+            }else{
+                queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+            }
+            if(!isArmInStowPosition(armPos)){
+                queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+            }
+            out.add(queue);
+            
+            if(elevatorPos < 3000 && armPos < 100){
+                queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+            }
+        }
+
+        if(isArmInStowPosition(armPos)){
+            out.add(new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+        }
+
+        return out;
+    }
+
+    public List<Titan.Command<Robot>> generateSequence(final Robot robot, final ArmDirection pos, final Supplier<List<Titan.Command<Robot>>> in){
         final List<Titan.Command<Robot>> output = new ArrayList<>();
-        final IntakePosition currentPosition = robot.getArm().getWristPosition() > 180 ? IntakePosition.REVERSE : IntakePosition.FORWARD;
+        final ArmDirection currentPosition = robot.getArm().getArmAngle() > 180 ? ArmDirection.REVERSE : ArmDirection.FORWARD;
         if(currentPosition != pos){
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
             output.add(queue);
-            if(Titan.approxEquals(robot.getArm().getWristPosition(), 175, 5)){
-                output.add(new ArmMoveToCommand(160, Constants.AUTO_ROBOT_ARM_SPEED));
-                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED + 0.1));
+            if(Titan.approxEquals(robot.getArm().getArmAngle(), 175, 5)){
+                output.add(new ArmMoveToCommand(160, Constants.AUTO_ARM_SPEED));
+                output.add(new CarriageUpCommand(Constants.AUTO_ELEVATOR_SPEED + 0.1));
             }else{
                 final Titan.ParallelCommandGroup<Robot> queue2 = new Titan.ParallelCommandGroup<>();
-                queue2.addCommand(robot, new ArmMoveToCommand(currentPosition == IntakePosition.FORWARD ? 160 : 255, Constants.AUTO_ROBOT_ARM_SPEED));
+                queue2.addCommand(robot, new ArmMoveToCommand(currentPosition == ArmDirection.FORWARD ? 160 : 255, Constants.AUTO_ARM_SPEED));
                 queue2.addCommand(robot, new WristCommand(true));
                 output.add(queue2);
-                output.add(new CarriageUpCommand(Constants.AUTO_ROBOT_ELEVATOR_SPEED + 0.1));
+                output.add(new CarriageUpCommand(Constants.AUTO_ELEVATOR_SPEED + 0.1));
             }
-            output.add(new ArmMoveToCommand(pos == IntakePosition.FORWARD ? 150 : 255, Constants.AUTO_ROBOT_ARM_SPEED));    
+            output.add(new ArmMoveToCommand(pos == ArmDirection.FORWARD ? 150 : 255, Constants.AUTO_ARM_SPEED));    
         }
         output.add(new Titan.ConsumerCommand<Robot>((rob)->{
             commands.addAll(in.get());
@@ -88,71 +159,71 @@ public class Auton {
     }
 
     public List<Titan.Command<Robot>> getBallRocketSequence(final Robot robot, final double height){
-        return generateSequence(robot, IntakePosition.FORWARD, ()->{
+        return generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new WristCommand(true));
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
-            queue.addCommand(robot, new ArmMoveToCommand(128, Constants.AUTO_ROBOT_ARM_SPEED));
-            queue.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+            queue.addCommand(robot, new ArmMoveToCommand(128, Constants.AUTO_ARM_SPEED));
+            queue.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ELEVATOR_SPEED));
             return List.of(queue);
         });
     }
 
     public List<Titan.Command<Robot>> getReverseBallRocketSequence(final Robot robot, final double height){
-        return generateSequence(robot, IntakePosition.FORWARD, ()-> {
+        return generateSequence(robot, ArmDirection.FORWARD, ()-> {
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
             final Titan.CommandQueue<Robot> subRoutine = new Titan.CommandQueue<>();
-            if(!Titan.approxEquals(robot.getArm().getWristPosition(), 130, 10) && robot.getArm().isWristing()){
-                subRoutine.add(new ArmMoveToCommand(130, Constants.AUTO_ROBOT_ARM_SPEED));
+            if(!Titan.approxEquals(robot.getArm().getArmAngle(), 130, 10) && robot.getArm().isWristing()){
+                subRoutine.add(new ArmMoveToCommand(130, Constants.AUTO_ARM_SPEED));
             }
             subRoutine.add(new WristCommand(false));
             queue.addQueue(robot, subRoutine);
-            return List.of(queue, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED), new ArmMoveToCommand(178, Constants.AUTO_ROBOT_ARM_SPEED));
+            return List.of(queue, new ElevateToCommand(height, Constants.AUTO_ELEVATOR_SPEED), new ArmMoveToCommand(178, Constants.AUTO_ARM_SPEED));
         });
     }
 
     public List<Titan.Command<Robot>> getHatchRocketSequence(final Robot robot, final double height){
-        return generateSequence(robot, IntakePosition.FORWARD, ()->{
+        return generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue1 = new Titan.ParallelCommandGroup<>();
             final List<Titan.Command<Robot>> commands = new ArrayList<>();
             queue1.addCommand(robot, new FingerCommand(true));
             queue1.addCommand(robot, new HatchOuttakeCommand(true));
             commands.add(queue1);
-            if(robot.getArm().getWristPosition() > 140){
-                commands.add(new ArmMoveToCommand(140, Constants.AUTO_ROBOT_ARM_SPEED));
+            if(robot.getArm().getArmAngle() > 140){
+                commands.add(new ArmMoveToCommand(140, Constants.AUTO_ARM_SPEED));
             }
             final Titan.ParallelCommandGroup<Robot> queue2  = new Titan.ParallelCommandGroup<>();
             queue2.addCommand(robot, new WristCommand(false));
             //pls fix arm compensation code
-            queue2.addCommand(robot, new ArmMoveToCommand(95, Constants.AUTO_ROBOT_ARM_SPEED));
-            queue2.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+            queue2.addCommand(robot, new ArmMoveToCommand(95, Constants.AUTO_ARM_SPEED));
+            queue2.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ELEVATOR_SPEED));
             commands.add(queue2);
             return commands;
         });
     }
 
     public List<Titan.Command<Robot>> getReverseHatchRocketSequence(final Robot robot, final double height){
-        return generateSequence(robot, IntakePosition.REVERSE, ()->{
+        return generateSequence(robot, ArmDirection.REVERSE, ()->{
             final Titan.ParallelCommandGroup<Robot> queue1 = new Titan.ParallelCommandGroup<>();
             return List.of(queue1);
         });
     }
 
     public List<Titan.Command<Robot>> getFloorIntake(final Robot robot, final double height){
-        return generateSequence(robot, IntakePosition.FORWARD, ()->{
+        return generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
-            queue.addCommand(robot, new ArmMoveToCommand(87, Constants.AUTO_ROBOT_ARM_SPEED));
+            queue.addCommand(robot, new ArmMoveToCommand(87, Constants.AUTO_ARM_SPEED));
             if(robot.getElevator().getEncoderPosition() < 3000){
-                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ELEVATOR_SPEED));
                 return List.of(queue, new WristCommand(true), new ElevateToCommand(height, 0.1));
             }else{
                 queue.addCommand(robot, new WristCommand(true));
-                queue.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(height, Constants.AUTO_ELEVATOR_SPEED));
                 return List.of(queue);
             }
         });
@@ -160,14 +231,14 @@ public class Auton {
 
     public void init(final Robot robot){
         //STOWING
-        final Supplier<List<Titan.Command<Robot>>> stowSequence = ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
+        final Supplier<List<Titan.Command<Robot>>> stowSequence = ()->generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> stowQueue = new Titan.ParallelCommandGroup<>();
             stowQueue.addCommand(robot, new WristCommand(true));
             stowQueue.addCommand(robot, new FingerCommand(true));
             stowQueue.addCommand(robot, new HatchOuttakeCommand(true));
             if(robot.getElevator().getEncoderPosition() > 200){
-                stowQueue.addCommand(robot, new ArmMoveToCommand(150, Constants.AUTO_ROBOT_ARM_SPEED));
-                stowQueue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+                stowQueue.addCommand(robot, new ArmMoveToCommand(150, Constants.AUTO_ARM_SPEED));
+                stowQueue.addCommand(robot, new ElevateToCommand(0, Constants.AUTO_ELEVATOR_SPEED));
             }
             return List.of(stowQueue, new ArmMoveToCommand(180, 0.3));
         });
@@ -197,35 +268,35 @@ public class Auton {
         ballSequences.put(Sequence.ROCKET_REVERSE_3, ()-> getReverseBallRocketSequence(robot, 38500));
 
         //CARGO SHIP
-        ballSequences.put(Sequence.CARGO_SHIP, ()->generateSequence(robot, IntakePosition.FORWARD, ()->{
+        ballSequences.put(Sequence.CARGO_SHIP, ()->generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new WristCommand(true));
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
-            queue.addCommand(robot, new ArmMoveToCommand(90, Constants.AUTO_ROBOT_ARM_SPEED));
-            queue.addCommand(robot, new ElevateToCommand(28000, Constants.AUTO_ROBOT_ELEVATOR_SPEED));
+            queue.addCommand(robot, new ArmMoveToCommand(90, Constants.AUTO_ARM_SPEED));
+            queue.addCommand(robot, new ElevateToCommand(28000, Constants.AUTO_ELEVATOR_SPEED));
             return List.of(queue);
         }));
         hatchSequences.put(Sequence.CARGO_SHIP, hatch1);
 
         // LOADING STATION
         ballSequences.put(Sequence.LOADING_STATION, ()-> getHatchRocketSequence(robot, 11500));
-        hatchSequences.put(Sequence.LOADING_STATION, ()-> generateSequence(robot, IntakePosition.FORWARD, ()->{
+        hatchSequences.put(Sequence.LOADING_STATION, ()-> generateSequence(robot, ArmDirection.FORWARD, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new WristCommand(false));
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
-            return List.of(queue, new ArmMoveToCommand(120, Constants.AUTO_ROBOT_ARM_SPEED), new Titan.ConsumerCommand<Robot>((rob)->{
+            return List.of(queue, new ArmMoveToCommand(120, Constants.AUTO_ARM_SPEED), new Titan.ConsumerCommand<Robot>((rob)->{
                 commands.addAll(stowSequence.get());
             }));
         }));
 
-        final Supplier<List<Titan.Command<Robot>>> climb = ()->generateSequence(robot, IntakePosition.REVERSE, ()->{
+        final Supplier<List<Titan.Command<Robot>>> climb = ()->generateSequence(robot, ArmDirection.REVERSE, ()->{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(robot, new WristCommand(true));
             queue.addCommand(robot, new FingerCommand(true));
             queue.addCommand(robot, new HatchOuttakeCommand(true));
-            return List.of(queue, new ElevateToCommand(12000, Constants.AUTO_ROBOT_ELEVATOR_SPEED), new ArmMoveToCommand(255, Constants.AUTO_ROBOT_ARM_SPEED));
+            return List.of(queue, new ElevateToCommand(12000, Constants.AUTO_ELEVATOR_SPEED), new ArmMoveToCommand(255, Constants.AUTO_ARM_SPEED));
         });
         ballSequences.put(Sequence.CLIMB, climb);
         hatchSequences.put(Sequence.CLIMB, climb);
