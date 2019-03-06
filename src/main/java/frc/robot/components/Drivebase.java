@@ -2,7 +2,9 @@ package frc.robot.components;
 
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.ControlMode;
+import frc.robot.util.ControlMode;
+import frc.robot.util.Component;
+import frc.robot.util.Testable;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -15,7 +17,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 
-public class Drivebase {
+public class Drivebase extends Component{
     // public class DriveBasePIDSource implements PIDSource {
 	// 	@Override
 	// 	public void setPIDSourceType(final PIDSourceType pidSource) {
@@ -138,13 +140,24 @@ public class Drivebase {
         //navx = new TitanNavx();
     }
 
+    
+    @Override
+    public void init(final Robot robot){
+        
+    }
+
+    @Override
     public void periodic(final Robot robot){
-        System.out.println("HI " + leftPower + ", " + leftCorrection + " = " + (leftPower + leftCorrection));
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
         frontLeft.set(leftPower + leftCorrection);
         frontRight.set(rightPower + rightCorrection);
+    }
+
+    @Override
+    public void disabled(final Robot robot){
+        
     }
 
     public double getLeftPower(){
@@ -285,4 +298,9 @@ public class Drivebase {
 // 	public final boolean hasTurned(final double wantedAngle) {
 // 		return Titan.approxEquals(wantedAngle, navx.getAngle(), Constants.TURN_PRECISION);
 // }
+
+    @Override
+    public String getTestResult(){
+        return Testable.SUCCESS;
+    }
 }

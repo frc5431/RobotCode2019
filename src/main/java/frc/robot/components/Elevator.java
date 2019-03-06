@@ -5,15 +5,20 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.util.Component;
+import frc.robot.util.Testable;
 
-public class Elevator{
+public class Elevator extends Component{
+    public static enum BrakeState{
+        ENGAGED, DISENGAGED
+    };
+
     private final WPI_TalonSRX bottom, top;
 
     private final Solenoid brakePad;
@@ -24,21 +29,29 @@ public class Elevator{
 
     private long lastBrake = -1;
 
-    private frc.robot.ControlMode controlMode = frc.robot.ControlMode.MANUAL;
+    //having to use the fully qualified name as it would conflict with the TalonSRX ControlMode otherwise
+    private frc.robot.util.ControlMode controlMode = frc.robot.util.ControlMode.MANUAL;
 
-    private boolean isBraking = true;
+    private BrakeState brakeState = BrakeState.ENGAGED;
+
+    private double elevPower = 0.0;
+
+    private int lastEncoderPosition = 0;
 
     public Elevator(){
         bottom = new WPI_TalonSRX(Constants.ELEVATOR_BOTTOM_ID);
         bottom.setInverted(Constants.ELEVATOR_BOTTOM_INVERTED);
-        bottom.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
         bottom.configForwardSoftLimitEnable(false);
         bottom.configReverseSoftLimitEnable(false);
+        bottom.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
+        bottom.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
+        bottom.configClearPositionOnLimitF(false, 0);
+        bottom.configClearPositionOnLimitR(false, 0);
         bottom.setNeutralMode(NeutralMode.Brake);
         
         bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 
-        final double peakSensorVelocity = 9000;
+        //final double peakSensorVelocity = 9000;
         //to calculate kF, move elevator to second stage, run at 100%, and print getSelectedSensorVelocity
 
         // bottom.config_kP(0, Constants.kGains_Distanc.kP, 00);
@@ -64,58 +77,77 @@ public class Elevator{
         //hi tauseef
     }
 
+    @Override
+    public void init(final Robot robot){
+        
+    }
+
+    @Override
     public void periodic(final Robot robot){
+        //in case of an encoder brownout, restore encoder position
+        if(bottom.hasResetOccurred()){
+            bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
+        }
+
         if(isCarriageUp() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(27000, 0);
-        }else if(isCarriageDown()){
+        }else if(isCarriageDown() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(0, 0);
         }
 
-        if(!isBraking){
+        lastEncoderPosition = getEncoderPosition();
+
+        if(elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
+            bottom.set(0);
+            brake(BrakeState.ENGAGED);
+        }else{
+            //in order to fix the brake issue, move the error checkng to outside the if statement
+            //if the elevator is going up, or the elevator is going down and it has waited long enough for the break to disengage
+            if(elevPower > 0 || System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
+                if((isCarriageDown() && elevPower < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && elevPower > 0)){
+                    elevPower = 0;
+                    brake(BrakeState.ENGAGED);
+                }else{
+                    brake(BrakeState.DISENGAGED);
+                }
+                bottom.set(elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower);
+            }else{
+                //at this point, the elevater wants to move down but it hasn't disengaged the break yet
+                brake(BrakeState.DISENGAGED);
+                //have to move the elevator slightly up to engage the break
+                bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
+            }
+        }
+
+        if(brakeState == BrakeState.DISENGAGED){
             if(lastBrake < 0){
                 lastBrake = System.currentTimeMillis();
             }
         }else{
             lastBrake = -1;
         }
-        brakePad.set(!isBraking);
+        brakePad.set(brakeState == BrakeState.DISENGAGED);
+    }
+
+    @Override
+    public void disabled(final Robot robot){
+        
     }
 
     public void elevate(double val){
-        if(val == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
-            bottom.set(0);
-            brake(true);
-        }else{
-            //in order to fix the brake issue, move the error checkng to outside the if statement
-            if(System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
-                if((isCarriageDown() && val < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && val > 0) || (getEncoderPosition() <= Constants.ELEVATOR_BOTTOM_LIMIT && val < 0)){
-                    val = 0;
-                    brake(true);
-                }else{
-                    brake(false);
-                }
-                bottom.set(val < 0 ? val * Constants.ELEVATOR_DOWN_MULTIPLIER : val);
-            }else{
-                brake(false);
-                if(val < 0){
-                    bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
-                }else{
-                    bottom.set(Constants.ELEVATOR_BRAKE_DOWN_SPEED);
-                }
-            }
-        }
+        elevPower = val;
         //right.set(val);
     }
 
-    public void brake(final boolean braked){
-        isBraking = braked;
+    public void brake(final BrakeState state){
+        brakeState = state;
     }
 
-    public frc.robot.ControlMode getControlMode(){
+    public frc.robot.util.ControlMode getControlMode(){
         return controlMode;
     }
 
-    public void setControlMode(final frc.robot.ControlMode mode){
+    public void setControlMode(final frc.robot.util.ControlMode mode){
         controlMode = mode;
     }
 
@@ -133,5 +165,10 @@ public class Elevator{
 
     public boolean isCarriageDown(){
         return !carriageDown1.get();
+    }
+
+    @Override
+    public String getTestResult(){
+        return Testable.SUCCESS;
     }
 }

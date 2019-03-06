@@ -1,9 +1,9 @@
 package frc.robot.commands;
 
-import frc.robot.Titan;
+import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.ControlMode;
+import frc.robot.util.ControlMode;
 
 public class GrabBallCommand extends Titan.Command<Robot>{
 	public GrabBallCommand() {

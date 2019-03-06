@@ -7,20 +7,26 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
-import frc.robot.ControlMode;
+import frc.robot.util.ControlMode;
+import frc.robot.util.Component;
+import frc.robot.util.Testable;
 import frc.robot.Robot;
 
-public class Arm{
+public class Arm extends Component{
+    public static enum BrakeState{
+        ENGAGED, DISENGAGED
+    };
+
     final CANSparkMax pivot;
     final Solenoid brakePad;
-
-    final Solenoid wrist;
 
     final AnalogInput armEncoder;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
-    private boolean isWristing = true, isBraking = true;
+    private BrakeState brakeState = BrakeState.ENGAGED;
+
+    private double armPower = 0.0;
 
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -28,38 +34,43 @@ public class Arm{
         pivot.setIdleMode(IdleMode.kBrake);
     
         brakePad = new Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
-
-        wrist = new Solenoid(Constants.ARM_WRIST_PCM_ID, Constants.ARM_WRIST_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
     }
 
-    public void periodic(final Robot robot){
-        wrist.set(!isWristing);
+    @Override
+    public void init(final Robot robot){
+        
+    }
 
-        //solenoid is inverted
-        brakePad.set(!isBraking);
+    @Override
+    public void periodic(final Robot robot){
+        brakePad.set(brakeState == BrakeState.DISENGAGED);
+        
+        // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
+        // USE THIS FOR BETTER EQUATION:
+        //pivot.set(armPower + (0.2 * (Math.signum(armPower) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
+        pivot.set(Math.signum(armPower) * (Math.abs(armPower) + (0.3 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90))))));
+    }
+    
+    @Override
+    public void disabled(final Robot robot){
+        
     }
 
     public void pivot(final double in){
         double val = in;
-        if(getArmAngle() > 250 && in > 0){
+        if(getArmAngle() > 250 && val > 0){
             val = 0;
         }
+
+        armPower = val;
         //if the value of the pivot is 0 (so stopped), automatically break
-        brake(val == 0);
-        // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
-        // USE THIS FOR BETTER EQUATION:
-        // pivot.set(val + (0.3 * (Math.signum(val) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
-        pivot.set(Math.signum(val) * (Math.abs(val) + (0.3 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90))))));
+        brake(val == 0 ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
     }
 
-    public void brake(final boolean val){
-        isBraking = val;
-    }
-
-    public void wrist(final boolean val){
-        isWristing = val;
+    public void brake(final BrakeState state){
+        brakeState = state;
     }
 
     public ControlMode getControlMode(){
@@ -78,7 +89,8 @@ public class Arm{
         return position;
     }
 
-    public boolean isWristing(){
-        return isWristing;
+    @Override
+    public String getTestResult(){
+        return Testable.SUCCESS;
     }
 }

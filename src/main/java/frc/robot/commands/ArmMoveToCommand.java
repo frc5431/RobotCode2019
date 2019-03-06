@@ -1,9 +1,9 @@
 package frc.robot.commands;
 
-import frc.robot.Titan;
+import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.ControlMode;
+import frc.robot.util.ControlMode;
 
 public class ArmMoveToCommand extends Titan.Command<Robot>{
 	private final double position, speed;
@@ -19,9 +19,25 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		properties = String.format("Position %.2f : Speed %.2f", position, speed);
 	}
 
+	private double getArmSpeed(final Robot robot){
+		final double error = Math.abs(position - robot.getArm().getArmAngle());
+		final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
+
+		if(robot.getArm().getArmAngle() > position){
+			return -(speed + speedOffset);
+		}else{
+			return speed + speedOffset;
+		}
+	}
+
+	private boolean isComplete(final Robot robot){
+		return Titan.approxEquals(robot.getArm().getArmAngle(), position, Constants.ARM_ANGLE_TOLERANCE);
+	}
+
 	@Override
 	public CommandResult update(final Robot robot) {
 		if(robot.getArm().getControlMode() == ControlMode.MANUAL){
+			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
@@ -29,28 +45,12 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// 	return CommandResult.RESTART_COMMAND;
 		// }
 
-		final double currentPos = robot.getArm().getArmAngle();
-		if (Titan.approxEquals(currentPos, position, Constants.ARM_ANGLE_TOLERANCE)) {
+		if (isComplete(robot)) {
 			robot.getArm().pivot(0.0);
 			return CommandResult.COMPLETE;
 		}
 
-		// if((position > 180 && currentPos > 180) || (position < 180 && currentPos < 180)){
-		// 	robot.getElevator().intakeFlipping = false;
-		// }
-
-		// if(robot.getElevator().intakeFlipping){
-		// 	robot.getElevator().elevate(0.3);
-		// }
-
-		final double error = Math.abs(position - robot.getArm().getArmAngle());
-		final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
-
-		if(robot.getArm().getArmAngle() > position){
-			robot.getArm().pivot(-(speed + speedOffset));
-		}else{
-			robot.getArm().pivot(speed + speedOffset);
-		}
+		robot.getArm().pivot(getArmSpeed(robot));
 
 		return CommandResult.IN_PROGRESS;
 	}
@@ -87,7 +87,10 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// pid.setSetpoint(position);
 
 		robot.getArm().setControlMode(ControlMode.AUTO);
-		//robot.getElevator().intakeFlipping = position > 180;
+
+		if(!isComplete(robot)){
+			robot.getArm().pivot(getArmSpeed(robot));
+		}
 	}
 
 	@Override

@@ -5,16 +5,19 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
-import frc.robot.Titan;
+import frc.robot.components.Intake.HatchState;
+import frc.robot.util.Titan;
 import frc.robot.Constants;
-import frc.robot.ControlMode;
+import frc.robot.util.ControlMode;
+import frc.robot.util.Component;
+import frc.robot.util.Testable;
 import frc.robot.Robot;
 
-public class Teleop{
+public class Teleop extends Component{
     private Titan.Xbox driver;
     private Titan.LogitechExtreme3D operator;
 
-    private Titan.Toggle wrist, fingers, hatch;
+    private Titan.Toggle fingers, hatch, jay;
 
     public Teleop(){
         driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
@@ -23,11 +26,17 @@ public class Teleop{
         operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
         operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
 
-        wrist = new Titan.Toggle();
         fingers = new Titan.Toggle();
         hatch = new Titan.Toggle();
+        jay = new Titan.Toggle();
     }
 
+    @Override
+    public void init(final Robot robot){
+        
+    }
+
+    @Override
     public void periodic(final Robot robot){
         final Drivebase drivebase = robot.getDrivebase();
         // xbox controllers have inverted controls
@@ -52,17 +61,21 @@ public class Teleop{
 
         final Intake intake = robot.getIntake();
         if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER)){
+          intake.setControlMode(ControlMode.MANUAL);
           intake.roll(Constants.INTAKE_ROLLER_SPEED);
         }else if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO)){
+          intake.setControlMode(ControlMode.MANUAL);
           intake.roll(-Constants.INTAKE_ROLLER_SPEED);
-        }else{
+        }else if(intake.getControlMode() == ControlMode.MANUAL){
           intake.roll(0);
         }
 
-        hatch.setState(intake.isHatchOuttaking());
-        intake.actuateHatch(hatch.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.FOUR)));
+        hatch.setState(intake.getHatchState() == HatchState.UP);
+        intake.actuateHatch(hatch.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.FOUR)) ? HatchState.UP : HatchState.DOWN);
         fingers.setState(intake.isFingering());
         intake.finger(fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)));
+        jay.setState(intake.isJaying());
+        intake.jay(jay.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));
 
         final Arm arm = robot.getArm();
         if(operator.getPOV() == 0){
@@ -74,9 +87,11 @@ public class Teleop{
         }else if(arm.getControlMode() == ControlMode.MANUAL){
           arm.pivot(0.0);
         }
+    }
 
-        wrist.setState(robot.getArm().isWristing());
-        arm.wrist(wrist.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));      
+    @Override
+    public void disabled(final Robot robot){
+        
     }
 
     public Titan.Xbox getDriver(){
@@ -85,5 +100,10 @@ public class Teleop{
 
     public Titan.LogitechExtreme3D getOperator(){
       return operator;
+    }
+
+    @Override
+    public String getTestResult(){
+        return Testable.SUCCESS;
     }
 }

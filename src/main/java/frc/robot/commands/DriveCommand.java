@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
-import frc.robot.Titan;
-import frc.robot.ControlMode;
+import frc.robot.util.Titan;
+import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 
 public class DriveCommand extends Titan.Command<Robot> {
@@ -40,6 +40,7 @@ public class DriveCommand extends Titan.Command<Robot> {
 	@Override
 	public CommandResult update(final Robot robot) {
 		if(robot.getDrivebase().getControlMode() == ControlMode.MANUAL){
+			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 

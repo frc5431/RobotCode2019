@@ -1,7 +1,10 @@
 package frc.robot;
 
+import java.util.List;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.util.Component;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
@@ -147,5 +150,9 @@ public class Robot extends TimedRobot {
 
   public Intake getIntake(){
     return intake;
+  }
+
+  public List<Component> getComponents(){
+    return List.of();
   }
 }

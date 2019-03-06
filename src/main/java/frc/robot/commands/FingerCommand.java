@@ -1,6 +1,6 @@
 package frc.robot.commands;
 
-import frc.robot.Titan;
+import frc.robot.util.Titan;
 import frc.robot.Robot;
 
 public class FingerCommand extends Titan.Command<Robot> {

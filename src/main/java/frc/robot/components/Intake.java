@@ -7,66 +7,121 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.Titan;
+import frc.robot.util.ControlMode;
+import frc.robot.util.Component;
+import frc.robot.util.Testable;
 
-public class Intake{
+public class Intake extends Component{
+    public static enum FingerState{
+        DEPLOYED, RETRACTED
+    };
+
+    public static enum JayState{
+        DEPLOYED, RETRACTED
+    };
+
+    public static enum HatchState{
+        UP, DOWN
+    };
+
     private final WPI_TalonSRX rollers;
 
-    private final Solenoid hatchLeft, hatchRight, finger;
+    //private final Solenoid hatchLeft, hatchRight, finger;
+    private final Solenoid finger, hatch, jay;
 
-    private final Titan.Lidar hatchLidar;
+    private ControlMode controlMode = ControlMode.MANUAL;
 
-    private boolean isHatching = true, isFingering = true;
+    private HatchState hatchState = HatchState.DOWN;
+    private boolean isFingering = true, isJaying = true;
+    private double rollerSpeed = 0.0;
 
     public Intake(){
         rollers = new WPI_TalonSRX(Constants.INTAKE_ROLLER_ID);
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        hatchLeft = new Solenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_ID);
-        hatchRight = new Solenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_ID);
+        // hatchLeft = new Solenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_ID);
+        // hatchRight = new Solenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_ID);
         finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
 
-        hatchLidar = new Titan.Lidar(Constants.INTAKE_HATCH_LIDAR_PORT);
-        hatchLidar.setCalibrationOffset(7);
+        hatch = new Solenoid(Constants.INTAKE_HATCH_PCM_ID, Constants.INTAKE_HATCH_ID);
+        jay = new Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
     }
 
+    @Override
+    public void init(final Robot robot){
+        
+    }
+
+    @Override
     public void periodic(final Robot robot){
-        hatchLeft.set(!isHatching);
-        hatchRight.set(!isHatching);
+        // hatchLeft.set(!isHatching);
+        // hatchRight.set(!isHatching);
+
+        rollers.set(rollerSpeed);
+
+        jay.set(!isJaying);
+
+        hatch.set(hatchState == HatchState.UP);
 
         finger.set(!isFingering);
     }
 
-    public void roll(final double val){
-        rollers.set(val);
+    @Override
+    public void disabled(final Robot robot){
+        
     }
 
-    public void actuateHatch(final boolean val){
-        isHatching = val;
+    public void roll(final double val){
+        rollerSpeed = val;
+    }
+
+    public void actuateHatch(final HatchState state){
+        hatchState = state;
     }
 
     public void finger(final boolean val){
         isFingering = val;
     }
 
+    public void jay(final boolean val){
+        isJaying = val;
+    }
+
+    public boolean isJaying(){
+        return isJaying;
+    }
+
     public boolean isFingering(){
         return isFingering;
     }
 
-    public boolean isHatchOuttaking(){
-        return isHatching;
-    }
-
-    public double getHatchDistance(){
-        return hatchLidar.getDistance();
+    public HatchState getHatchState(){
+        return hatchState;
     }
 
     public boolean isBallIn(){
         return false;
     }
 
+    public boolean isRolling(){
+        return rollerSpeed != 0;
+    }
+
     public boolean canShootHatch(){
         return true;
+    }
+
+    public ControlMode getControlMode(){
+        return controlMode;
+    }
+
+    public void setControlMode(final ControlMode mode){
+        controlMode = mode;
+    }
+
+    @Override
+    public String getTestResult(){
+        return Testable.SUCCESS;
     }
 }

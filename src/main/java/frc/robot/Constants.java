@@ -1,6 +1,11 @@
 package frc.robot;
 
 public final class Constants {
+    private static enum Robot {
+        PRACTICE, COMPETITION;
+    }
+
+    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -17,19 +22,19 @@ public final class Constants {
     //public final static int ELEVATOR_BRAKE_REVERSE_ID = 1;
 
     public final static int ARM_BRAKE_PCM_ID = 30;
-    public final static int ARM_BRAKE_ID = 7;
+    public final static int ARM_BRAKE_ID = ROBOT_TYPE == Robot.COMPETITION ? 7 : 1;
     
-    public final static int ARM_WRIST_PCM_ID = 30;
-    public final static int ARM_WRIST_ID = 5;
+    // public final static int ARM_WRIST_PCM_ID = 30;
+    // public final static int ARM_WRIST_ID = 5;
     //public final static int ARM_WRIST_LEFT_REVERSE_ID = 7;
 
     //public final static int ARM_WRIST_RIGHT_REVERSE_ID = 4;
     
-    public final static int INTAKE_HATCH_LEFT_PCM_ID = 30;
-    public final static int INTAKE_HATCH_LEFT_ID = 3;
+    public final static int INTAKE_HATCH_PCM_ID = 30;
+    public final static int INTAKE_HATCH_ID = 3;
 
-    public final static int INTAKE_HATCH_RIGHT_PCM_ID = 30;
-    public final static int INTAKE_HATCH_RIGHT_ID = 4;
+    public final static int INTAKE_JAY_PCM_ID = 30;
+    public final static int INTAKE_JAY_ID = 4;
     //public final static int INTAKE_HATCH_LEFT_REVERSE_ID = 5;
 
     //public final static int INTAKE_HATCH_RIGHT_PCM_ID = 30;
@@ -68,19 +73,20 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = true;
+    public final static boolean INTAKE_ROLLER_INVERTED = false;
 
-    public final static int ELEVATOR_BOTTOM_ID = 2;
-    public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
+    public final static int ELEVATOR_BOTTOM_ID = 3;
+    public final static boolean ELEVATOR_BOTTOM_INVERTED = false;
 
-    public final static int ELEVATOR_TOP_ID = 3;
-    public final static boolean ELEVATOR_TOP_INVERTED = false;
+    public final static int ELEVATOR_TOP_ID = 2;
+    public final static boolean ELEVATOR_TOP_INVERTED = true;
 
     // sensors
 
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
-    public final static int ARM_ENCODER_CALIBRATION_OFFSET = 74;
+
+    public final static int ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 183;
 
     // digital inputs
 
@@ -88,12 +94,12 @@ public final class Constants {
     public final static int ELEVATOR_DOWN_1_PORT = 1;
     //public final static int ELEVATOR_DOWN_2_PORT = 3;
 
-    public final static int INTAKE_HATCH_LIDAR_PORT = 2;
-
     public final static int ELEVATOR_CARRIAGE_DOWN_1_PORT = 0;
     //public final static int ELEVATOR_CARRIAGE_DOWN_2_PORT = 5;
 
     // ENCODER INFORMATION
+    public final static boolean ELEVATOR_ENCODER_INVERTED = ROBOT_TYPE == Robot.COMPETITION ? false : true;
+
     public final static int DRIVEBASE_ENCODER_SAMPLES_TO_AVERAGE = 7;
     public final static double DRIVEBASE_ENCODER_MIN_RATE = 10;
     public final static double DRIVEBASE_ENCODER_MAX_PERIOD = 0.2;
@@ -115,6 +121,8 @@ public final class Constants {
     public final static boolean DRIVEBASE_RIGHT_ENCODER_INVERTED = false;
 
     // values
+
+    public final static int ARM_STOW_ANGLE = 168;
 
     // PID
     public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
@@ -149,23 +157,22 @@ public final class Constants {
 
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
-    public final static double AUTO_ELEVATOR_SPEED = 0.4;
-    public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;
+    public final static double AUTO_ELEVATOR_SPEED = 0.4;//old: 0.4
+    public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;// old: 0.35
     public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 10000;
 
     public final static double AUTO_ELEVATOR_STAGE_1_STALL = 1.902 / 12.0;
     public final static double AUTO_ELEVATOR_STAGE_2_STALL = 3.862 / 12.0;
 
-    public final static double AUTO_ARM_SPEED = 0.15;
-    public final static double AUTO_ARM_ACCELERATION = 0.1;
+    public final static double AUTO_ARM_SPEED = 0.15;//old: 0.15
+    public final static double AUTO_ARM_ACCELERATION = 0.0;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 45;
 
     //AUTONOMOUS MULTIPLIERS
-    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.5;
+    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.8;
 
     // to activate the clutch it runs these
     public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
-    public final static double ELEVATOR_BRAKE_DOWN_SPEED = 0.0;
 
     // TIMINGS
     public final static long ELEVATOR_BRAKE_TIME = 200;

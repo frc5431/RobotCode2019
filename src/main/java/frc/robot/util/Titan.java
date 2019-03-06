@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.util;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -614,6 +614,7 @@ public final class Titan {
 	public static class Mimic {
 		public static enum PropertyType{
 			DOUBLE(Double::parseDouble),
+			INTEGER(Integer::parseInt),
 			BOOLEAN(Boolean::parseBoolean);
 	
 			final Function<String, Object> converter;
@@ -665,6 +666,10 @@ public final class Titan {
 			public boolean getBoolean(final PV value){
 				return (boolean) get(value);
 			}
+
+			public int getInteger(final PV value){
+				return (Integer) get(value);
+			}
 			
 			public String toString() {
 				final StringBuilder builder = new StringBuilder();
@@ -704,10 +709,14 @@ public final class Titan {
 					Titan.ee("Mimic", e);
 				}
 			}
+
+			public boolean isRecording(){
+				return log != null;
+			}
 			
 			public void save() {
 				try {
-					if(log == null) return;
+					if(!isRecording()) return;
 					Titan.l("Finished observing");
 					log.flush();
 					log.close();

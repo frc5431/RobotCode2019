@@ -1,10 +1,10 @@
-package frc.robot;
+package frc.robot.util;
 
 import java.util.function.Function;
 
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
-import frc.robot.Titan;
+import frc.robot.components.Auton;
 
 public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
         LEFT_DISTANCE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftDistance()),
@@ -13,7 +13,17 @@ public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
 		LEFT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftPower()),
 		RIGHT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightPower()),
 		HOME(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.START)),
-		BATTERY(Titan.Mimic.PropertyType.DOUBLE, (robot)->RobotController.getBatteryVoltage());
+		BATTERY(Titan.Mimic.PropertyType.DOUBLE, (robot)->RobotController.getBatteryVoltage()),
+		USING_VISION(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BACK)),
+		SEQUENCE_TYPE(Titan.Mimic.PropertyType.INTEGER, (robot)->robot.getAuton().getCurrentSequenceType().ordinal()),
+		RUNNING_SEQUENCE(Titan.Mimic.PropertyType.INTEGER, (robot)->{
+			final Auton.Sequence runningSequence = robot.getAuton().getRunningSequence();
+			if(runningSequence == null){
+				return -1;
+			}else{
+				return runningSequence.ordinal();
+			}
+		});
 
 		private final Titan.Mimic.PropertyType type;
 		private final Function<Robot, Object> getter;
