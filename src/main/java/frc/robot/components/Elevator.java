@@ -103,7 +103,7 @@ public class Elevator extends Component{
         }else{
             //in order to fix the brake issue, move the error checkng to outside the if statement
             //if the elevator is going up, or the elevator is going down and it has waited long enough for the break to disengage
-            if(elevPower > 0 || System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
+            if(System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
                 if((isCarriageDown() && elevPower < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && elevPower > 0)){
                     elevPower = 0;
                     brake(BrakeState.ENGAGED);

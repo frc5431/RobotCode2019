@@ -5,9 +5,9 @@ import frc.robot.Robot;
 import frc.robot.components.Intake.HatchState;
 
 public class HatchOuttakeCommand extends Titan.Command<Robot> {
-        private final boolean outtaking;
+        private final HatchState outtaking;
 
-        public HatchOuttakeCommand(final boolean outtaking) {
+        public HatchOuttakeCommand(final HatchState outtaking) {
             this.outtaking = outtaking;
 
             name = "HatchOuttakeCommand";
@@ -21,7 +21,7 @@ public class HatchOuttakeCommand extends Titan.Command<Robot> {
     
         @Override
         public void init(final Robot robot) {
-            robot.getIntake().actuateHatch(outtaking ? HatchState.DOWN : HatchState.UP);
+            robot.getIntake().actuateHatch(outtaking);
         }
     
         @Override

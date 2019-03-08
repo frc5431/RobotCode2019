@@ -122,7 +122,7 @@ public final class Constants {
 
     // values
 
-    public final static int ARM_STOW_ANGLE = 168;
+    public final static int ARM_STOW_ANGLE = 170;
 
     // PID
     public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
@@ -157,9 +157,9 @@ public final class Constants {
 
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
-    public final static double AUTO_ELEVATOR_SPEED = 0.4;//old: 0.4
+    public final static double AUTO_ELEVATOR_SPEED = 0.6;//old: 0.4
     public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;// old: 0.35
-    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 10000;
+    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 20000;
 
     public final static double AUTO_ELEVATOR_STAGE_1_STALL = 1.902 / 12.0;
     public final static double AUTO_ELEVATOR_STAGE_2_STALL = 3.862 / 12.0;
@@ -175,7 +175,7 @@ public final class Constants {
     public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
 
     // TIMINGS
-    public final static long ELEVATOR_BRAKE_TIME = 200;
+    public final static long ELEVATOR_BRAKE_TIME = 250;
 
     // LIMITS
     public final static int ELEVATOR_TOP_LIMIT = 50000;

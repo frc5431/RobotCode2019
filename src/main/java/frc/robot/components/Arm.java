@@ -64,9 +64,18 @@ public class Arm extends Component{
             val = 0;
         }
 
+        pivot(in, val == 0 ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
+    }
+
+    public void pivot(final double in, final BrakeState state){
+        double val = in;
+        if(getArmAngle() > 250 && val > 0){
+            val = 0;
+        }
+
         armPower = val;
         //if the value of the pivot is 0 (so stopped), automatically break
-        brake(val == 0 ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
+        brake(state);
     }
 
     public void brake(final BrakeState state){

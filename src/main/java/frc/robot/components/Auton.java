@@ -61,8 +61,6 @@ public class Auton extends Component{
 
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
 
-    private long lastIntake = -1;
-
     public Auton(){
         commands = new Titan.CommandQueue<>();
         mimicCommands = new Titan.CommandQueue<>();
@@ -204,6 +202,7 @@ public class Auton extends Component{
 
             if(elevatorPos < 3000 && armPos < 100){
                 out.add(new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                out.add(new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED, false));
             }
         }
 
@@ -257,10 +256,10 @@ public class Auton extends Component{
             if(robot.getElevator().getEncoderPosition() < 1000 && robot.getArm().getArmAngle() < 100){
                 final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
                 queue.addCommand(robot, new RollerCommand(-1.0, 250));
-                queue.addCommand(robot, new HatchOuttakeCommand(true));
-                return goToPosition(robot, 8000, 90, List.of(new FingerCommand(false), new JayCommand(false), new HatchOuttakeCommand(false), new Titan.WaitCommand<>(400), new FingerCommand(true), new RollerCommand(-1.0, 400), new Titan.WaitCommand<>(200), queue, new JayCommand(true)));
+                queue.addCommand(robot, new HatchOuttakeCommand(Intake.HatchState.DOWN));
+                return goToPosition(robot, 8000, 100, List.of(new FingerCommand(false), new JayCommand(false), new HatchOuttakeCommand(Intake.HatchState.UP), new Titan.WaitCommand<>(400), new FingerCommand(true), new RollerCommand(1.0, 400), new Titan.WaitCommand<>(200), queue, new JayCommand(true)));
             }else{
-                return goToPosition(robot, List.of(new HatchOuttakeCommand(true)), 0, 90);
+                return goToPosition(robot, List.of(new HatchOuttakeCommand(Intake.HatchState.DOWN)), 0, 90);
             }
         });
 
@@ -270,49 +269,50 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 8000, 90, List.of(new JayCommand(true), new FingerCommand(true))));
         hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, 31000, 90, List.of(new JayCommand(true), new FingerCommand(true))));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 46000, 90, List.of(new JayCommand(true), new FingerCommand(true))));
 
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
         // BUTTON MAPPINGS
         // LOGITECH
-        // sequences.put(Button.TRIGGER.ordinal(), Sequence.STOW);
+        sequences.put(Titan.LogitechExtreme3D.Button.TRIGGER.ordinal() + 1, Sequence.STOW);
 
-        // sequences.put(Button.FIVE.ordinal(), Sequence.FLOOR);
-        // sequences.put(Button.THREE.ordinal(), Sequence.LOADING_STATION);
-        // sequences.put(Button.SIX.ordinal(), Sequence.CARGO_SHIP);
+        sequences.put(Titan.LogitechExtreme3D.Button.FIVE.ordinal() + 1, Sequence.FLOOR);
+        sequences.put(Titan.LogitechExtreme3D.Button.THREE.ordinal() + 1, Sequence.LOADING_STATION);
+        sequences.put(Titan.LogitechExtreme3D.Button.SIX.ordinal() + 1, Sequence.CARGO_SHIP);
 
-        // sequences.put(Button.TWELVE.ordinal(), Sequence.ROCKET_FORWARD_1);
-        // sequences.put(Button.TEN.ordinal(), Sequence.ROCKET_FORWARD_2);
-        // sequences.put(Button.EIGHT.ordinal(), Sequence.ROCKET_FORWARD_3);
+        sequences.put(Titan.LogitechExtreme3D.Button.TWELVE.ordinal() + 1, Sequence.ROCKET_FORWARD_1);
+        sequences.put(Titan.LogitechExtreme3D.Button.TEN.ordinal() + 1, Sequence.ROCKET_FORWARD_2);
+        sequences.put(Titan.LogitechExtreme3D.Button.EIGHT.ordinal() + 1, Sequence.ROCKET_FORWARD_3);
 
-        // sequences.put(Button.ELEVEN.ordinal(), Sequence.ROCKET_REVERSE_1);
-        // sequences.put(Button.NINE.ordinal(), Sequence.ROCKET_REVERSE_2);
-        // sequences.put(Button.SEVEN.ordinal(), Sequence.ROCKET_REVERSE_3);
+        sequences.put(Titan.LogitechExtreme3D.Button.ELEVEN.ordinal() + 1, Sequence.ROCKET_REVERSE_1);
+        sequences.put(Titan.LogitechExtreme3D.Button.NINE.ordinal() + 1, Sequence.ROCKET_REVERSE_2);
+        sequences.put(Titan.LogitechExtreme3D.Button.SEVEN.ordinal() + 1, Sequence.ROCKET_REVERSE_3);
 
-        // sequences.put(Button.TWO.ordinal(), Sequence.CLIMB);
+        sequences.put(Titan.LogitechExtreme3D.Button.TWO.ordinal() + 1, Sequence.CLIMB);
 
         //BUTTON BOARD
 
         //nine is outtake
         //fourteen is intake
-        sequences.put(13, Sequence.STOW);
+        // sequences.put(13, Sequence.STOW);
 
-        sequences.put(14, Sequence.INTAKE);
-        sequences.put(9, Sequence.OUTTAKE);
+        // sequences.put(14, Sequence.INTAKE);
+        // sequences.put(9, Sequence.OUTTAKE);
 
-        sequences.put(11, Sequence.FLOOR);
-        sequences.put(8, Sequence.LOADING_STATION);
-        sequences.put(6, Sequence.CARGO_SHIP);
+        // sequences.put(11, Sequence.FLOOR);
+        // sequences.put(8, Sequence.LOADING_STATION);
+        // sequences.put(6, Sequence.CARGO_SHIP);
 
-        sequences.put(12, Sequence.ROCKET_FORWARD_1);
-        sequences.put(7, Sequence.ROCKET_FORWARD_2);
-        sequences.put(2, Sequence.ROCKET_FORWARD_3);
+        // sequences.put(12, Sequence.ROCKET_FORWARD_1);
+        // sequences.put(7, Sequence.ROCKET_FORWARD_2);
+        // sequences.put(2, Sequence.ROCKET_FORWARD_3);
 
-        sequences.put(4, Sequence.ROCKET_REVERSE_1);
-        sequences.put(3, Sequence.ROCKET_REVERSE_2);
-        sequences.put(1, Sequence.ROCKET_REVERSE_3);
+        // sequences.put(4, Sequence.ROCKET_REVERSE_1);
+        // sequences.put(3, Sequence.ROCKET_REVERSE_2);
+        // sequences.put(1, Sequence.ROCKET_REVERSE_3);
 
-        sequences.put(5, Sequence.CLIMB);
+        // sequences.put(5, Sequence.CLIMB);
         //switch is 16
 
         if(robot.getMode() == Robot.Mode.AUTO){
@@ -383,7 +383,8 @@ public class Auton extends Component{
     }
 
     public SequenceType getCurrentSequenceType(){
-        return buttonBoard.getRawButton(16) ? SequenceType.HATCH : SequenceType.CARGO;
+        return buttonBoard.getRawAxis(Titan.LogitechExtreme3D.Axis.SLIDER) > 0 ? SequenceType.HATCH : SequenceType.CARGO;
+        //return buttonBoard.getRawButton(16) ? SequenceType.HATCH : SequenceType.CARGO;
     }
 
     public Titan.CommandQueue<Robot> getMimicCommands(){

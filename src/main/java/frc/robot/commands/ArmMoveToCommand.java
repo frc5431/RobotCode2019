@@ -4,16 +4,26 @@ import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
+import frc.robot.components.Arm;
 
 public class ArmMoveToCommand extends Titan.Command<Robot>{
 	private final double position, speed;
+
+	private long finished = -1;
+
+	private final boolean willBrake;
 	//private PIDController pid = null;
 	//private double speedOffset = 0.0;
 
-	public ArmMoveToCommand(final double position, final double spd) {
+	public ArmMoveToCommand(final double position, final double spd){
+		this(position, spd, true);
+	}
+
+	public ArmMoveToCommand(final double position, final double spd, final boolean brake) {
         this.position = position;
         /* sped */
-        this.speed = spd;
+		this.speed = spd;
+		this.willBrake = brake;
 
 		name = "ArmMoveCommand";
 		properties = String.format("Position %.2f : Speed %.2f", position, speed);
@@ -46,8 +56,21 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// }
 
 		if (isComplete(robot)) {
-			robot.getArm().pivot(0.0);
-			return CommandResult.COMPLETE;
+			if(finished < 0){
+				finished = System.currentTimeMillis();
+			}
+			if(!willBrake){
+				if(System.currentTimeMillis() > finished + 1000){
+					robot.getArm().pivot(0.0);
+					return CommandResult.COMPLETE;
+				}else{
+					robot.getArm().pivot(0.0, Arm.BrakeState.DISENGAGED);
+					return CommandResult.IN_PROGRESS;
+				}
+			}else{
+				robot.getArm().pivot(0.0);
+				return CommandResult.COMPLETE;
+			}
 		}
 
 		robot.getArm().pivot(getArmSpeed(robot));
