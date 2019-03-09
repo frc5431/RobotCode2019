@@ -130,7 +130,11 @@ public class Auton extends Component{
     }
 
     public boolean isElevatorInStage2(final int elevatorPos){
-        return elevatorPos > 29000;
+        return elevatorPos > Constants.ELEVATOR_FIRST_STAGE_LIMIT;
+    }
+
+    public boolean isInFloorIntake(final int elevatorPos, final double armPos){
+        return elevatorPos < Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT && armPos < 100;
     }
 
     public ArmDirection getArmDirection(final double armPos){
@@ -149,68 +153,80 @@ public class Auton extends Component{
         return goToPosition(robot, List.of(), elevatorPos, armPos, extraCommands);
     }
 
-    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final List<Titan.Command<Robot>> preCommands, final int elevatorPos, final double armPos, final List<Titan.Command<Robot>> extraCommands){
+    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final List<Titan.Command<Robot>> preCommands, final int targetElevatorPos, final double targetArmPos, final List<Titan.Command<Robot>> postCommands){
+        final ArmDirection currentArmDirection = getArmDirection(robot.getArm().getArmAngle());
+        final ArmDirection targetArmDirection = getArmDirection(targetArmPos);
+
+        final int currentElevatorPos = robot.getElevator().getEncoderPosition();
+        final double currentArmPos = robot.getArm().getArmAngle();
+
         final List<Titan.Command<Robot>> out = new ArrayList<>();
         out.addAll(preCommands);
-        final ArmDirection currentDirection = getArmDirection(robot.getArm().getArmAngle());
-        final ArmDirection targetDirection = getArmDirection(armPos);
-        if(currentDirection != targetDirection){
-            if(isArmInStowPosition(robot.getArm().getArmAngle())){
-                out.add(new ArmMoveToCommand(140, Constants.AUTO_ARM_SPEED));
+        if(currentArmDirection != targetArmDirection){
+            if(isArmInStowPosition(currentArmPos)){
+                out.add(new ArmMoveToCommand(Constants.ARM_PRESTOW_ANGLE, Constants.AUTO_ARM_SPEED));
             }
-            if(isElevatorInStage2(robot.getElevator().getEncoderPosition()) && isElevatorInStage2(elevatorPos)){
+            if(isElevatorInStage2(currentElevatorPos) && isElevatorInStage2(targetElevatorPos)){
                 final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-                queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
-                queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
                 out.add(queue);
             }else{
-                if(!isElevatorInStage2(robot.getElevator().getEncoderPosition())){
-                    out.add(new ElevateToCommand(17000, Constants.AUTO_ELEVATOR_SPEED));
+                if(currentElevatorPos < Constants.ELEVATOR_INTAKE_FLIP_LIMIT){
+                    out.add(new ElevateToCommand(Constants.ELEVATOR_INTAKE_FLIP_LIMIT, Constants.AUTO_ELEVATOR_SPEED));
                 }
                 final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-                if(isElevatorInStage2(elevatorPos)){
-                    queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                if(isElevatorInStage2(targetElevatorPos)){
+                    queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
                 }
-                if(isArmInStowPosition(armPos)){
-                    queue.addCommand(robot, new ArmMoveToCommand(140, Constants.AUTO_ARM_SPEED));
+                if(isArmInStowPosition(targetArmPos)){
+                    queue.addCommand(robot, new ArmMoveToCommand(Constants.ARM_PRESTOW_ANGLE, Constants.AUTO_ARM_SPEED));
                 }else{
-                    queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+                    queue.addCommand(robot, new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
                 }
                 out.add(queue);
-                if(!isElevatorInStage2(elevatorPos)){
-                    out.add(new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                if(!isElevatorInStage2(targetElevatorPos)){
+                    out.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
                 }
             }
         }else /* if target is in the same direction as current*/{
-
-            if((robot.getElevator().getEncoderPosition() > 0 && isArmInStowPosition(armPos) && isArmInStowPosition(robot.getArm().getArmAngle())) || (elevatorPos > 0 && isArmInStowPosition(robot.getArm().getArmAngle()))){
+            if((currentElevatorPos > 0 && isArmInStowPosition(targetArmPos) && isArmInStowPosition(currentArmPos)) || (targetElevatorPos > 0 && isArmInStowPosition(currentArmPos))){
                 out.add(new ArmMoveToCommand(140, Constants.AUTO_ARM_SPEED));
             }
 
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-            if(elevatorPos < 3000 && armPos < 100){
-                queue.addCommand(robot, new ElevateToCommand(3000, Constants.AUTO_ELEVATOR_SPEED));
+            if(isInFloorIntake(targetElevatorPos, targetArmPos)){
+                queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT, Constants.AUTO_ELEVATOR_SPEED));
             }else{
-                queue.addCommand(robot, new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
             }
-            if(!isArmInStowPosition(armPos)){
-                queue.addCommand(robot, new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+            if(isArmInStowPosition(targetArmPos)/* || (currentArmPos < 100 && isElevatorInStage2(targetElevatorPos))*/){
+                queue.addCommand(robot, new ArmMoveToCommand(Constants.ARM_PRESTOW_ANGLE, Constants.AUTO_ARM_SPEED));    
+            }else if(isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE)){
+                queue.addCommand(robot, new ArmMoveToCommand(Constants.ARM_PRESTOW_ANGLE, Constants.AUTO_ARM_SPEED));    
             }else{
-                queue.addCommand(robot, new ArmMoveToCommand(140, Constants.AUTO_ARM_SPEED));
+                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos/* + (isElevatorInStage2(targetElevatorPos) ? 10 : 0)*/, Constants.AUTO_ARM_SPEED));
             }
             out.add(queue);
 
-            if(elevatorPos < 3000 && armPos < 100){
-                out.add(new ElevateToCommand(elevatorPos, Constants.AUTO_ELEVATOR_SPEED));
-                out.add(new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED, false));
+            if(isInFloorIntake(targetElevatorPos, targetArmPos)){
+                out.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED, false));
+            }else if(!isArmInStowPosition(targetArmPos)){
+                //out.add(new Titan.WaitCommand<Robot>(200));
+                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED / 2.0));
             }
+
+            //if(isElevatorInStage2(targetElevatorPos)){
+            //    out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+            //}
         }
 
-        if(isArmInStowPosition(armPos)){
-            out.add(new ArmMoveToCommand(armPos, Constants.AUTO_ARM_SPEED));
+        if(isArmInStowPosition(targetArmPos) || (isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE))){
+            out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
         }
 
-        out.addAll(extraCommands);
+        out.addAll(postCommands);
 
         return out;
     }

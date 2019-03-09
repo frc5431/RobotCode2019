@@ -122,7 +122,9 @@ public final class Constants {
 
     // values
 
-    public final static int ARM_STOW_ANGLE = 170;
+    public final static double ARM_STOW_ANGLE = 170;
+    //The angle to go to where it is safe to move the elevator before stowing
+    public final static double ARM_PRESTOW_ANGLE = 140;
 
     // PID
     public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
@@ -157,19 +159,17 @@ public final class Constants {
 
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
-    public final static double AUTO_ELEVATOR_SPEED = 0.6;//old: 0.4
-    public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;// old: 0.35
-    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 20000;
-
-    public final static double AUTO_ELEVATOR_STAGE_1_STALL = 1.902 / 12.0;
-    public final static double AUTO_ELEVATOR_STAGE_2_STALL = 3.862 / 12.0;
+    public final static double AUTO_ELEVATOR_SPEED = 0.5;//old: 0.4
+    public final static double AUTO_ELEVATOR_ACCELERATION = 0.4;// old: 0.35
+    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 5000;
+    public final static double AUTO_ELEVATOR_STAGE_2_FEEDFORWARD = 0.15;
 
     public final static double AUTO_ARM_SPEED = 0.15;//old: 0.15
     public final static double AUTO_ARM_ACCELERATION = 0.0;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 45;
 
     //AUTONOMOUS MULTIPLIERS
-    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.8;
+    public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.7;
 
     // to activate the clutch it runs these
     public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
@@ -178,10 +178,21 @@ public final class Constants {
     public final static long ELEVATOR_BRAKE_TIME = 250;
 
     // LIMITS
+    // The minimum height the elevator needs to be to have the intake flip
+    public final static int ELEVATOR_INTAKE_FLIP_LIMIT = 23000;
+    // The minimum height the elevator needs to be in to consider the second stage engaged
+    public final static int ELEVATOR_FIRST_STAGE_LIMIT = 24000;
+    // The max operational height of the elevator
     public final static int ELEVATOR_TOP_LIMIT = 50000;
+    // The height at which the elevator will be considered at the bottom of it's operational height
     public final static int ELEVATOR_BOTTOM_LIMIT = 600;
+    // Before going into floor intake mode, the elevator will go to this height to have the intake slowly fall down
+    public final static int ELEVATOR_FLOOR_INTAKE_HEIGHT = 3000;
 
     // TOLERANCES
-    public final static int ARM_ANGLE_TOLERANCE = 5;
+    public final static double ARM_ANGLE_TOLERANCE = 1;
     public final static int ELEVATOR_POSITION_TOLERANCE = 750;
+
+    //AMPS
+    public final static int ROLLER_BALL_AMPS = 20;
 }

@@ -4,12 +4,13 @@ import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
-import frc.robot.components.Arm;
+//import frc.robot.components.Arm;
+import frc.robot.components.Arm.BrakeState;
 
 public class ArmMoveToCommand extends Titan.Command<Robot>{
 	private final double position, speed;
 
-	private long finished = -1;
+	//private long finished = -1;
 
 	private final boolean willBrake;
 	//private PIDController pid = null;
@@ -56,21 +57,21 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		// }
 
 		if (isComplete(robot)) {
-			if(finished < 0){
-				finished = System.currentTimeMillis();
-			}
-			if(!willBrake){
-				if(System.currentTimeMillis() > finished + 1000){
-					robot.getArm().pivot(0.0);
-					return CommandResult.COMPLETE;
-				}else{
-					robot.getArm().pivot(0.0, Arm.BrakeState.DISENGAGED);
-					return CommandResult.IN_PROGRESS;
-				}
-			}else{
-				robot.getArm().pivot(0.0);
+			// if(finished < 0){
+			// 	finished = System.currentTimeMillis();
+			// }
+			// if(!willBrake){
+			// 	if(System.currentTimeMillis() > finished + 1000){
+			// 		robot.getArm().pivot(0.0);
+			// 		return CommandResult.COMPLETE;
+			// 	}else{
+			// 		robot.getArm().pivot(0.0, Arm.BrakeState.DISENGAGED);
+			// 		return CommandResult.IN_PROGRESS;
+			// 	}
+			// }else{
+				robot.getArm().pivot(0.0, willBrake ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
 				return CommandResult.COMPLETE;
-			}
+			//}
 		}
 
 		robot.getArm().pivot(getArmSpeed(robot));

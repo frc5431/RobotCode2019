@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
@@ -27,7 +28,8 @@ public class Intake extends Component{
     private final WPI_TalonSRX rollers;
 
     //private final Solenoid hatchLeft, hatchRight, finger;
-    private final Solenoid finger, hatch, jay;
+    private final Solenoid hatch, jay;
+    private final DoubleSolenoid finger;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
@@ -42,7 +44,8 @@ public class Intake extends Component{
 
         // hatchLeft = new Solenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_ID);
         // hatchRight = new Solenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_ID);
-        finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
+        //finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
+        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID, 7);
 
         hatch = new Solenoid(Constants.INTAKE_HATCH_PCM_ID, Constants.INTAKE_HATCH_ID);
         jay = new Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
@@ -64,7 +67,7 @@ public class Intake extends Component{
 
         hatch.set(hatchState == HatchState.UP);
 
-        finger.set(!isFingering);
+        finger.set(isFingering ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
     }
 
     @Override
@@ -101,7 +104,7 @@ public class Intake extends Component{
     }
 
     public boolean isBallIn(){
-        return false;
+        return rollers.getOutputCurrent() >= Constants.ROLLER_BALL_AMPS;
     }
 
     public boolean isRolling(){
