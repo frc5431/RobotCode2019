@@ -17,6 +17,10 @@ public class Arm extends Component{
         ENGAGED, DISENGAGED
     };
 
+    public static enum BrakeMode{
+        BREAK, COAST
+    };
+
     final CANSparkMax pivot;
     final Solenoid brakePad;
 
@@ -31,7 +35,8 @@ public class Arm extends Component{
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
-        pivot.setIdleMode(IdleMode.kBrake);
+        
+        setBrakeMode(BrakeMode.BREAK);
     
         brakePad = new Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
@@ -45,17 +50,25 @@ public class Arm extends Component{
 
     @Override
     public void periodic(final Robot robot){
+        if(getControlMode() == ControlMode.MANUAL){
+            setBrakeMode(BrakeMode.BREAK);
+        }
+
+        //System.out.println(pivot.getIdleMode().name());
+
         brakePad.set(brakeState == BrakeState.DISENGAGED);
-        
+
+        final double power = Math.signum(armPower) * (Math.abs(armPower) + (0.1 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90)))));
+        //System.out.println(power);
         // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
         // USE THIS FOR BETTER EQUATION:
         //pivot.set(armPower + (0.2 * (Math.signum(armPower) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
-        pivot.set(Math.signum(armPower) * (Math.abs(armPower) + (0.3 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90))))));
+        pivot.set(power);
     }
     
     @Override
     public void disabled(final Robot robot){
-        
+        setBrakeMode(BrakeMode.BREAK);
     }
 
     public void pivot(final double in){
@@ -98,8 +111,15 @@ public class Arm extends Component{
         return position;
     }
 
+    public void setBrakeMode(final BrakeMode mode){
+        pivot.setIdleMode(mode == BrakeMode.BREAK ? IdleMode.kBrake : IdleMode.kCoast);
+    }
+
     @Override
     public String getTestResult(){
+        if(getArmAngle() == 0){
+            return "Invalid arm encoder";
+        }
         return Testable.SUCCESS;
     }
 }

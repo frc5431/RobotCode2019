@@ -4,6 +4,7 @@ import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
+import frc.robot.components.Arm.BrakeMode;
 //import frc.robot.components.Arm;
 import frc.robot.components.Arm.BrakeState;
 
@@ -35,7 +36,7 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
 
 		if(robot.getArm().getArmAngle() > position){
-			return -(speed + speedOffset);
+			return -(speed + speedOffset) * Constants.AUTO_ARM_DOWN_MULITPLIER;
 		}else{
 			return speed + speedOffset;
 		}
@@ -70,6 +71,7 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 			// 	}
 			// }else{
 				robot.getArm().pivot(0.0, willBrake ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
+				robot.getArm().setBrakeMode(willBrake ? BrakeMode.BREAK : BrakeMode.COAST);
 				return CommandResult.COMPLETE;
 			//}
 		}

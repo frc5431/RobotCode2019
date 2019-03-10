@@ -1,11 +1,13 @@
 package frc.robot.components;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -35,6 +37,7 @@ public class Elevator extends Component{
     private BrakeState brakeState = BrakeState.ENGAGED;
 
     private double elevPower = 0.0;
+    private int targetPosition = -1;
 
     private int lastEncoderPosition = 0;
 
@@ -51,15 +54,24 @@ public class Elevator extends Component{
         
         bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 
-        //final double peakSensorVelocity = 9000;
+        final double peakSensorVelocity = 5000;
         //to calculate kF, move elevator to second stage, run at 100%, and print getSelectedSensorVelocity
 
-        // bottom.config_kP(0, Constants.kGains_Distanc.kP, 00);
-		// bottom.config_kI(0, Constants.kGains_Distanc.kI, 0);
-		// bottom.config_kD(0, Constants.kGains_Distanc.kD, 0);
-		// bottom.config_kF(0, 0, 0);
-		// bottom.config_IntegralZone(0, Constants.kGains_Distanc.kIzone, 0);
-        // bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
+        bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 0);
+        bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 0);
+
+        bottom.selectProfileSlot(0, 0);
+        bottom.setSensorPhase(false);
+        bottom.config_kP(0, 4.4, 0);//0.05
+		bottom.config_kI(0, 0.004, 0);
+		bottom.config_kD(0, 40, 0);
+        bottom.config_kF(0, 1023.0 / peakSensorVelocity, 0);
+        bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
+		bottom.config_IntegralZone(0, 200, 0);
+        bottom.configMotionAcceleration((int)(1.5 * peakSensorVelocity));
+        bottom.configMotionCruiseVelocity((int)(1.0 * peakSensorVelocity));
+        bottom.configClosedLoopPeakOutput(0, 1);
+        //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
 
         top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
@@ -97,20 +109,33 @@ public class Elevator extends Component{
 
         lastEncoderPosition = getEncoderPosition();
 
-        if(elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
+        if(targetPosition >= 0){
+            elevPower = bottom.get();
+        }
+
+        System.out.println(elevPower + ", " + targetPosition + ", " + bottom.getSelectedSensorVelocity());
+
+        if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
             bottom.set(0);
-            brake(BrakeState.ENGAGED);
+            brake(isCarriageDown() ? BrakeState.DISENGAGED : BrakeState.ENGAGED);
         }else{
             //in order to fix the brake issue, move the error checkng to outside the if statement
             //if the elevator is going up, or the elevator is going down and it has waited long enough for the break to disengage
             if(System.currentTimeMillis() >= lastBrake + Constants.ELEVATOR_BRAKE_TIME){
-                if((isCarriageDown() && elevPower < 0) || (getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && elevPower > 0)){
+                if(isCarriageDown() && elevPower < 0){
+                    elevPower = 0;
+                    brake(BrakeState.DISENGAGED);
+                }else if((getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && elevPower > 0)){
                     elevPower = 0;
                     brake(BrakeState.ENGAGED);
                 }else{
                     brake(BrakeState.DISENGAGED);
                 }
-                bottom.set(elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower);
+                if(targetPosition >= 0){
+                    bottom.set(ControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, 0.0);//0.35
+                }else{
+                    bottom.set(ControlMode.PercentOutput, elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower);
+                }
             }else{
                 //at this point, the elevater wants to move down but it hasn't disengaged the break yet
                 brake(BrakeState.DISENGAGED);
@@ -126,7 +151,7 @@ public class Elevator extends Component{
         }else{
             lastBrake = -1;
         }
-        brakePad.set(isCarriageDown() || brakeState == BrakeState.DISENGAGED);
+        brakePad.set(brakeState == BrakeState.DISENGAGED);
     }
 
     @Override
@@ -134,9 +159,15 @@ public class Elevator extends Component{
         
     }
 
-    public void elevate(double val){
+    public void elevate(final double val){
         elevPower = val;
+        targetPosition = -1;
         //right.set(val);
+    }
+
+    public void elevateTo(final int pos){
+        elevPower = 0;
+        targetPosition = pos;
     }
 
     public void brake(final BrakeState state){
@@ -147,12 +178,20 @@ public class Elevator extends Component{
         return controlMode;
     }
 
+    public BrakeState getBrakeState(){
+        return brakeState;
+    }
+
     public void setControlMode(final frc.robot.util.ControlMode mode){
         controlMode = mode;
     }
 
     public int getEncoderPosition(){
         return bottom.getSensorCollection().getQuadraturePosition();
+    }
+
+    public int getEncoderVelocity(){
+        return bottom.getSensorCollection().getQuadratureVelocity();
     }
 
     public boolean isElevatorDown(){
@@ -169,6 +208,11 @@ public class Elevator extends Component{
 
     @Override
     public String getTestResult(){
+        if(isCarriageDown()&&isCarriageUp()){
+            return "Carriage sensor mismatch";
+        }else if(isCarriageDown() && getEncoderPosition() != 0){
+            return "Bottom limit switch logic failure";
+        }
         return Testable.SUCCESS;
     }
 }

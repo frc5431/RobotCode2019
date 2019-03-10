@@ -6,21 +6,22 @@ import frc.robot.Robot;
 import frc.robot.util.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
-	private final double position, speed;
+	private final int position;
+	private final double speed;
 	//private PIDController pid = null;
 
-	public ElevateToCommand(final double position, final double spd) {
+	public ElevateToCommand(final int position, final double spd) {
         this.position = position;
         /* sped */
         this.speed = spd;
 
 		name = "ElevateToCommand";
-		properties = String.format("Position %.2f : Speed %.2f", position, speed);
+		properties = "Position: " + position + " ; Speed: " + speed;
 	}
 
 	private double getElevatorSpeed(final Robot robot){
 		final double error = Math.abs(position - robot.getElevator().getEncoderPosition());
-		final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * (Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR);
+		final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * Math.pow(Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, 2);
 
 		final double feedforward = robot.getElevator().isCarriageUp() ? Constants.AUTO_ELEVATOR_STAGE_2_FEEDFORWARD : 0;
 
@@ -51,7 +52,12 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 			return CommandResult.COMPLETE;
 		}
 
-		robot.getElevator().elevate(getElevatorSpeed(robot));
+		if(position <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
+			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
+		}else{
+			robot.getElevator().elevateTo(position);
+		}
+		//robot.getElevator().elevate(getElevatorSpeed(robot));
 
 		return CommandResult.IN_PROGRESS;
 	}
@@ -90,7 +96,7 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		robot.getElevator().setControlMode(ControlMode.AUTO);
 
 		if(!isComplete(robot)){
-			robot.getElevator().elevate(getElevatorSpeed(robot));
+			//robot.getElevator().elevate(getElevatorSpeed(robot));
 		}
 	}
 

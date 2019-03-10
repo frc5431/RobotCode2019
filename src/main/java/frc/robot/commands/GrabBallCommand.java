@@ -13,7 +13,7 @@ public class GrabBallCommand extends Titan.Command<Robot>{
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getArm().getControlMode() == ControlMode.MANUAL){
+		if(robot.getIntake().getControlMode() == ControlMode.MANUAL){
 			return CommandResult.CLEAR_QUEUE;
 		}
 
@@ -38,7 +38,7 @@ public class GrabBallCommand extends Titan.Command<Robot>{
 
 	@Override
 	public void init(final Robot robot) {
-		robot.getArm().setControlMode(ControlMode.AUTO);
+		robot.getIntake().setControlMode(ControlMode.AUTO);
 	}
 
 	@Override

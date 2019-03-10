@@ -86,7 +86,7 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static int ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 183;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 178;
 
     // digital inputs
 
@@ -122,7 +122,7 @@ public final class Constants {
 
     // values
 
-    public final static double ARM_STOW_ANGLE = 170;
+    public final static double ARM_STOW_ANGLE = 169;
     //The angle to go to where it is safe to move the elevator before stowing
     public final static double ARM_PRESTOW_ANGLE = 140;
 
@@ -146,8 +146,8 @@ public final class Constants {
     // SPEEDS
 
     // TELEOPERATED SPEEDS
-    public final static double ARM_PIVOT_UP_SPEED = 0.15;
-    public final static double ARM_PIVOT_DOWN_SPEED = 0.1;
+    public final static double ARM_PIVOT_UP_SPEED = 0.2;
+    public final static double ARM_PIVOT_DOWN_SPEED = 0.15;
     public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 1.0;
 
@@ -160,22 +160,23 @@ public final class Constants {
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
     public final static double AUTO_ELEVATOR_SPEED = 0.5;//old: 0.4
-    public final static double AUTO_ELEVATOR_ACCELERATION = 0.4;// old: 0.35
-    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 5000;
-    public final static double AUTO_ELEVATOR_STAGE_2_FEEDFORWARD = 0.15;
+    public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;// old: 0.35
+    public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 20000;
+    public final static double AUTO_ELEVATOR_STAGE_2_FEEDFORWARD = 0.1;// old: 0.15
 
-    public final static double AUTO_ARM_SPEED = 0.15;//old: 0.15
-    public final static double AUTO_ARM_ACCELERATION = 0.0;//old: 0.1
-    public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 45;
+    public final static double AUTO_ARM_SPEED = 0.1;//old: 0.15
+    public final static double AUTO_ARM_ACCELERATION = 0.9;//old: 0.1
+    public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 120;
 
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.7;
+    public final static double AUTO_ARM_DOWN_MULITPLIER = 0.7;
 
     // to activate the clutch it runs these
     public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
 
     // TIMINGS
-    public final static long ELEVATOR_BRAKE_TIME = 250;
+    public final static long ELEVATOR_BRAKE_TIME = 200;
 
     // LIMITS
     // The minimum height the elevator needs to be to have the intake flip
@@ -190,9 +191,9 @@ public final class Constants {
     public final static int ELEVATOR_FLOOR_INTAKE_HEIGHT = 3000;
 
     // TOLERANCES
-    public final static double ARM_ANGLE_TOLERANCE = 1;
+    public final static double ARM_ANGLE_TOLERANCE = 0.5;
     public final static int ELEVATOR_POSITION_TOLERANCE = 750;
 
     //AMPS
-    public final static int ROLLER_BALL_AMPS = 20;
+    public final static int ROLLER_BALL_AMPS = 73;
 }
