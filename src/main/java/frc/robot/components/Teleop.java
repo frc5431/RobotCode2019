@@ -5,7 +5,9 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
+import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.HatchState;
+import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
@@ -72,10 +74,10 @@ public class Teleop extends Component{
 
         hatch.setState(intake.getHatchState() == HatchState.UP);
         intake.actuateHatch(hatch.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.FOUR)) ? HatchState.UP : HatchState.DOWN);
-        fingers.setState(intake.isFingering());
-        intake.finger(fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)));
-        jay.setState(intake.isJaying());
-        intake.jay(jay.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)));
+        fingers.setState(intake.getFingerState() == FingerState.DEPLOYED);
+        intake.finger(fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)) ? FingerState.DEPLOYED : FingerState.RETRACTED);
+        jay.setState(intake.getJayState() == JayState.DEPLOYED);
+        intake.jay(jay.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)) ? JayState.DEPLOYED : JayState.RETRACTED);
 
         final Arm arm = robot.getArm();
         if(operator.getPOV() == 0){

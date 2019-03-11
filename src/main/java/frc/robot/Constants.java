@@ -124,7 +124,8 @@ public final class Constants {
 
     public final static double ARM_STOW_ANGLE = 169;
     //The angle to go to where it is safe to move the elevator before stowing
-    public final static double ARM_PRESTOW_ANGLE = 140;
+    public final static double ARM_PRESTOW_FORWARD_ANGLE = 140;
+    public final static double ARM_PRESTOW_REVERSE_ANGLE = 220;
 
     // PID
     public final static double AUTO_DISTANCE_P = 0.00635;//0.00635

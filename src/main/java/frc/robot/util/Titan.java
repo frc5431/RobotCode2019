@@ -517,6 +517,14 @@ public final class Titan {
 		 */
 		private static final long serialVersionUID = 1L;
 
+		public CommandQueue(){
+			super();
+		}
+
+		public CommandQueue(final Collection<Command<T>> col){
+			super(col);
+		}
+
 		public void init(final T robot) {
 			// Initialize the first command
 			final Command<T> initCommand = peek();

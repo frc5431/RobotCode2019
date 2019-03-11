@@ -72,6 +72,10 @@ public class Elevator extends Component{
         bottom.configMotionCruiseVelocity((int)(1.0 * peakSensorVelocity));
         bottom.configClosedLoopPeakOutput(0, 1);
         //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
+        
+        // bottom.disableNominalClosedLoopVoltage();
+        // bottom.setNominalClosedLoopVoltage(12.0);
+
 
         top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);

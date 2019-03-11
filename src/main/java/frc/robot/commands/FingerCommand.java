@@ -2,15 +2,16 @@ package frc.robot.commands;
 
 import frc.robot.util.Titan;
 import frc.robot.Robot;
+import frc.robot.components.Intake.FingerState;
 
 public class FingerCommand extends Titan.Command<Robot> {
-        private final boolean fingered;
+        private final FingerState fingered;
 
-        public FingerCommand(final boolean fingered) {
+        public FingerCommand(final FingerState fingered) {
             this.fingered = fingered;
 
             name = "FingerCommand";
-            properties = "Whether it will Finger or not";
+            properties = "Whether it will finger or not";
         }
     
         @Override

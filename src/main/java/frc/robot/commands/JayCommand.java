@@ -2,12 +2,12 @@ package frc.robot.commands;
 
 import frc.robot.util.Titan;
 import frc.robot.Robot;
+import frc.robot.components.Intake.JayState;
 
 public class JayCommand extends Titan.Command<Robot> {
-        private final boolean jayed;
-        //private boolean wasFingering = false;
+        private final JayState jayed;
 
-        public JayCommand(final boolean jayed) {
+        public JayCommand(final JayState jayed) {
             this.jayed = jayed;
 
             name = "JayCommand";
@@ -16,23 +16,12 @@ public class JayCommand extends Titan.Command<Robot> {
     
         @Override
         public CommandResult update(final Robot robot) {
-            // if(jayed == false && !wasFingering){
-            //     robot.getIntake().finger(false);
-            //     if(System.currentTimeMillis() > startTime + 100){
-            //         return CommandResult.COMPLETE;
-            //     }else{
-            //         return CommandResult.IN_PROGRESS;
-            //     }
-            // }else{
-                return CommandResult.COMPLETE;
-            //}
+            return CommandResult.COMPLETE;
         }
     
         @Override
         public void init(final Robot robot) {
             robot.getIntake().jay(jayed);
-
-            //wasFingering = robot.getIntake().isFingering();
         }
     
         @Override

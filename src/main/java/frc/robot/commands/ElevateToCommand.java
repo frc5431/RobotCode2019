@@ -6,12 +6,12 @@ import frc.robot.Robot;
 import frc.robot.util.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
-	private final int position;
+	private final int targetPosition;
 	private final double speed;
-	//private PIDController pid = null;
+	private int startPosition = -1;
 
 	public ElevateToCommand(final int position, final double spd) {
-        this.position = position;
+        this.targetPosition = position;
         /* sped */
         this.speed = spd;
 
@@ -20,12 +20,12 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	}
 
 	private double getElevatorSpeed(final Robot robot){
-		final double error = Math.abs(position - robot.getElevator().getEncoderPosition());
+		final double error = Math.abs(targetPosition - robot.getElevator().getEncoderPosition());
 		final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * Math.pow(Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, 2);
 
 		final double feedforward = robot.getElevator().isCarriageUp() ? Constants.AUTO_ELEVATOR_STAGE_2_FEEDFORWARD : 0;
 
-		if(position <= 0 || robot.getElevator().getEncoderPosition() > position){
+		if(targetPosition <= 0 || robot.getElevator().getEncoderPosition() > targetPosition){
 			return (-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER)  + feedforward ;
 		}else{
 			return (speed + speedOffset) + feedforward ;
@@ -33,7 +33,20 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	}
 
 	private boolean isComplete(final Robot robot){
-		return (position > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), position, Constants.ELEVATOR_POSITION_TOLERANCE)) || (position <= 0 && robot.getElevator().isCarriageDown());
+		return (targetPosition > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), targetPosition, Constants.ELEVATOR_POSITION_TOLERANCE)) || (targetPosition <= 0 && robot.getElevator().isCarriageDown());
+	}
+
+	private void runElevator(final Robot robot){
+		if(Math.abs(targetPosition - startPosition) < 10000){
+			// motion magic jerks in short ranges, so manually run it when the initial error is low
+			robot.getElevator().elevate(getElevatorSpeed(robot));
+		}else if(targetPosition <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
+			// if trying to stow, and the elevator is almost there, just run it at a constant speed down as motion magic could undershoot
+			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
+		}else{
+			// use motion magic
+			robot.getElevator().elevateTo(targetPosition);
+		}
 	}
 
 	@Override
@@ -43,67 +56,29 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		// if(pid == null){
-		// 	return CommandResult.RESTART_COMMAND;
-		// }
-
 		if (isComplete(robot)) {
+			// stop the elevator
 			robot.getElevator().elevate(0.0);
 			return CommandResult.COMPLETE;
 		}
 
-		if(position <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
-			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
-		}else{
-			robot.getElevator().elevateTo(position);
-		}
-		//robot.getElevator().elevate(getElevatorSpeed(robot));
-
+		runElevator(robot);
+		
 		return CommandResult.IN_PROGRESS;
 	}
 
 	@Override
 	public void init(final Robot robot) {
-		// pid  = new PIDController(Constants.ELEVATOR_PID_P, Constants.ELEVATOR_PID_I, Constants.ELEVATOR_PID_D, new PIDSource(){
-		
-		// 	@Override
-		// 	public void setPIDSourceType(final PIDSourceType pidSource) {
-		// 		//do nothing
-		// 	}
-		
-		// 	@Override
-		// 	public double pidGet() {
-		// 		return robot.getElevator().getEncoderPosition();
-		// 	}
-		
-		// 	@Override
-		// 	public PIDSourceType getPIDSourceType() {
-		// 		return PIDSourceType.kDisplacement;
-		// 	}
-		// }, new PIDOutput(){
-		
-		// 	@Override
-		// 	public void pidWrite(final double output) {
-		// 		speedOffset = output;
-		// 	}
-		// });
-		// pid.enable();
-
-		// pid.setInputRange(0.0, 10000);
-		// pid.setOutputRange(-1.0, 1.0);
-		// pid.setSetpoint(position);
-
 		robot.getElevator().setControlMode(ControlMode.AUTO);
 
+		startPosition = robot.getElevator().getEncoderPosition();
+
 		if(!isComplete(robot)){
-			//robot.getElevator().elevate(getElevatorSpeed(robot));
+			runElevator(robot);
 		}
 	}
 
 	@Override
 	public void done(final Robot robot) {
-		// if(pid != null){
-		// 	pid.disable();
-		// }
 	}
 }

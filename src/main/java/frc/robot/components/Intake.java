@@ -34,7 +34,8 @@ public class Intake extends Component{
     private ControlMode controlMode = ControlMode.MANUAL;
 
     private HatchState hatchState = HatchState.DOWN;
-    private boolean isFingering = true, isJaying = true;
+    private JayState jayState = JayState.RETRACTED;
+    private FingerState fingerState = FingerState.DEPLOYED;
     private double rollerSpeed = 0.0;
 
     public Intake(){
@@ -63,11 +64,11 @@ public class Intake extends Component{
 
         rollers.set(rollerSpeed);
 
-        jay.set(!isJaying);
+        jay.set(jayState == JayState.DEPLOYED);
 
         hatch.set(hatchState == HatchState.UP);
 
-        finger.set(isFingering ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
+        finger.set(fingerState == FingerState.RETRACTED ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
     }
 
     @Override
@@ -83,20 +84,20 @@ public class Intake extends Component{
         hatchState = state;
     }
 
-    public void finger(final boolean val){
-        isFingering = val;
+    public void finger(final FingerState val){
+        fingerState = val;
     }
 
-    public void jay(final boolean val){
-        isJaying = val;
+    public void jay(final JayState val){
+        jayState = val;
     }
 
-    public boolean isJaying(){
-        return isJaying;
+    public JayState getJayState(){
+        return jayState;
     }
 
-    public boolean isFingering(){
-        return isFingering;
+    public FingerState getFingerState(){
+        return fingerState;
     }
 
     public HatchState getHatchState(){

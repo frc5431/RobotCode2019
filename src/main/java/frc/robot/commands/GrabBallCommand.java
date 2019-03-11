@@ -14,6 +14,7 @@ public class GrabBallCommand extends Titan.Command<Robot>{
 	@Override
 	public CommandResult update(final Robot robot) {
 		if(robot.getIntake().getControlMode() == ControlMode.MANUAL){
+			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
@@ -21,15 +22,6 @@ public class GrabBallCommand extends Titan.Command<Robot>{
 			robot.getIntake().roll(0.0);
 			return CommandResult.COMPLETE;
 		}
-
-
-		// if((position > 180 && currentPos > 180) || (position < 180 && currentPos < 180)){
-		// 	robot.getElevator().intakeFlipping = false;
-		// }
-
-		// if(robot.getElevator().intakeFlipping){
-		// 	robot.getElevator().elevate(0.3);
-		// }
 
 		robot.getIntake().roll(Constants.INTAKE_ROLLER_SPEED);
 
