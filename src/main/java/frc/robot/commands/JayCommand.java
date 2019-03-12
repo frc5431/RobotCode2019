@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import frc.robot.util.Titan;
 import frc.robot.Robot;
-import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 
 public class JayCommand extends Titan.Command<Robot> {

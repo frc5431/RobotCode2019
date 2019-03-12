@@ -25,9 +25,8 @@ public class Elevator extends Component{
 
     private final Solenoid brakePad;
 
-    //private final DigitalInput carriageUp;
-    private final DigitalInput carriageDown1;
-    private final DigitalInput elevatorDown1;
+    private final DigitalInput carriageDown;
+    private final DigitalInput elevatorDown;
 
     private long lastBrake = -1;
 
@@ -61,7 +60,7 @@ public class Elevator extends Component{
         bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 0);
 
         bottom.selectProfileSlot(0, 0);
-        bottom.setSensorPhase(false);
+        bottom.setSensorPhase(true);
         bottom.config_kP(0, 1.5, 0);//7.5
 		bottom.config_kI(0, 0, 0);//0.004
 		bottom.config_kD(0, 0, 0);//40
@@ -83,11 +82,9 @@ public class Elevator extends Component{
 
         brakePad = new Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
 
-        //carriageUp = new DigitalInput(Constants.ELEVATOR_CARRIAGE_UP_PORT);
+        elevatorDown = new DigitalInput(Constants.ELEVATOR_DOWN_PORT);
 
-        elevatorDown1 = new DigitalInput(Constants.ELEVATOR_DOWN_1_PORT);
-
-        carriageDown1 = new DigitalInput(Constants.ELEVATOR_CARRIAGE_DOWN_1_PORT);
+        carriageDown = new DigitalInput(Constants.ELEVATOR_CARRIAGE_DOWN_PORT);
 
         //hi tauseef
     }
@@ -199,7 +196,7 @@ public class Elevator extends Component{
     }
 
     public boolean isElevatorDown(){
-        return !elevatorDown1.get();
+        return !elevatorDown.get();
     }
 
     public boolean isCarriageUp(){
@@ -207,7 +204,7 @@ public class Elevator extends Component{
     }
 
     public boolean isCarriageDown(){
-        return !carriageDown1.get();
+        return !carriageDown.get();
     }
 
     @Override

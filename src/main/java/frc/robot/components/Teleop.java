@@ -6,7 +6,6 @@ import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
 import frc.robot.components.Intake.FingerState;
-import frc.robot.components.Intake.HatchState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
 import frc.robot.Constants;
@@ -19,7 +18,7 @@ public class Teleop extends Component{
     private Titan.Xbox driver;
     private Titan.LogitechExtreme3D operator;
 
-    private Titan.Toggle fingers, hatch, jay;
+    private Titan.Toggle fingers, jay;
 
     public Teleop(){
         driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
@@ -29,7 +28,6 @@ public class Teleop extends Component{
         operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
 
         fingers = new Titan.Toggle();
-        hatch = new Titan.Toggle();
         jay = new Titan.Toggle();
     }
 
@@ -72,8 +70,6 @@ public class Teleop extends Component{
           intake.roll(0);
         }
 
-        hatch.setState(intake.getHatchState() == HatchState.UP);
-        intake.actuateHatch(hatch.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.FOUR)) ? HatchState.UP : HatchState.DOWN);
         fingers.setState(intake.getFingerState() == FingerState.DEPLOYED);
         intake.finger(fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)) ? FingerState.DEPLOYED : FingerState.RETRACTED);
         jay.setState(intake.getJayState() == JayState.DEPLOYED);

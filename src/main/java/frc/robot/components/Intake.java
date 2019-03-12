@@ -21,19 +21,14 @@ public class Intake extends Component{
         DEPLOYED, RETRACTED
     };
 
-    public static enum HatchState{
-        UP, DOWN
-    };
-
     private final WPI_TalonSRX rollers;
 
     //private final Solenoid hatchLeft, hatchRight, finger;
-    private final Solenoid hatch, jay;
+    private final Solenoid jay;
     private final DoubleSolenoid finger;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
-    private HatchState hatchState = HatchState.DOWN;
     private JayState jayState = JayState.DEPLOYED;
     private FingerState fingerState = FingerState.DEPLOYED;
     private double rollerSpeed = 0.0;
@@ -48,7 +43,6 @@ public class Intake extends Component{
         //finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
         finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID, 7);
 
-        hatch = new Solenoid(Constants.INTAKE_HATCH_PCM_ID, Constants.INTAKE_HATCH_ID);
         jay = new Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
     }
 
@@ -68,9 +62,6 @@ public class Intake extends Component{
         finger.set(fingerState == FingerState.DEPLOYED ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
 
         jay.set(jayState == JayState.RETRACTED);
-
-        hatch.set(hatchState == HatchState.UP);
-
     }
 
     @Override
@@ -80,10 +71,6 @@ public class Intake extends Component{
 
     public void roll(final double val){
         rollerSpeed = val;
-    }
-
-    public void actuateHatch(final HatchState state){
-        hatchState = state;
     }
 
     public void finger(final FingerState val){
@@ -103,10 +90,6 @@ public class Intake extends Component{
 
     public FingerState getFingerState(){
         return fingerState;
-    }
-
-    public HatchState getHatchState(){
-        return hatchState;
     }
 
     public boolean isBallIn(){
