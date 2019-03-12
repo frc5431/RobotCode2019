@@ -86,7 +86,9 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 178;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 173;
+    // to calculate this, move the elevator to the max operational height and record the number
+    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 50000 : 47000;
 
     // digital inputs
 
@@ -122,7 +124,7 @@ public final class Constants {
 
     // values
 
-    public final static double ARM_STOW_ANGLE = 169;
+    public final static double ARM_STOW_ANGLE = 166;
     //The angle to go to where it is safe to move the elevator before stowing
     public final static double ARM_PRESTOW_FORWARD_ANGLE = 140;
     public final static double ARM_PRESTOW_REVERSE_ANGLE = 220;
@@ -193,7 +195,7 @@ public final class Constants {
 
     // TOLERANCES
     public final static double ARM_ANGLE_TOLERANCE = 0.5;
-    public final static int ELEVATOR_POSITION_TOLERANCE = 750;
+    public final static int ELEVATOR_POSITION_TOLERANCE = 300;
 
     //AMPS
     public final static int ROLLER_BALL_AMPS = 73;

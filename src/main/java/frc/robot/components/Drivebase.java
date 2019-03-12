@@ -182,6 +182,7 @@ public class Drivebase extends Component{
     }
 
     public void resetEncoders(){
+        System.out.println("Reset");
         leftEncoder.reset();
         rightEncoder.reset();
     }

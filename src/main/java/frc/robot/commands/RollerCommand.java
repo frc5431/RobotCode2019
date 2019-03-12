@@ -19,9 +19,9 @@ public class RollerCommand extends Titan.Command<Robot> {
 	
 	@Override
 	public void init(final Robot robot) {
-		if(time >= 0){
+		//if(time >= 0){
 			robot.getIntake().setControlMode(ControlMode.AUTO);
-		}
+		//}
     }
 
 	@Override

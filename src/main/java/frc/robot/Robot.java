@@ -37,6 +37,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     compressor = new Compressor(30);
+    compressor.start();
     compressor.setClosedLoopControl(true);
     //compressor.stop();
 
@@ -92,6 +93,8 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     mode = Mode.AUTO;
     auton.init(this);
+
+    drivebase.setHome();
   }
 
   @Override

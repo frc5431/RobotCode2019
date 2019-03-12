@@ -54,7 +54,7 @@ public class Elevator extends Component{
         
         bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 
-        final double peakSensorVelocity = 5000;
+        final double peakSensorVelocity = 5200;
         //to calculate kF, move elevator to second stage, run at 100%, and print getSelectedSensorVelocity
 
         bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 0);
@@ -62,13 +62,13 @@ public class Elevator extends Component{
 
         bottom.selectProfileSlot(0, 0);
         bottom.setSensorPhase(false);
-        bottom.config_kP(0, 4.4, 0);//0.05
-		bottom.config_kI(0, 0.004, 0);
-		bottom.config_kD(0, 40, 0);
+        bottom.config_kP(0, 1.5, 0);//7.5
+		bottom.config_kI(0, 0, 0);//0.004
+		bottom.config_kD(0, 0, 0);//40
         bottom.config_kF(0, 1023.0 / peakSensorVelocity, 0);
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
-		bottom.config_IntegralZone(0, 200, 0);
-        bottom.configMotionAcceleration((int)(1.5 * peakSensorVelocity));
+		bottom.config_IntegralZone(0, 300, 0);
+        bottom.configMotionAcceleration((int)(1.6 * peakSensorVelocity));
         bottom.configMotionCruiseVelocity((int)(1.0 * peakSensorVelocity));
         bottom.configClosedLoopPeakOutput(0, 1);
         //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
@@ -79,7 +79,6 @@ public class Elevator extends Component{
 
         top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
-        top.set(ControlMode.Follower, bottom.getDeviceID());
         top.setNeutralMode(NeutralMode.Brake);
 
         brakePad = new Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
@@ -95,11 +94,12 @@ public class Elevator extends Component{
 
     @Override
     public void init(final Robot robot){
-        
     }
 
     @Override
     public void periodic(final Robot robot){
+        top.set(ControlMode.Follower, Constants.ELEVATOR_BOTTOM_ID);
+
         //in case of an encoder brownout, restore encoder position
         if(bottom.hasResetOccurred()){
             bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
@@ -117,7 +117,7 @@ public class Elevator extends Component{
             elevPower = bottom.get();
         }
 
-        System.out.println(elevPower + ", " + targetPosition + ", " + bottom.getSelectedSensorVelocity());
+        System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
 
         if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
             bottom.set(0);

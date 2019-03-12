@@ -63,6 +63,8 @@ public class Auton extends Component{
 
     private Sequence runningSequence = null;
 
+    private List<Titan.Mimic.Step<MimicPropertyValue>> mimicFile;
+
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
 
     public Auton(){
@@ -72,20 +74,22 @@ public class Auton extends Component{
         buttonBoard = new Titan.LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
 
         observer = new Titan.Mimic.Observer<>();
+
+        mimicFile = Titan.Mimic.load("farrocket_v1", MimicPropertyValue.class);
     }
 
-    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot, final String file){
+    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             rob.getDrivebase().setHome();
 
-            robot.getDrivebase().setControlMode(ControlMode.AUTO);
+            rob.getDrivebase().setControlMode(ControlMode.AUTO);
         }));
 
         int lastRunningSequence = -1;
 
         //Collect the mimic file
-        final ArrayList<Titan.Mimic.Step<MimicPropertyValue>> steps = Titan.Mimic.load(file.toLowerCase(), MimicPropertyValue.class);
+        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFile;
         for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
             final List<Titan.Command<Robot>> out = new ArrayList<>();
             if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -228,11 +232,16 @@ public class Auton extends Component{
             if(isInFloorIntake(targetElevatorPos, targetArmPos) && targetElevatorPos < Constants.ELEVATOR_BOTTOM_LIMIT){
                 queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT, Constants.AUTO_ELEVATOR_SPEED));
             }else{
-                queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                final Titan.CommandQueue<Robot> subQueue = new Titan.CommandQueue<>();
+                if(isElevatorInStage2(targetElevatorPos) && isArmInStowPosition(currentArmPos)){
+                    subQueue.add(new Titan.ConditionalCommand<>((rob)->!isArmInStowPosition(rob.getArm().getArmAngle())));
+                }
+                subQueue.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                queue.addQueue(robot, subQueue);
             }
             if(currentElevatorPos > 0 && isArmInStowPosition(targetArmPos)){
                 queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED));    
-            }else if(isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE)){
+            }else if(isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE) && currentArmPos > 120){
                 queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED));    
             }else{
                 queue.addCommand(robot, new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
@@ -272,7 +281,7 @@ public class Auton extends Component{
             if(robot.getElevator().getEncoderPosition() < 1000 && robot.getArm().getArmAngle() < 100){
                 return List.of(new RollerCommand(-Constants.INTAKE_ROLLER_SPEED, -1));
             }else{
-                return List.of(new FingerCommand(FingerState.DEPLOYED), new Titan.WaitCommand<>(60), new JayCommand(JayState.RETRACTED));
+                return List.of(new FingerCommand(FingerState.DEPLOYED)/*, new Titan.WaitCommand<>(60), new JayCommand(JayState.RETRACTED)*/);
             }
             //if(System.currentTimeMillis() > lastIntake + 1000){
             //}else{
@@ -310,37 +319,37 @@ public class Auton extends Component{
         // });
 
         ballSequences.put(Sequence.FLOOR, ()->{
-            if(robot.getArm().getArmAngle() < 85){
+            if(isInFloorIntake(robot.getElevator().getEncoderPosition(), robot.getArm().getArmAngle())){
                 return List.of(new GrabBallCommand());
             }
-            return goToPosition(robot, 5800, 80, List.of(new ArmMoveToCommand(80, Constants.AUTO_ARM_SPEED * 0.2, false), new GrabBallCommand()));
+            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 5800, 80, List.of(new ArmMoveToCommand(80, Constants.AUTO_ARM_SPEED * 0.2, false), new GrabBallCommand()));
         });
 
         hatchSequences.put(Sequence.LOADING_STATION, ()->{
             final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
-            if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), 500, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 93, 5)){
+            if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), 500, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 90, 5)){
                 return deploymentSequence;
             }
-            return goToPosition(robot, 7500, 93, deploymentSequence);
+            return goToPosition(robot, 7500, 90, deploymentSequence);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
-        final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(new JayCommand(JayState.RETRACTED), new FingerCommand(FingerState.DEPLOYED));
+        final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(/*new JayCommand(JayState.RETRACTED), */new FingerCommand(FingerState.DEPLOYED));
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
         hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, hatchRocketCustomCommands, 18000, 115));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 40000, 115));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 46500, 95));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 14500, 95));
+        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 14500, 92));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, 34500, 95));
+        ballSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, 34500, 92));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 45000, 115));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 45000, 112));
 
         ballSequences.put(Sequence.CARGO_SHIP, ()->goToPosition(robot, 21000, 95));
 
@@ -387,10 +396,13 @@ public class Auton extends Component{
         //switch is 16
 
         if(robot.getMode() == Robot.Mode.AUTO){
-            mimicCommands.addAll(loadMimicFile(robot, "TEST"));
+            robot.getDrivebase().setHome();
+            mimicCommands.addAll(loadMimicFile(robot));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
             observer.prepare("TEST");
+        }else if(robot.getMode() == Robot.Mode.TELEOP){
+            abort(robot);
         }
 
         commands.init(robot);
