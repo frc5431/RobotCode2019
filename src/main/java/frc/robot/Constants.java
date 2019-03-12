@@ -111,6 +111,8 @@ public final class Constants {
     public final static double ARM_PRESTOW_FORWARD_ANGLE = 140;
     public final static double ARM_PRESTOW_REVERSE_ANGLE = 250;
 
+    public final static double ARM_MAX_ANGLE = 280;
+
     // PID
     public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
 	public final static double AUTO_DISTANCE_I = 0.00000000025; // 0.0003; //0.0022;

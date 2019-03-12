@@ -5,10 +5,13 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 import java.lang.Integer;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.util.MimicPropertyValue;
@@ -61,9 +64,11 @@ public class Auton extends Component{
 
     private Sequence runningSequence = null;
 
-    private List<Titan.Mimic.Step<MimicPropertyValue>> mimicFile;
+    private Map<String, List<Titan.Mimic.Step<MimicPropertyValue>>> mimicFiles = new HashMap<>();
 
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
+
+    private final SendableChooser<String> mimicChooser = new SendableChooser<>();
 
     public Auton(){
         commands = new Titan.CommandQueue<>();
@@ -73,10 +78,27 @@ public class Auton extends Component{
 
         observer = new Titan.Mimic.Observer<>();
 
-        mimicFile = Titan.Mimic.load("farrocket_v1", MimicPropertyValue.class);
+        new Thread(()->{
+            System.out.println("Beginning Mimic file sweep of " + Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
+            final File folder = new File(Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
+            if(!folder.exists()){
+                System.err.println("Mimic directory not found!");
+            }
+            for(final File f : folder.listFiles()){
+                final String name = f.getName();
+                System.out.println("Found Mimic file with name " + name);
+                mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+                mimicChooser.addOption(name, name);
+            }
+            SmartDashboard.putData("MimicChooser", mimicChooser);
+        }).start();
     }
 
     public List<Titan.Command<Robot>> loadMimicFile(final Robot robot){
+        return loadMimicFile(robot, false);
+    }
+
+    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot, final boolean swapped){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             rob.getDrivebase().setHome();
@@ -87,7 +109,7 @@ public class Auton extends Component{
         int lastRunningSequence = -1;
 
         //Collect the mimic file
-        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFile;
+        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get(mimicChooser.getSelected());
         for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
             final List<Titan.Command<Robot>> out = new ArrayList<>();
             if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -104,7 +126,24 @@ public class Auton extends Component{
             }
             lastRunningSequence = stepSequence;
 
-            out.add(new DriveCommand(step.getDouble(MimicPropertyValue.LEFT_POWER), step.getDouble(MimicPropertyValue.RIGHT_POWER), step.getDouble(MimicPropertyValue.LEFT_DISTANCE), step.getDouble(MimicPropertyValue.RIGHT_DISTANCE), step.getDouble(MimicPropertyValue.BATTERY)));
+            final double leftPower, leftDistance;
+            final double rightPower, rightDistance;
+
+            if(swapped){
+                leftPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
+                rightPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
+
+                leftDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
+                rightDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
+            }else{
+                leftPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
+                rightPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
+
+                leftDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
+                rightDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
+            }
+
+            out.add(new DriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
 
             if(out.size() == 1){
                 outCommands.add(out.get(0));
@@ -308,7 +347,7 @@ public class Auton extends Component{
             if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 90, 5)){
                 return deploymentSequence;
             }
-            return goToPosition(robot, hatchLoadingStationPos, 95, deploymentSequence);
+            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 95);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
@@ -378,7 +417,7 @@ public class Auton extends Component{
             mimicCommands.addAll(loadMimicFile(robot));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
-            observer.prepare("TEST");
+            observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
         }else if(robot.getMode() == Robot.Mode.TELEOP){
             abort(robot);
         }

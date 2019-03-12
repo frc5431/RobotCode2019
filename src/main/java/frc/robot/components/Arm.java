@@ -73,7 +73,7 @@ public class Arm extends Component{
 
     public void pivot(final double in){
         double val = in;
-        if(getArmAngle() > 280 && val > 0){
+        if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
             val = 0;
         }
 
@@ -82,7 +82,7 @@ public class Arm extends Component{
 
     public void pivot(final double in, final BrakeState state){
         double val = in;
-        if(getArmAngle() > 250 && val > 0){
+        if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
             val = 0;
         }
 

@@ -667,7 +667,8 @@ public final class Titan {
 			public Object get(final R robot);
 		}
 	
-		public static final String DEFAULT_MIMIC_PATH = "/media/sda1/%s.mimic";
+		public static final String DEFAULT_MIMIC_DIRECTORY = "/media/sda1/";
+		public static final String DEFAULT_MIMIC_PATH = DEFAULT_MIMIC_DIRECTORY + "%s.mimic";
 		
 		public static class Step<PV extends Enum<PV> & PropertyValue<?>> {
 			public EnumMap<PV, Object> values;
@@ -721,10 +722,10 @@ public final class Titan {
 				final String fName = String.format(DEFAULT_MIMIC_PATH, fileName);
 				try {
 					if(Files.deleteIfExists(new File(fName).toPath())) {
-						Titan.e("Deleted previous pathfinding data");
+						Titan.e("Deleted previous Mimic data");
 					}
 					log = new FileOutputStream(fName);
-					Titan.l("Created new pathfinding file");
+					Titan.l("Created new Mimic file");
 				} catch (IOException e) {
 					Titan.ee("Mimic", e);
 				}
@@ -754,7 +755,7 @@ public final class Titan {
 					log.flush();
 					log.close();
 					log = null;
-					Titan.l("Saved the mimic data");
+					Titan.l("Saved the Mimic data");
 				} catch (IOException e) {
 					Titan.ee("Mimic", e);
 				}
@@ -765,9 +766,9 @@ public final class Titan {
 			final ArrayList<Step<PV>> pathData = new ArrayList<>();
 			final String fName = String.format(DEFAULT_MIMIC_PATH, fileName);
 			try (final BufferedReader reader = new BufferedReader(new FileReader(fName))) {
-				Titan.l("Loading the mimic file");
+				Titan.l("Loading the Mimic file " + fileName);
 				if(!Files.exists(new File(fName).toPath())) {
-					Titan.e("The requested mimic data was not found");
+					Titan.e("The requested Mimic data was not found");
 				}
 				
 				String line;
@@ -779,7 +780,7 @@ public final class Titan {
 					}
 				}
 				
-				Titan.l("Loaded the mimic file");
+				Titan.l("Loaded the Mimic file");
 			} catch (IOException e) {
 				Titan.ee("Mimic", e);
 			}
