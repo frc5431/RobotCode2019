@@ -5,7 +5,7 @@ public final class Constants {
         PRACTICE, COMPETITION;
     }
 
-    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
+    public static final Robot ROBOT_TYPE = Robot.COMPETITION;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -106,7 +106,7 @@ public final class Constants {
 
     // values
 
-    public final static double ARM_STOW_ANGLE = 164;
+    public final static double ARM_STOW_ANGLE = 168;
     //The angle to go to where it is safe to move the elevator before stowing
     public final static double ARM_PRESTOW_FORWARD_ANGLE = 140;
     public final static double ARM_PRESTOW_REVERSE_ANGLE = 250;

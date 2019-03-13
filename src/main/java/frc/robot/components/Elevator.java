@@ -25,6 +25,7 @@ public class Elevator extends Component{
 
     private final Solenoid brakePad;
 
+    private final DigitalInput carriageUp;
     private final DigitalInput carriageDown;
     private final DigitalInput elevatorDown;
 
@@ -37,8 +38,6 @@ public class Elevator extends Component{
 
     private double elevPower = 0.0;
     private int targetPosition = -1;
-
-    private int lastEncoderPosition = 0;
 
     public Elevator(){
         bottom = new WPI_TalonSRX(Constants.ELEVATOR_BOTTOM_ID);
@@ -86,6 +85,8 @@ public class Elevator extends Component{
 
         carriageDown = new DigitalInput(Constants.ELEVATOR_CARRIAGE_DOWN_PORT);
 
+        carriageUp = new DigitalInput(Constants.ELEVATOR_CARRIAGE_UP_PORT);
+
         //hi tauseef
     }
 
@@ -98,23 +99,23 @@ public class Elevator extends Component{
         top.set(ControlMode.Follower, Constants.ELEVATOR_BOTTOM_ID);
 
         //in case of an encoder brownout, restore encoder position
-        if(bottom.hasResetOccurred()){
-            bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
-        }
+        //if(bottom.hasResetOccurred()){
+            //bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
+        //}
 
-        /*if(isCarriageUp() && isElevatorDown()){
-            bottom.getSensorCollection().setQuadraturePosition(27000, 0);
-        }else*/if(isCarriageDown() && isElevatorDown()){
+        if(isCarriageUp() && isElevatorDown()){
+            System.out.println("RESET");
+            bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
+            //bagged robot: 27000
+        }else if(isCarriageDown() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(0, 0);
         }
-
-        lastEncoderPosition = getEncoderPosition();
 
         if(targetPosition >= 0){
             elevPower = bottom.get();
         }
 
-        System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
+        //System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
 
         if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
             bottom.set(0);
@@ -200,7 +201,7 @@ public class Elevator extends Component{
     }
 
     public boolean isCarriageUp(){
-        return /*!carriageUp.get() || */getEncoderPosition() > Constants.ELEVATOR_FIRST_STAGE_LIMIT;
+        return !carriageUp.get() /*||getEncoderPosition() > Constants.ELEVATOR_FIRST_STAGE_LIMIT*/;
     }
 
     public boolean isCarriageDown(){

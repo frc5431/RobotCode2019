@@ -85,13 +85,16 @@ public class Auton extends Component{
                 System.err.println("Mimic directory not found!");
             }
             for(final File f : folder.listFiles()){
-                final String name = f.getName();
+                final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
                 System.out.println("Found Mimic file with name " + name);
                 mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
                 mimicChooser.addOption(name, name);
             }
+
             SmartDashboard.putData("MimicChooser", mimicChooser);
         }).start();
+
+        SmartDashboard.putData("MimicChooser", mimicChooser);
     }
 
     public List<Titan.Command<Robot>> loadMimicFile(final Robot robot){
@@ -109,7 +112,8 @@ public class Auton extends Component{
         int lastRunningSequence = -1;
 
         //Collect the mimic file
-        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get(mimicChooser.getSelected());
+        //mimicChooser.getSelected()
+        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get("farrocket_v1");
         for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
             final List<Titan.Command<Robot>> out = new ArrayList<>();
             if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -179,7 +183,7 @@ public class Auton extends Component{
     }
 
     public boolean isArmInStowPosition(final double armPos){
-        return Titan.approxEquals(armPos, Constants.ARM_STOW_ANGLE, Constants.ARM_ANGLE_TOLERANCE);
+        return Titan.approxEquals(armPos, Constants.ARM_STOW_ANGLE, 5);
     }
 
     public boolean isElevatorInStage2(final int elevatorPos){
@@ -235,8 +239,8 @@ public class Auton extends Component{
         out.addAll(preCommands);
 
         // can't move the elevator up or down if the arm is in a stowed position
-        if((currentElevatorPos > 0 && isArmInStowPosition(targetArmPos) && isArmInStowPosition(currentArmPos)) || (targetElevatorPos > 0 && isArmInStowPosition(currentArmPos)) || currentArmDirection != targetArmDirection){
-            out.add(new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED));
+        if((currentElevatorPos > 0 && isArmInStowPosition(targetArmPos) && isArmInStowPosition(currentArmPos)) || (targetElevatorPos > 0 && isArmInStowPosition(currentArmPos)) || (currentArmDirection != targetArmDirection && isArmInStowPosition(currentArmPos))){
+            out.add(new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED * 1.5));
         }
 
         if(currentArmDirection != targetArmDirection){
@@ -260,10 +264,19 @@ public class Auton extends Component{
                     subArmQueue.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
                 }
                 queue.addQueue(robot, subArmQueue);
-                out.add(queue);
                 if(!elevatorAllowsIntakeFlip(targetElevatorPos)){
-                    out.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                    final Titan.CommandQueue<Robot> subElevatorQueue = new Titan.CommandQueue<>();
+                    subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->elevatorAllowsIntakeFlip(rob.getElevator().getEncoderPosition())));
+                    if(targetArmDirection == ArmDirection.FORWARD){
+                        subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->rob.getArm().getArmAngle() <= getStowAngle(targetArmDirection)));
+                    }else{
+                        subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->rob.getArm().getArmAngle() >= getStowAngle(targetArmDirection)));
+                    }
+                    subElevatorQueue.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                    queue.addQueue(robot, subElevatorQueue);
                 }
+                out.add(queue);
+                
             }
         }else /* if target is in the same direction as current*/{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
@@ -310,6 +323,8 @@ public class Auton extends Component{
 
     @Override
     public void init(final Robot robot){
+        SmartDashboard.putData("MimicChooser", mimicChooser);
+
         final Supplier<List<Titan.Command<Robot>>> stow =()->goToPosition(robot, List.of(new Titan.ConsumerCommand<>((rob)->rob.getIntake().roll(0.0))), 0, Constants.ARM_STOW_ANGLE);
 
         hatchSequences.put(Sequence.STOW, stow);
@@ -347,7 +362,7 @@ public class Auton extends Component{
             if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 90, 5)){
                 return deploymentSequence;
             }
-            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 95);
+            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 92);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
@@ -355,12 +370,16 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.2021, 115));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.4025, 115));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8723, 115));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 1.0, 90));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
+
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5350, 262));
+
+        hatchSequences.put(Sequence.ROCKET_REVERSE_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 250));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.3085, 92));
 
@@ -405,9 +424,9 @@ public class Auton extends Component{
         sequences.put(2, Sequence.ROCKET_FORWARD_2);
         sequences.put(3, Sequence.ROCKET_FORWARD_3);
 
-        sequences.put(7, Sequence.ROCKET_REVERSE_1);
+        sequences.put(6, Sequence.ROCKET_REVERSE_1);
         sequences.put(5, Sequence.ROCKET_REVERSE_2);
-        sequences.put(6, Sequence.ROCKET_REVERSE_3);
+        sequences.put(7, Sequence.ROCKET_REVERSE_3);
 
         sequences.put(13, Sequence.CLIMB);
         //switch is 16
