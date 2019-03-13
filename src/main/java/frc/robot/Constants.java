@@ -27,7 +27,8 @@ public final class Constants {
     public final static int INTAKE_JAY_ID = 4;
 
     public final static int INTAKE_FINGER_PCM_ID = 30;
-    public final static int INTAKE_FINGER_ID = 6;
+    public final static int INTAKE_FINGER_FORWARD_ID = 6;
+    public final static int INTAKE_FINGER_REVERSE_ID = ROBOT_TYPE == Robot.COMPETITION ? 1 : 7;
 
     //motor controller definitions
 
@@ -83,6 +84,7 @@ public final class Constants {
 
     // ENCODER INFORMATION
     public final static boolean ELEVATOR_ENCODER_INVERTED = ROBOT_TYPE == Robot.COMPETITION ? false : true;
+    public final static boolean ELEVATOR_ENCODER_SENSOR_PHASE = true;
 
     public final static int DRIVEBASE_ENCODER_SAMPLES_TO_AVERAGE = 7;
     public final static double DRIVEBASE_ENCODER_MIN_RATE = 10;
@@ -125,6 +127,12 @@ public final class Constants {
 	public final static double DRIVE_MIMICK_I = 0.00;
 	public final static double DRIVE_MIMICK_D = 0.060;
     public final static double DRIVE_MIMICK_MIN_MAX = 0.35; //0.4
+
+    //motion magic
+    public final static double ELEVATOR_MM_P = 1.5;
+    public final static double ELEVATOR_MM_I = 0;
+    public final static double ELEVATOR_MM_D = 0;
+    public final static int ELEVATOR_MM_PEAK_SENSOR_VELOCITY = 5200;
 
     // SPEEDS
 

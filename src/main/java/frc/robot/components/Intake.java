@@ -23,7 +23,6 @@ public class Intake extends Component{
 
     private final WPI_TalonSRX rollers;
 
-    //private final Solenoid hatchLeft, hatchRight, finger;
     private final Solenoid jay;
     private final DoubleSolenoid finger;
 
@@ -38,10 +37,7 @@ public class Intake extends Component{
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        // hatchLeft = new Solenoid(Constants.INTAKE_HATCH_LEFT_PCM_ID, Constants.INTAKE_HATCH_LEFT_ID);
-        // hatchRight = new Solenoid(Constants.INTAKE_HATCH_RIGHT_PCM_ID, Constants.INTAKE_HATCH_RIGHT_ID);
-        //finger = new Solenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID);
-        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_ID, 1);
+        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 
         jay = new Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
     }
@@ -53,9 +49,6 @@ public class Intake extends Component{
 
     @Override
     public void periodic(final Robot robot){
-        // hatchLeft.set(!isHatching);
-        // hatchRight.set(!isHatching);
-
         rollers.set(rollerSpeed);
 
         

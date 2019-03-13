@@ -7,6 +7,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import frc.robot.Robot;
 import frc.robot.util.Titan;
@@ -14,6 +15,34 @@ import frc.robot.util.Component;
 import frc.robot.util.Testable;
 
 public class Dashboard extends Component{
+    public static enum MimicFile{
+        FAR_ROCKET_2_FORWARD("farrocket_v1"),
+        FAR_ROCKET_2_REVERSE("farrocket_v1", true),
+        TEST("TEST");
+
+        private final String file;
+        private final boolean swapped;
+
+        MimicFile(final String file){
+            this(file, false);
+        }
+
+        MimicFile(final String file, final boolean swapped){
+            this.file = file;
+            this.swapped = swapped;
+        }
+
+        public String getFile(){
+            return file;
+        }
+
+        public boolean isSwapped(){
+            return swapped;
+        }
+    };
+
+    private final SendableChooser<MimicFile> mimicChooser = new SendableChooser<>();
+
     private final Titan.Toggle selfTest = new Titan.Toggle();
 
     public Dashboard(){
@@ -21,6 +50,11 @@ public class Dashboard extends Component{
         camera1.setConnectVerbose(0);
         final UsbCamera camera2 = CameraServer.getInstance().startAutomaticCapture(1);
         camera2.setConnectVerbose(0);
+
+        for(final MimicFile file : MimicFile.values()){
+            mimicChooser.addOption(file.toString(), file);
+        }
+        SmartDashboard.putData("MimicChooser", mimicChooser);
     }
 
     
@@ -34,6 +68,7 @@ public class Dashboard extends Component{
 
         SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());
         SmartDashboard.putNumber("ElevatorPosition", robot.getElevator().getEncoderPosition());
+        SmartDashboard.putNumber("ElevatorVelocity", robot.getElevator().getEncoderVelocity());
         SmartDashboard.putBoolean("CarriageDown", robot.getElevator().isCarriageDown());
         SmartDashboard.putBoolean("CarriageUp", robot.getElevator().isCarriageUp());
         SmartDashboard.putBoolean("ElevatorDown", robot.getElevator().isElevatorDown());
@@ -64,6 +99,10 @@ public class Dashboard extends Component{
     @Override
     public void disabled(final Robot robot){
         
+    }
+
+    public MimicFile getChosenMimicFile(){
+        return mimicChooser.getSelected();
     }
 
     @Override

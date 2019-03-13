@@ -52,22 +52,19 @@ public class Elevator extends Component{
         
         bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 
-        final double peakSensorVelocity = 5200;
-        //to calculate kF, move elevator to second stage, run at 100%, and print getSelectedSensorVelocity
-
         bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 0);
         bottom.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 0);
 
         bottom.selectProfileSlot(0, 0);
-        bottom.setSensorPhase(true);
-        bottom.config_kP(0, 1.5, 0);//7.5
-		bottom.config_kI(0, 0, 0);//0.004
-		bottom.config_kD(0, 0, 0);//40
-        bottom.config_kF(0, 1023.0 / peakSensorVelocity, 0);
+        bottom.setSensorPhase(Constants.ELEVATOR_ENCODER_SENSOR_PHASE);
+        bottom.config_kP(0, Constants.ELEVATOR_MM_P, 0);//7.5
+		bottom.config_kI(0, Constants.ELEVATOR_MM_I, 0);//0.004
+		bottom.config_kD(0, Constants.ELEVATOR_MM_D, 0);//40
+        bottom.config_kF(0, 1023.0 / Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY, 0);
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
 		bottom.config_IntegralZone(0, 300, 0);
-        bottom.configMotionAcceleration((int)(1.6 * peakSensorVelocity));
-        bottom.configMotionCruiseVelocity((int)(1.0 * peakSensorVelocity));
+        bottom.configMotionAcceleration((int)(1.6 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
+        bottom.configMotionCruiseVelocity((int)(1.0 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
         bottom.configClosedLoopPeakOutput(0, 1);
         //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
         

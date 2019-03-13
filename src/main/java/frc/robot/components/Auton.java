@@ -10,7 +10,6 @@ import java.lang.Integer;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
@@ -27,6 +26,7 @@ import frc.robot.commands.GrabBallCommand;
 import frc.robot.commands.JayCommand;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.RollerCommand;
+import frc.robot.components.Dashboard.MimicFile;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 
@@ -68,8 +68,6 @@ public class Auton extends Component{
 
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
 
-    private final SendableChooser<String> mimicChooser = new SendableChooser<>();
-
     public Auton(){
         commands = new Titan.CommandQueue<>();
         mimicCommands = new Titan.CommandQueue<>();
@@ -88,20 +86,15 @@ public class Auton extends Component{
                 final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
                 System.out.println("Found Mimic file with name " + name);
                 mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
-                mimicChooser.addOption(name, name);
             }
-
-            SmartDashboard.putData("MimicChooser", mimicChooser);
         }).start();
-
-        SmartDashboard.putData("MimicChooser", mimicChooser);
     }
 
-    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot){
-        return loadMimicFile(robot, false);
+    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot, final String name){
+        return loadMimicFile(robot, name, false);
     }
 
-    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot, final boolean swapped){
+    public List<Titan.Command<Robot>> loadMimicFile(final Robot robot, final String name, final boolean swapped){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             rob.getDrivebase().setHome();
@@ -113,7 +106,7 @@ public class Auton extends Component{
 
         //Collect the mimic file
         //mimicChooser.getSelected()
-        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get("farrocket_v1");
+        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get(name);
         for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
             final List<Titan.Command<Robot>> out = new ArrayList<>();
             if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -323,8 +316,6 @@ public class Auton extends Component{
 
     @Override
     public void init(final Robot robot){
-        SmartDashboard.putData("MimicChooser", mimicChooser);
-
         final Supplier<List<Titan.Command<Robot>>> stow =()->goToPosition(robot, List.of(new Titan.ConsumerCommand<>((rob)->rob.getIntake().roll(0.0))), 0, Constants.ARM_STOW_ANGLE);
 
         hatchSequences.put(Sequence.STOW, stow);
@@ -433,14 +424,17 @@ public class Auton extends Component{
 
         if(robot.getMode() == Robot.Mode.AUTO){
             robot.getDrivebase().setHome();
-            mimicCommands.addAll(loadMimicFile(robot));
+            //mimicCommands.addAll(loadMimicFile(robot, "farrocket_v1"));
+            final MimicFile file = robot.getDashboard().getChosenMimicFile();
+            mimicCommands.addAll(loadMimicFile(robot, file.getFile(), file.isSwapped()));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
             observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
         }else if(robot.getMode() == Robot.Mode.TELEOP){
             abort(robot);
         }
-
+        
+        mimicCommands.init(robot);
         commands.init(robot);
     }
 

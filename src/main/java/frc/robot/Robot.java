@@ -69,7 +69,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     mode = Mode.TELEOP;
     auton.init(this);
-
+    
     drivebase.setHome();
   }
 
