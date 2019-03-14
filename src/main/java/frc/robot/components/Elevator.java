@@ -63,7 +63,7 @@ public class Elevator extends Component{
         bottom.config_kF(0, 1023.0 / Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY, 0);
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
 		bottom.config_IntegralZone(0, 300, 0);
-        bottom.configMotionAcceleration((int)(1.6 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
+        bottom.configMotionAcceleration((int)(1.4 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
         bottom.configMotionCruiseVelocity((int)(1.0 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
         bottom.configClosedLoopPeakOutput(0, 1);
         //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
@@ -112,7 +112,7 @@ public class Elevator extends Component{
             elevPower = bottom.get();
         }
 
-        //System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
+        System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
 
         if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
             bottom.set(0);

@@ -54,6 +54,7 @@ public class Dashboard extends Component{
         for(final MimicFile file : MimicFile.values()){
             mimicChooser.addOption(file.toString(), file);
         }
+        mimicChooser.setDefaultOption(MimicFile.FAR_ROCKET_2_FORWARD.toString(), MimicFile.FAR_ROCKET_2_FORWARD);
         SmartDashboard.putData("MimicChooser", mimicChooser);
     }
 
@@ -64,6 +65,8 @@ public class Dashboard extends Component{
 
     @Override
     public void periodic(final Robot robot){
+        SmartDashboard.putData("MimicChooser", mimicChooser);
+
         robot.getAuton().getButtonBoard().setOutput(3, robot.getAuton().isRunningSequence() || (robot.getAuton().isRunningMimic() && System.currentTimeMillis() % 1000 > 500) || (robot.getAuton().isRecording() && System.currentTimeMillis() % 250 >= 125));
 
         SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());

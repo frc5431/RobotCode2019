@@ -21,14 +21,14 @@ public final class Constants {
     public final static int ELEVATOR_BRAKE_ID = 0;
 
     public final static int ARM_BRAKE_PCM_ID = 30;
-    public final static int ARM_BRAKE_ID = ROBOT_TYPE == Robot.COMPETITION ? 7 : 1;
+    public final static int ARM_BRAKE_ID = ROBOT_TYPE == Robot.COMPETITION ? 5 : 1;
 
     public final static int INTAKE_JAY_PCM_ID = 30;
-    public final static int INTAKE_JAY_ID = 4;
+    public final static int INTAKE_JAY_ID = ROBOT_TYPE == Robot.COMPETITION ? 7 : 4;
 
     public final static int INTAKE_FINGER_PCM_ID = 30;
     public final static int INTAKE_FINGER_FORWARD_ID = 6;
-    public final static int INTAKE_FINGER_REVERSE_ID = ROBOT_TYPE == Robot.COMPETITION ? 1 : 7;
+    public final static int INTAKE_FINGER_REVERSE_ID = ROBOT_TYPE == Robot.COMPETITION ? 4 : 7;
 
     //motor controller definitions
 
@@ -71,9 +71,9 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 163;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 153;
     // to calculate this, move the elevator to the max operational height and record the number
-    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 50000 : 47000;
+    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 43000 : 47000;
 
     // digital inputs
 
@@ -108,10 +108,10 @@ public final class Constants {
 
     // values
 
-    public final static double ARM_STOW_ANGLE = 168;
+    public final static double ARM_STOW_ANGLE = 171;
     //The angle to go to where it is safe to move the elevator before stowing
     public final static double ARM_PRESTOW_FORWARD_ANGLE = 140;
-    public final static double ARM_PRESTOW_REVERSE_ANGLE = 250;
+    public final static double ARM_PRESTOW_REVERSE_ANGLE = 240;
 
     public final static double ARM_MAX_ANGLE = 280;
 
@@ -129,10 +129,10 @@ public final class Constants {
     public final static double DRIVE_MIMICK_MIN_MAX = 0.35; //0.4
 
     //motion magic
-    public final static double ELEVATOR_MM_P = 1.5;
+    public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;
     public final static double ELEVATOR_MM_I = 0;
     public final static double ELEVATOR_MM_D = 0;
-    public final static int ELEVATOR_MM_PEAK_SENSOR_VELOCITY = 5200;
+    public final static int ELEVATOR_MM_PEAK_SENSOR_VELOCITY = ROBOT_TYPE == Robot.COMPETITION ? 5100 : 5200;
 
     // SPEEDS
 

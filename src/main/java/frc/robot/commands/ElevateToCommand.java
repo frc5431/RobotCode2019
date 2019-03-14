@@ -37,12 +37,13 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	}
 
 	private void runElevator(final Robot robot){
-		if(Math.abs(targetPosition - startPosition) < 10000){
-			// motion magic jerks in short ranges, so manually run it when the initial error is low
-			robot.getElevator().elevate(getElevatorSpeed(robot));
-		}else if(targetPosition <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
+		if(targetPosition <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
 			// if trying to stow, and the elevator is almost there, just run it at a constant speed down as motion magic could undershoot
 			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
+		}else if(Math.abs(targetPosition - startPosition) < 10000){
+			// motion magic jerks in short ranges, so manually run it when the initial error is low
+			//robot.getElevator().elevate(getElevatorSpeed(robot));
+			robot.getElevator().elevateTo(targetPosition);
 		}else{
 			// use motion magic
 			robot.getElevator().elevateTo(targetPosition);

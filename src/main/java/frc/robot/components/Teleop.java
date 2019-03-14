@@ -5,6 +5,8 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
+import frc.robot.components.Auton.Sequence;
+import frc.robot.components.Auton.SequenceType;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
@@ -60,10 +62,10 @@ public class Teleop extends Component{
         }
 
         final Intake intake = robot.getIntake();
-        if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER)){
+        if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER) || robot.getAuton().isSequencePressed(SequenceType.CARGO, Sequence.INTAKE)){
           intake.setControlMode(ControlMode.MANUAL);
           intake.roll(Constants.INTAKE_ROLLER_SPEED);
-        }else if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO)){
+        }else if(operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO) || robot.getAuton().isSequencePressed(SequenceType.CARGO, Sequence.OUTTAKE)){
           intake.setControlMode(ControlMode.MANUAL);
           intake.roll(-Constants.INTAKE_ROLLER_SPEED);
         }else if(intake.getControlMode() == ControlMode.MANUAL){

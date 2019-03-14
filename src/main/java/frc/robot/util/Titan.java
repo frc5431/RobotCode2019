@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.SpeedController;
  * Namespace for TitanUtil
  */
 public final class Titan {
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	private Titan() {
 	}

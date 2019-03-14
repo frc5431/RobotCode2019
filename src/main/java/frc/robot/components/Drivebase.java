@@ -148,6 +148,7 @@ public class Drivebase extends Component{
 
     @Override
     public void periodic(final Robot robot){
+        //System.out.println(getLeftError() + ", " + getRightError());
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
@@ -182,7 +183,6 @@ public class Drivebase extends Component{
     }
 
     public void resetEncoders(){
-        System.out.println("Reset");
         leftEncoder.reset();
         rightEncoder.reset();
     }
@@ -213,6 +213,8 @@ public class Drivebase extends Component{
     public final void disableDistancePID(){
         leftDistancePID.disable();
         rightDistancePID.disable();
+        leftCorrection = 0;
+        rightCorrection = 0;
     }
     
 	public final void disableAllPID() {
@@ -256,6 +258,14 @@ public class Drivebase extends Component{
 
     public boolean isAtDistancePIDTarget(){
         return leftDistancePID.onTarget() && rightDistancePID.onTarget();
+    }
+
+    public double getLeftError(){
+        return leftDistancePID.getError();
+    }
+
+    public double getRightError(){
+        return rightDistancePID.getError();
     }
 
     // public final void setDrivePIDValues() {

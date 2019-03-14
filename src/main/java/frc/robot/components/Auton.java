@@ -21,6 +21,7 @@ import frc.robot.util.Titan;
 
 import frc.robot.commands.ElevateToCommand;
 import frc.robot.commands.ArmMoveToCommand;
+import frc.robot.commands.ArmBrakeCommand;
 import frc.robot.commands.FingerCommand;
 import frc.robot.commands.GrabBallCommand;
 import frc.robot.commands.JayCommand;
@@ -176,7 +177,7 @@ public class Auton extends Component{
     }
 
     public boolean isArmInStowPosition(final double armPos){
-        return Titan.approxEquals(armPos, Constants.ARM_STOW_ANGLE, 5);
+        return Titan.approxEquals(armPos, Constants.ARM_STOW_ANGLE, 10) || (armPos > 180 && armPos < Constants.ARM_PRESTOW_REVERSE_ANGLE);
     }
 
     public boolean isElevatorInStage2(final int elevatorPos){
@@ -260,6 +261,7 @@ public class Auton extends Component{
                 if(!elevatorAllowsIntakeFlip(targetElevatorPos)){
                     final Titan.CommandQueue<Robot> subElevatorQueue = new Titan.CommandQueue<>();
                     subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->elevatorAllowsIntakeFlip(rob.getElevator().getEncoderPosition())));
+                    
                     if(targetArmDirection == ArmDirection.FORWARD){
                         subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->rob.getArm().getArmAngle() <= getStowAngle(targetArmDirection)));
                     }else{
@@ -269,7 +271,7 @@ public class Auton extends Component{
                     queue.addQueue(robot, subElevatorQueue);
                 }
                 out.add(queue);
-                
+                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
             }
         }else /* if target is in the same direction as current*/{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
@@ -310,7 +312,6 @@ public class Auton extends Component{
         }
 
         out.addAll(postCommands);
-
         return out;
     }
 
@@ -321,7 +322,13 @@ public class Auton extends Component{
         hatchSequences.put(Sequence.STOW, stow);
         ballSequences.put(Sequence.STOW, stow);
 
-        final Supplier<List<Titan.Command<Robot>>> climb = ()->goToPosition(robot, 0, 260);
+        final Supplier<List<Titan.Command<Robot>>> climb = ()->{
+            if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
+                return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
+            }else{
+                return goToPosition(robot, 0.1234, 260, List.of(new JayCommand(JayState.RETRACTED)));
+            }
+        };
 
         hatchSequences.put(Sequence.CLIMB, climb);
         ballSequences.put(Sequence.CLIMB, climb);
@@ -333,21 +340,21 @@ public class Auton extends Component{
             return List.of(new JayCommand(JayState.RETRACTED), new FingerCommand(FingerState.RETRACTED));
         });
 
-        ballSequences.put(Sequence.INTAKE, ()->{
-            return List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1));
-        });
-        ballSequences.put(Sequence.OUTTAKE, ()->{
-            return List.of(new RollerCommand(-Constants.INTAKE_ROLLER_SPEED, -1));
-        });
+        // ballSequences.put(Sequence.INTAKE, ()->{
+        //     return List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1));
+        // });
+        // ballSequences.put(Sequence.OUTTAKE, ()->{
+        //     return List.of(new RollerCommand(-Constants.INTAKE_ROLLER_SPEED, -1));
+        // });
 
         ballSequences.put(Sequence.FLOOR, ()->{
             if(isInFloorIntake(robot.getElevator().getEncoderPosition(), robot.getArm().getArmAngle())){
                 return List.of(new GrabBallCommand());
             }
-            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 80, List.of(new ArmMoveToCommand(80, Constants.AUTO_ARM_SPEED * 0.2, false), new GrabBallCommand()));
+            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 72, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
-        final double hatchLoadingStationPos = 0.1595;
+        final double hatchLoadingStationPos = 0.1936;
         hatchSequences.put(Sequence.LOADING_STATION, ()->{
             final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
             if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 90, 5)){
@@ -361,18 +368,18 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.4025, 115));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5957, 100));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 1.0, 90));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, hatchRocketCustomCommands, 1.0, 100));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5350, 262));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 262));
 
         hatchSequences.put(Sequence.ROCKET_REVERSE_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 250));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.3085, 92));
+        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.2510, 90));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, 0.7340, 92));
 
@@ -474,6 +481,7 @@ public class Auton extends Component{
         mimicCommands.done(robot);
         mimicCommands.clear();
 
+        robot.getDrivebase().setControlMode(ControlMode.MANUAL);
         robot.getArm().setControlMode(ControlMode.MANUAL);
         robot.getElevator().setControlMode(ControlMode.MANUAL);
         robot.getIntake().setControlMode(ControlMode.MANUAL);
@@ -489,6 +497,18 @@ public class Auton extends Component{
 
     public boolean isRunningMimic(){
         return !mimicCommands.isEmpty();
+    }
+
+    public boolean isSequencePressed(final SequenceType type, final Sequence seq){
+        if(getCurrentSequenceType() != type){
+            return false;
+        }
+        for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
+            if(e.getValue() == seq && buttonBoard.getRawButton(e.getKey())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public Sequence getRunningSequence(){
