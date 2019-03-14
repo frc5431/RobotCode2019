@@ -326,7 +326,7 @@ public class Auton extends Component{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
-                return goToPosition(robot, 0.1234, 260, List.of(new JayCommand(JayState.RETRACTED)));
+                return goToPosition(robot, 0.1558, 260, List.of(new JayCommand(JayState.RETRACTED)));
             }
         };
 
@@ -379,11 +379,11 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_REVERSE_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 250));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.2510, 90));
+        ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.3030, 90));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_2, ()->goToPosition(robot, 0.7340, 92));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 0.9574, 112));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 1.0010, 115));
 
         ballSequences.put(Sequence.CARGO_SHIP, ()->goToPosition(robot, 0.4468, 95));
 
@@ -471,7 +471,10 @@ public class Auton extends Component{
     public void disabled(final Robot robot){
         abort(robot);
 
-        observer.save();
+        if(observer.save()){
+            final String name = SmartDashboard.getString("MimicRecordingName", "TEST");
+            mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+        }
     }
 
     public void abort(final Robot robot){

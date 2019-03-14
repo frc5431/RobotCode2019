@@ -116,9 +116,9 @@ public final class Constants {
     public final static double ARM_MAX_ANGLE = 280;
 
     // PID
-    public final static double AUTO_DISTANCE_P = 0.00635;//0.00635
-	public final static double AUTO_DISTANCE_I = 0.00000000025; // 0.0003; //0.0022;
-    public final static double AUTO_DISTANCE_D = 0.000915; // 0.00031;
+    public final static double AUTO_DISTANCE_P = 0.010;//0.00635
+	public final static double AUTO_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
+    public final static double AUTO_DISTANCE_D = 0.000915; // 0.000915;
 
 
     // 115, 85

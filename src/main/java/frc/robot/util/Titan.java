@@ -748,17 +748,19 @@ public final class Titan {
 				return log != null;
 			}
 			
-			public void save() {
+			public boolean save() {
 				try {
-					if(!isRecording()) return;
+					if(!isRecording()) return false;
 					Titan.l("Finished observing");
 					log.flush();
 					log.close();
 					log = null;
 					Titan.l("Saved the Mimic data");
+					return true;
 				} catch (IOException e) {
 					Titan.ee("Mimic", e);
 				}
+				return false;
 			}
 		}
 
