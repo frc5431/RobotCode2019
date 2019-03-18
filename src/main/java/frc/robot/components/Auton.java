@@ -251,6 +251,9 @@ public class Auton extends Component{
                     queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_INTAKE_FLIP_LIMIT + (int)(0.0500 * Constants.ELEVATOR_ENCODER_CALIBRATION), Constants.AUTO_ELEVATOR_SPEED));
                 }
                 final Titan.CommandQueue<Robot> subArmQueue = new Titan.CommandQueue<>();
+                if(robot.getArm().getArmAngle() < 80){
+                    subArmQueue.add(new ArmMoveToCommand(90, Constants.AUTO_ARM_SPEED));
+                }
                 subArmQueue.add(new Titan.ConditionalCommand<>((rob)->elevatorAllowsIntakeFlip(rob.getElevator().getEncoderPosition())));
                 if(isArmInStowPosition(targetArmPos)){
                     subArmQueue.add(new ArmMoveToCommand(getStowAngle(targetArmDirection), Constants.AUTO_ARM_SPEED));
@@ -351,7 +354,7 @@ public class Auton extends Component{
             if(isInFloorIntake(robot.getElevator().getEncoderPosition(), robot.getArm().getArmAngle())){
                 return List.of(new GrabBallCommand());
             }
-            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 72, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
+            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
         final double hatchLoadingStationPos = 0.1936;
@@ -385,7 +388,9 @@ public class Auton extends Component{
 
         ballSequences.put(Sequence.ROCKET_FORWARD_3, ()->goToPosition(robot, 1.0010, 115));
 
-        ballSequences.put(Sequence.CARGO_SHIP, ()->goToPosition(robot, 0.4468, 95));
+        ballSequences.put(Sequence.ROCKET_REVERSE_1, ()->goToPosition(robot, 0.5116, 270));
+
+        ballSequences.put(Sequence.CARGO_SHIP, ()->goToPosition(robot, 0.5348, 95));
 
         // BUTTON MAPPINGS
         // LOGITECH

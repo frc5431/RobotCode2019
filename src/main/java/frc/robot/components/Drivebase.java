@@ -6,8 +6,10 @@ import frc.robot.util.ControlMode;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
 
+import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMax.ExternalFollower;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.Encoder;
@@ -102,15 +104,18 @@ public class Drivebase extends Component{
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontLeft.setInverted(Constants.DRIVEBASE_FRONT_LEFT_INVERTED);
         frontLeft.setIdleMode(IdleMode.kBrake);
+        frontLeft.burnFlash();
         
         frontRight = new CANSparkMax(Constants.DRIVEBASE_FRONT_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontRight.setInverted(Constants.DRIVEBASE_FRONT_RIGHT_INVERTED);
         frontRight.setIdleMode(IdleMode.kBrake);
+        frontRight.burnFlash();
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backLeft.setInverted(Constants.DRIVEBASE_BACK_LEFT_INVERTED);
-        backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
+        backLeft.follow(ExternalFollower.kFollowerDisabled, 0);
         backLeft.setIdleMode(IdleMode.kBrake);
+        backLeft.burnFlash();
 
         //he attac
         //he protec
@@ -118,8 +123,9 @@ public class Drivebase extends Component{
         //he bac
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
-        backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
+        backRight.follow(ExternalFollower.kFollowerDisabled, 0);
         backRight.setIdleMode(IdleMode.kBrake);
+        backRight.burnFlash();
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
         leftEncoder.setMaxPeriod(Constants.DRIVEBASE_ENCODER_MAX_PERIOD);
@@ -152,8 +158,11 @@ public class Drivebase extends Component{
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
+        backLeft.set(leftPower + leftCorrection);
         frontLeft.set(leftPower + leftCorrection);
-        frontRight.set(rightPower + rightCorrection);
+
+        backRight.set(rightPower);
+        frontRight.set(rightPower);
     }
 
     @Override

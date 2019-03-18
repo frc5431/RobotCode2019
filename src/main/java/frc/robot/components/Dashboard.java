@@ -48,8 +48,8 @@ public class Dashboard extends Component{
     public Dashboard(){
         final UsbCamera camera1 = CameraServer.getInstance().startAutomaticCapture(0);
         camera1.setConnectVerbose(0);
-        final UsbCamera camera2 = CameraServer.getInstance().startAutomaticCapture(1);
-        camera2.setConnectVerbose(0);
+        camera1.setFPS(15);
+        camera1.setResolution(96, 54);
 
         for(final MimicFile file : MimicFile.values()){
             mimicChooser.addOption(file.toString(), file);

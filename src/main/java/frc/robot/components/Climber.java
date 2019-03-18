@@ -16,11 +16,13 @@ public class Climber extends Component{
         left = new CANSparkMax(Constants.CLIMBER_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         left.setInverted(Constants.CLIMBER_LEFT_INVERTED);
         left.setIdleMode(IdleMode.kBrake);
+        left.burnFlash();
 
         right = new CANSparkMax(Constants.CLIMBER_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         right.setInverted(Constants.CLIMBER_RIGHT_INVERTED);
         right.follow(left, Constants.CLIMBER_RIGHT_INVERTED);
         right.setIdleMode(IdleMode.kBrake);
+        right.burnFlash();
     }
     
     @Override

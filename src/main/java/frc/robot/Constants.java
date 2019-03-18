@@ -42,7 +42,7 @@ public final class Constants {
     // NOTE: The back motor follows the front so keep that in mind when inverting
 
     public final static int DRIVEBASE_BACK_LEFT_ID = 5;
-    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = false;
+    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = true;
     
     public final static int DRIVEBASE_BACK_RIGHT_ID = 6;
     public final static boolean DRIVEBASE_BACK_RIGHT_INVERTED = false;
