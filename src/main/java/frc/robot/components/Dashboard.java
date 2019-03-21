@@ -13,27 +13,57 @@ import frc.robot.Robot;
 import frc.robot.util.Titan;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
+import frc.robot.components.Auton.Sequence;
 
 public class Dashboard extends Component{
     public static enum MimicFile{
-        FAR_ROCKET_2_FORWARD("farrocket_v1"),
-        FAR_ROCKET_2_REVERSE("farrocket_v1", true),
-        TEST("TEST");
+        CARGOSHIP_1_HATCH_RIGHT(Sequence.CARGO_SHIP, "hab_to_cargo", "cargo_to_ls", null),
+        CARGOSHIP_1_HATCH_LEFT(Sequence.CARGO_SHIP, "hab_to_cargo", "cargo_to_ls", null, true),
+        CARGOSHIP_2_HATCH_RIGHT(Sequence.CARGO_SHIP,"hab_to_cargo", "cargo_to_ls", "ls_to_cargo"),
+        CARGOSHIP_2_HATCH_LEFT(Sequence.CARGO_SHIP,"hab_to_cargo", "cargo_to_ls", "ls_to_cargo", true),
+        ROCKET_TIER_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket"),
+        ROCKET_TIER_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket", true),
+        ROCKET_TIER_2_RIGHT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket"),
+        ROCKET_TIER_2_LEFT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket", true),
+        ROCKET_TIER_3_RIGHT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket"),
+        ROCKET_TIER_3_LEFT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket", "frocket_to_ls", "ls_to_crocket", true),
+        CARGOSHIP_1_ROCKET_FAR_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_frocket"),
+        CARGOSHIP_1_ROCKET_FAR_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_frocket", true),
+        CARGOSHIP_1_ROCKET_CLOSE_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_crocket"),
+        CARGOSHIP_1_ROCKET_CLOSE_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_crocket", true),
+        TEST(null, "TEST", null, null),
+        DO_NOTHING(null, null, null, null);
 
-        private final String file;
+        private final String startHatch, loadingStation, secondHatch;
+        private final Sequence sequence;
         private final boolean swapped;
 
-        MimicFile(final String file){
-            this(file, false);
+        MimicFile(final Sequence sequence, final String startHatch, final String loadingStation, final String secondHatch){
+            this(sequence, startHatch, loadingStation, secondHatch, false);
         }
 
-        MimicFile(final String file, final boolean swapped){
-            this.file = file;
+        MimicFile(final Sequence sequence, final String startHatch, final String loadingStation, final String secondHatch, final boolean swapped){
+            this.sequence = sequence;
+            this.startHatch = startHatch;
+            this.loadingStation = loadingStation;
+            this.secondHatch = secondHatch;
             this.swapped = swapped;
         }
 
-        public String getFile(){
-            return file;
+        public Sequence getSequence(){
+            return sequence;
+        }
+
+        public String getStartHatchFile(){
+            return startHatch;
+        }
+
+        public String getLoadingStationFile(){
+            return loadingStation;
+        }
+
+        public String getSecondHatchFile(){
+            return secondHatch;
         }
 
         public boolean isSwapped(){
@@ -58,7 +88,7 @@ public class Dashboard extends Component{
         for(final MimicFile file : MimicFile.values()){
             mimicChooser.addOption(file.toString(), file);
         }
-        mimicChooser.setDefaultOption(MimicFile.FAR_ROCKET_2_FORWARD.toString(), MimicFile.FAR_ROCKET_2_FORWARD);
+        mimicChooser.setDefaultOption(MimicFile.CARGOSHIP_2_HATCH_RIGHT.toString(), MimicFile.CARGOSHIP_2_HATCH_RIGHT);
         SmartDashboard.putData("MimicChooser", mimicChooser);
     }
 

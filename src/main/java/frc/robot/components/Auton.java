@@ -86,9 +86,11 @@ public class Auton extends Component{
                 System.err.println("Mimic directory not found!");
             }
             for(final File f : folder.listFiles()){
-                final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
-                System.out.println("Found Mimic file with name " + name);
-                mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+                if(f.isFile()){
+                    final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
+                    System.out.println("Found Mimic file with name " + name);
+                    mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+                }
             }
         }).start();
     }
@@ -176,6 +178,22 @@ public class Auton extends Component{
             sequenceCommands.addAll(selected.get());
         }
         sequenceCommands.init(robot);
+    }
+
+    private List<Titan.Command<Robot>> getAutoAim(final Robot robot, final Sequence preSequence, final Sequence postSequence){
+        final List<Titan.Command<Robot>> out = new ArrayList<>();
+        out.add(new AlignToTargetCommand());
+        if(preSequence != null){
+            out.add(new Titan.ConsumerCommand<>((rob)->{
+                runSequence(robot, SequenceType.HATCH, preSequence);
+            }));
+            out.add(new Titan.ConditionalCommand<>((rob)->sequenceCommands.isEmpty()));
+        }
+        out.add(new DriveToTargetCommand());
+        out.add(new Titan.ConsumerCommand<>((rob)->{
+            runSequence(robot, SequenceType.HATCH, postSequence);
+        }));
+        return out;
     }
 
     public boolean isArmInStowPosition(final double armPos){
@@ -440,7 +458,22 @@ public class Auton extends Component{
             robot.getDrivebase().setHome();
             //mimicCommands.addAll(loadMimicFile(robot, "farrocket_v1"));
             final MimicFile file = robot.getDashboard().getChosenMimicFile();
-            drivebaseCommands.addAll(loadMimicFile(robot, file.getFile(), file.isSwapped()));
+            if(file.getStartHatchFile() != null){
+                drivebaseCommands.addAll(loadMimicFile(robot, file.getStartHatchFile(), file.isSwapped()));
+                if(file.getSequence() != null){
+                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE));
+                }
+            }
+            if(file.getLoadingStationFile() != null){
+                drivebaseCommands.addAll(loadMimicFile(robot, file.getLoadingStationFile(), file.isSwapped()));
+                drivebaseCommands.addAll(getAutoAim(robot, Sequence.LOADING_STATION, Sequence.INTAKE));
+            }
+            if(file.getSecondHatchFile() != null){
+                drivebaseCommands.addAll(loadMimicFile(robot, file.getSecondHatchFile(), file.isSwapped()));
+                if(file.getSequence() != null){
+                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE));
+                }
+            }
             // final MoveToTargetCommand targettingCommand = new MoveToTargetCommand();
             // final Titan.ParallelCommandGroup<Robot> targettingQueue = new Titan.ParallelCommandGroup<>();
             // targettingQueue.addCommand(robot, new MoveToTargetCommand());
@@ -480,17 +513,8 @@ public class Auton extends Component{
         }
 
         if(drivebaseCommands.isEmpty() && robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R)){
-            drivebaseCommands.add(new AlignToTargetCommand());
-            if(isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000){
-                drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
-                    runSequence(robot, SequenceType.HATCH, Sequence.CARGO_SHIP);
-                }));
-                drivebaseCommands.add(new Titan.ConditionalCommand<>((rob)->sequenceCommands.isEmpty()));
-            }
-            drivebaseCommands.add(new DriveToTargetCommand());
-            drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
-                runSequence(robot, SequenceType.HATCH, Sequence.OUTTAKE);
-            }));
+            final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
+            drivebaseCommands.addAll(getAutoAim(robot, preSequence, Sequence.OUTTAKE));
             //drivebaseCommands.add(new MoveToTargetCommand());
             drivebaseCommands.init(robot);
         }

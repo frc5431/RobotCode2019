@@ -16,6 +16,8 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
 
+		lastErrorChange = System.currentTimeMillis();
+
 		//drivebase.enableDistancePID();
 
 		name = "Drive to vision target";
@@ -52,7 +54,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			}
 			averageError = newAverageError;
 
-			System.out.println(averageError);
+			System.out.println(targetLeft + ", " + targetRight);
 
 			final boolean reachedLeft = drivebase.getLeftDistance() > startLeft + targetLeft;
 			final boolean reachedRight = drivebase.getRightDistance() > startRight + targetRight;

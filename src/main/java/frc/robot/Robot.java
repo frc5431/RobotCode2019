@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
+    //Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
 
     compressor = new Compressor(30);
     compressor.start();

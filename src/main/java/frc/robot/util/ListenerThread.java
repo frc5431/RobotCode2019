@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.function.Consumer;
 
 public class ListenerThread extends Thread{
+    private boolean connected = false;
     private final int port;
     private final Consumer<String> handler;
 
@@ -23,8 +24,10 @@ public class ListenerThread extends Thread{
         try(final ServerSocket server = new ServerSocket(port)){
             Socket socket = null;
             while(true){
+                connected = false;
                 Titan.l("Waiting for connection to port " + port);
                 socket = server.accept();
+                connected = true;
                 Titan.l("Connected on port " + port);
                 try(final PrintWriter writer = new PrintWriter(socket.getOutputStream())){
                     try(final BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
@@ -44,4 +47,7 @@ public class ListenerThread extends Thread{
         }
     }
 
+    public boolean isConnected(){
+        return connected;
+    }
 }
