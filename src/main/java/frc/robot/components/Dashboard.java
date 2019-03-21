@@ -45,11 +45,15 @@ public class Dashboard extends Component{
 
     private final Titan.Toggle selfTest = new Titan.Toggle();
 
+    //private String frontCameraData = null;
+
     public Dashboard(){
-        final UsbCamera camera1 = CameraServer.getInstance().startAutomaticCapture(0);
-        camera1.setConnectVerbose(0);
-        camera1.setFPS(15);
-        camera1.setResolution(96, 54);
+        final CameraServer cameraServer = CameraServer.getInstance();
+
+        final UsbCamera intakeCamera = cameraServer.startAutomaticCapture("Intake Camera", 0);
+        intakeCamera.setConnectVerbose(0);
+        intakeCamera.setFPS(15);
+        intakeCamera.setResolution(96, 54);
 
         for(final MimicFile file : MimicFile.values()){
             mimicChooser.addOption(file.toString(), file);
@@ -89,7 +93,7 @@ public class Dashboard extends Component{
 
             final StringBuilder builder = new StringBuilder();
             for(final Testable t : testables){
-                builder.append(t.getTestResult()).append(System.lineSeparator());
+                builder.append(t.getClass().getName()).append(": ").append(t.getTestResult()).append(System.lineSeparator());
             }
 
             SmartDashboard.putString("SelfTest", builder.toString());
@@ -101,7 +105,6 @@ public class Dashboard extends Component{
 
     @Override
     public void disabled(final Robot robot){
-        
     }
 
     public MimicFile getChosenMimicFile(){

@@ -6,7 +6,6 @@ import frc.robot.util.ControlMode;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
 
-import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.ExternalFollower;
@@ -140,7 +139,7 @@ public class Drivebase extends Component{
         rightEncoder.setDistancePerPulse(Constants.DRIVEBASE_ENCODER_DISTANCE_PER_PULSE);
         rightEncoder.setSamplesToAverage(Constants.DRIVEBASE_ENCODER_SAMPLES_TO_AVERAGE);
         rightEncoder.setReverseDirection(Constants.DRIVEBASE_RIGHT_ENCODER_INVERTED);
-        
+
         disableAllPID();
 
         //navx = new TitanNavx();
@@ -161,8 +160,8 @@ public class Drivebase extends Component{
         backLeft.set(leftPower + leftCorrection);
         frontLeft.set(leftPower + leftCorrection);
 
-        backRight.set(rightPower);
-        frontRight.set(rightPower);
+        backRight.set(rightPower + rightCorrection);
+        frontRight.set(rightPower + rightCorrection);
     }
 
     @Override
@@ -252,6 +251,10 @@ public class Drivebase extends Component{
             rightDistancePID.setAbsoluteTolerance(3);
             rightDistancePID.enable();
         }
+    }
+
+    public void setDistancePIDTarget(final double[] setpoints){
+        setDistancePIDTarget(setpoints[0], setpoints[1]);
     }
 
     public void setDistancePIDTarget(final double leftSetpoint, final double rightSetpoint){

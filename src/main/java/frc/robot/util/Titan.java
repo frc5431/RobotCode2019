@@ -316,6 +316,46 @@ public final class Titan {
 		}
 	}
 	
+	public static class Solenoid extends edu.wpi.first.wpilibj.Solenoid{
+		private boolean currentState = false;
+
+		public Solenoid(final int channel){
+			super(channel);
+		}
+
+		public Solenoid(final int moduleNumber, final int channel) {
+			super(moduleNumber, channel);
+		}
+
+		@Override
+		public void set(final boolean newState){
+			if(currentState != newState){
+				currentState = newState;
+				super.set(newState);
+			}
+		}
+	}
+
+	public static class DoubleSolenoid extends edu.wpi.first.wpilibj.DoubleSolenoid{
+		private Value currentState = Value.kOff;
+
+		public DoubleSolenoid(final int forwardChannel, final int reverseChannel){
+			super(forwardChannel, reverseChannel);
+		}
+
+		public DoubleSolenoid(final int moduleNumber, final int forwardChannel, final int reverseChannel){
+			super(moduleNumber, forwardChannel, reverseChannel);
+		}
+
+		@Override
+		public void set(final Value newState){
+			if(currentState != newState){
+				currentState = newState;
+				super.set(newState);
+			}
+		}
+	}
+
 	public static class Lidar extends Counter{
 		private int calibrationOffset = 0;
 		

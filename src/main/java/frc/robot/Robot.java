@@ -5,6 +5,7 @@ import java.util.List;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.util.Component;
+import frc.robot.util.Titan;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
@@ -13,6 +14,7 @@ import frc.robot.components.Intake;
 import frc.robot.components.Teleop;
 import frc.robot.components.Auton;
 import frc.robot.components.Dashboard;
+import frc.robot.components.Vision;
 
 public class Robot extends TimedRobot {
   public static enum Mode{
@@ -32,10 +34,14 @@ public class Robot extends TimedRobot {
   private Teleop teleop;
   private Auton auton;
 
+  private Vision vision;
+
   private Dashboard dashboard;
 
   @Override
   public void robotInit() {
+    Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
+
     compressor = new Compressor(30);
     compressor.start();
     compressor.setClosedLoopControl(true);
@@ -56,6 +62,8 @@ public class Robot extends TimedRobot {
 
     teleop = new Teleop();
     auton = new Auton();
+
+    vision = new Vision();
   
     dashboard = new Dashboard();
   }
@@ -63,12 +71,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     dashboard.periodic(this);
+    vision.periodic(this);
   }
   
   @Override
   public void teleopInit() {
     mode = Mode.TELEOP;
     auton.init(this);
+    vision.init(this);
     
     drivebase.setHome();
   }
@@ -93,6 +103,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     mode = Mode.AUTO;
     auton.init(this);
+    vision.init(this);
 
     drivebase.setHome();
   }
@@ -106,6 +117,7 @@ public class Robot extends TimedRobot {
   public void testInit(){
     mode = Mode.TEST;
     auton.init(this);
+    vision.init(this);
   }
 
   @Override
@@ -117,6 +129,7 @@ public class Robot extends TimedRobot {
   public void disabledInit(){
     mode = Mode.DISABLED;
     auton.disabled(this);
+    vision.disabled(this);
   }
 
   public Mode getMode(){
@@ -155,7 +168,11 @@ public class Robot extends TimedRobot {
     return intake;
   }
 
+  public Vision getVision(){
+    return vision;
+  }
+
   public List<Component> getComponents(){
-    return List.of();
+    return List.of(teleop, auton, dashboard, arm, climber, drivebase, elevator, intake, vision);
   }
 }

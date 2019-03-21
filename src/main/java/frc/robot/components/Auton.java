@@ -21,11 +21,13 @@ import frc.robot.util.Titan;
 
 import frc.robot.commands.ElevateToCommand;
 import frc.robot.commands.ArmMoveToCommand;
+import frc.robot.commands.AlignToTargetCommand;
 import frc.robot.commands.ArmBrakeCommand;
 import frc.robot.commands.FingerCommand;
 import frc.robot.commands.GrabBallCommand;
 import frc.robot.commands.JayCommand;
 import frc.robot.commands.DriveCommand;
+import frc.robot.commands.DriveToTargetCommand;
 import frc.robot.commands.RollerCommand;
 import frc.robot.components.Dashboard.MimicFile;
 import frc.robot.components.Intake.FingerState;
@@ -56,7 +58,7 @@ public class Auton extends Component{
         FORWARD, REVERSE
     };
 
-    private Titan.CommandQueue<Robot> commands, mimicCommands;
+    private Titan.CommandQueue<Robot> sequenceCommands, drivebaseCommands;
     private Titan.Joystick buttonBoard;
 
     private EnumMap<Sequence, Supplier<List<Titan.Command<Robot>>>> hatchSequences = new EnumMap<>(Sequence.class);
@@ -70,8 +72,8 @@ public class Auton extends Component{
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
 
     public Auton(){
-        commands = new Titan.CommandQueue<>();
-        mimicCommands = new Titan.CommandQueue<>();
+        sequenceCommands = new Titan.CommandQueue<>();
+        drivebaseCommands = new Titan.CommandQueue<>();
 
         buttonBoard = new Titan.LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
 
@@ -169,11 +171,11 @@ public class Auton extends Component{
             queue.addCommand(robot, new FingerCommand(FingerState.RETRACTED));
             queue.addCommand(robot, new JayCommand(JayState.RETRACTED));
             queue.addQueue(robot, new Titan.CommandQueue<>(selected.get()));
-            commands.add(queue);
+            sequenceCommands.add(queue);
         }else{
-            commands.addAll(selected.get());
+            sequenceCommands.addAll(selected.get());
         }
-        commands.init(robot);
+        sequenceCommands.init(robot);
     }
 
     public boolean isArmInStowPosition(final double armPos){
@@ -438,7 +440,20 @@ public class Auton extends Component{
             robot.getDrivebase().setHome();
             //mimicCommands.addAll(loadMimicFile(robot, "farrocket_v1"));
             final MimicFile file = robot.getDashboard().getChosenMimicFile();
-            mimicCommands.addAll(loadMimicFile(robot, file.getFile(), file.isSwapped()));
+            drivebaseCommands.addAll(loadMimicFile(robot, file.getFile(), file.isSwapped()));
+            // final MoveToTargetCommand targettingCommand = new MoveToTargetCommand();
+            // final Titan.ParallelCommandGroup<Robot> targettingQueue = new Titan.ParallelCommandGroup<>();
+            // targettingQueue.addCommand(robot, new MoveToTargetCommand());
+            // final Titan.CommandQueue<Robot> intakeQueue = new Titan.CommandQueue<>();
+            // intakeQueue.add(new Titan.ConditionalCommand<>((rob)->targettingCommand.isMovingTowardsTarget()));
+            // intakeQueue.add(new Titan.ConsumerCommand<>((rob)->{
+            //     runSequence(robot, SequenceType.HATCH, Sequence.CARGO_SHIP);
+            // }));
+            // targettingQueue.addQueue(robot, intakeQueue);
+            // drivebaseCommands.add(targettingQueue);
+            // drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
+            //     runSequence(robot, SequenceType.HATCH, Sequence.OUTTAKE);
+            // }));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
             observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
@@ -446,15 +461,15 @@ public class Auton extends Component{
             abort(robot);
         }
         
-        mimicCommands.init(robot);
-        commands.init(robot);
+        drivebaseCommands.init(robot);
+        sequenceCommands.init(robot);
     }
 
     @Override
     public void periodic(final Robot robot){
         final SequenceType sequenceType = getCurrentSequenceType();
 
-        if(commands.isEmpty()){
+        if(sequenceCommands.isEmpty()){
             runningSequence = null;
             for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
                 if(buttonBoard.getRawButton(e.getKey())){
@@ -464,8 +479,24 @@ public class Auton extends Component{
             }
         }
 
-        commands.update(robot);
-        mimicCommands.update(robot);
+        if(drivebaseCommands.isEmpty() && robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R)){
+            drivebaseCommands.add(new AlignToTargetCommand());
+            if(isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000){
+                drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                    runSequence(robot, SequenceType.HATCH, Sequence.CARGO_SHIP);
+                }));
+                drivebaseCommands.add(new Titan.ConditionalCommand<>((rob)->sequenceCommands.isEmpty()));
+            }
+            drivebaseCommands.add(new DriveToTargetCommand());
+            drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                runSequence(robot, SequenceType.HATCH, Sequence.OUTTAKE);
+            }));
+            //drivebaseCommands.add(new MoveToTargetCommand());
+            drivebaseCommands.init(robot);
+        }
+
+        sequenceCommands.update(robot);
+        drivebaseCommands.update(robot);
 
         if(robot.getMode() == Robot.Mode.TEST){
             observer.addStep(robot, MimicPropertyValue.class);
@@ -483,11 +514,11 @@ public class Auton extends Component{
     }
 
     public void abort(final Robot robot){
-        commands.done(robot);
-        commands.clear();
+        sequenceCommands.done(robot);
+        sequenceCommands.clear();
 
-        mimicCommands.done(robot);
-        mimicCommands.clear();
+        drivebaseCommands.done(robot);
+        drivebaseCommands.clear();
 
         robot.getDrivebase().setControlMode(ControlMode.MANUAL);
         robot.getArm().setControlMode(ControlMode.MANUAL);
@@ -500,11 +531,11 @@ public class Auton extends Component{
     }
 
     public boolean isRunningSequence(){
-        return !commands.isEmpty();
+        return !sequenceCommands.isEmpty();
     }
 
     public boolean isRunningMimic(){
-        return !mimicCommands.isEmpty();
+        return !drivebaseCommands.isEmpty();
     }
 
     public boolean isSequencePressed(final SequenceType type, final Sequence seq){
@@ -528,12 +559,12 @@ public class Auton extends Component{
         return buttonBoard.getRawButton(9) ? SequenceType.HATCH : SequenceType.CARGO;
     }
 
-    public Titan.CommandQueue<Robot> getMimicCommands(){
-        return mimicCommands;
+    public Titan.CommandQueue<Robot> getDrivebaseCommands(){
+        return drivebaseCommands;
     }
 
-    public Titan.CommandQueue<Robot> getCommands(){
-        return commands;
+    public Titan.CommandQueue<Robot> getSequenceCommands(){
+        return sequenceCommands;
     }
 
     public Titan.Joystick getButtonBoard(){

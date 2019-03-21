@@ -112,7 +112,7 @@ public class Elevator extends Component{
             elevPower = bottom.get();
         }
 
-        System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
+        //System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
 
         if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
             bottom.set(0);

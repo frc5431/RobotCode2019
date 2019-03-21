@@ -1,7 +1,7 @@
 package frc.robot;
 
 public final class Constants {
-    private static enum Robot {
+    public static enum Robot {
         PRACTICE, COMPETITION;
     }
 
@@ -93,18 +93,19 @@ public final class Constants {
     public final static double DRIVEBASE_WHEEL_DIAMETER = 6.0; // WHEEL DIAMETER IN INCHES
 
 	// Calcs
-	public final static int DRIVEBASE_ENCODER_STEPS_PER_FULL_ROTATION = 500;
+    public final static int DRIVEBASE_ENCODER_STEPS_PER_FULL_ROTATION = 500;
+    public final static double DRIVEBASE_ENCODER_GEAR_RATIO = ROBOT_TYPE == Robot.PRACTICE ? 84.0 / 44.0 : 84.0 / 54.0;
 	// public final static int ENCODER_SAMPLES_TO_AVERAGE = 25; //5 steps to average
-	public final static double DRIVEBASE_ENCODER_DISTANCE_PER_PULSE = (DRIVEBASE_WHEEL_DIAMETER * Math.PI)
-/ DRIVEBASE_ENCODER_STEPS_PER_FULL_ROTATION;
+	public final static double DRIVEBASE_ENCODER_DISTANCE_PER_PULSE = ((DRIVEBASE_WHEEL_DIAMETER * Math.PI)
+/ DRIVEBASE_ENCODER_STEPS_PER_FULL_ROTATION) / DRIVEBASE_ENCODER_GEAR_RATIO;
 
     public final static int DRIVEBASE_LEFT_ENCODER_PORT_A = 8;
     public final static int DRIVEBASE_LEFT_ENCODER_PORT_B = 9;
-    public final static boolean DRIVEBASE_LEFT_ENCODER_INVERTED = false;
+    public final static boolean DRIVEBASE_LEFT_ENCODER_INVERTED = ROBOT_TYPE == Robot.PRACTICE ? false : true;
 
     public final static int DRIVEBASE_RIGHT_ENCODER_PORT_A = 6;
     public final static int DRIVEBASE_RIGHT_ENCODER_PORT_B = 7;
-    public final static boolean DRIVEBASE_RIGHT_ENCODER_INVERTED = false;
+    public final static boolean DRIVEBASE_RIGHT_ENCODER_INVERTED = ROBOT_TYPE == Robot.PRACTICE ? false : true;
 
     // values
 

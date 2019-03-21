@@ -19,18 +19,18 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		properties = "Position: " + position + " ; Speed: " + speed;
 	}
 
-	private double getElevatorSpeed(final Robot robot){
-		final double error = Math.abs(targetPosition - robot.getElevator().getEncoderPosition());
-		final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * Math.pow(Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, 2);
+	// private double getElevatorSpeed(final Robot robot){
+	// 	final double error = Math.abs(targetPosition - robot.getElevator().getEncoderPosition());
+	// 	final double speedOffset = Constants.AUTO_ELEVATOR_ACCELERATION * Math.pow(Math.min(Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ELEVATOR_ACCELERATION_MAX_ERROR, 2);
 
-		final double feedforward = robot.getElevator().isCarriageUp() ? Constants.AUTO_ELEVATOR_STAGE_2_FEEDFORWARD : 0;
+	// 	final double feedforward = robot.getElevator().isCarriageUp() ? Constants.AUTO_ELEVATOR_STAGE_2_FEEDFORWARD : 0;
 
-		if(targetPosition <= 0 || robot.getElevator().getEncoderPosition() > targetPosition){
-			return (-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER)  + feedforward ;
-		}else{
-			return (speed + speedOffset) + feedforward ;
-		}
-	}
+	// 	if(targetPosition <= 0 || robot.getElevator().getEncoderPosition() > targetPosition){
+	// 		return (-(speed + speedOffset) * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER)  + feedforward ;
+	// 	}else{
+	// 		return (speed + speedOffset) + feedforward ;
+	// 	}
+	// }
 
 	private boolean isComplete(final Robot robot){
 		return (targetPosition > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), targetPosition, Constants.ELEVATOR_POSITION_TOLERANCE)) || (targetPosition <= 0 && robot.getElevator().isCarriageDown());
