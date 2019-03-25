@@ -15,11 +15,13 @@ public class Vision extends Component{
 
     private final double[] distances = new double[]{0, 0, 0};
 
+    private final ListenerThread dataThread;
+
     private final DigitalOutput led;
     private LEDState ledState = LEDState.OFF;
 
     public Vision(){
-        new ListenerThread(5431, (message)->{
+        dataThread = new ListenerThread(5431, (message)->{
             final String[] comps = message.split(",", 3);
             if(!comps[0].equals("null") && !comps[0].equals("nan")){
                 distances[0] = Double.parseDouble(comps[0]);
@@ -28,11 +30,13 @@ public class Vision extends Component{
                 distances[1] = Double.parseDouble(comps[1]);
             }
             if(!comps[2].equals("null") && !comps[2].equals("nan")){
-                distances[2] = Double.parseDouble(comps[2]);
+                distances[2] = Double.parseDouble(comps[2]) - 2;
             }
 
-            //System.out.println(message);
-        }).start();
+            System.out.println(message);
+        });
+        dataThread.start();
+
         led = new DigitalOutput(2);
         //led = new Relay(1, Relay.Direction.kBoth);
     }
@@ -65,8 +69,15 @@ public class Vision extends Component{
         return ledState;
     }
 
+    public boolean isConnected(){
+        return dataThread.isConnected();
+    }
+
     @Override
     public String getTestResult(){
+        if(!isConnected()){
+            return "No connection to vision data";
+        }
         return Testable.SUCCESS;
     }
 }

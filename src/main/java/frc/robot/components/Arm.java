@@ -11,6 +11,7 @@ import frc.robot.util.ControlMode;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
 import frc.robot.Robot;
+import frc.robot.util.Titan;
 
 public class Arm extends Component{
     public static enum BrakeState{
@@ -45,13 +46,17 @@ public class Arm extends Component{
 
     @Override
     public void init(final Robot robot){
-        
+        pivot.getEncoder().setPosition(0);
     }
 
     @Override
     public void periodic(final Robot robot){
         if(getControlMode() == ControlMode.MANUAL){
             setBrakeMode(BrakeMode.BREAK);
+        }
+
+        if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
+            pivot.getEncoder().setPosition(0);
         }
 
         //System.out.println(pivot.getIdleMode().name());
@@ -73,18 +78,18 @@ public class Arm extends Component{
 
     public void pivot(final double in){
         double val = in;
-        if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
-            val = 0;
-        }
+        // if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
+        //     val = 0;
+        // }
 
         pivot(in, val == 0 ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
     }
 
     public void pivot(final double in, final BrakeState state){
         double val = in;
-        if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
-            val = 0;
-        }
+        // if(getArmAngle() > Constants.ARM_MAX_ANGLE && val > 0){
+        //     val = 0;
+        // }
 
         armPower = val;
         //if the value of the pivot is 0 (so stopped), automatically break
@@ -104,7 +109,10 @@ public class Arm extends Component{
     }
 
     public double getArmAngle(){
-        final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
+        //return pivot.getEncoder().getPosition() / 237.5;
+        //System.out.println(pivot.getEncoder().getPosition());
+        // final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
+        final double position = (360.0 * (pivot.getEncoder().getPosition() / 237.5) + Constants.ARM_STOW_ANGLE) % 360;
         if(position < 0){
             return 360 + position;
         }

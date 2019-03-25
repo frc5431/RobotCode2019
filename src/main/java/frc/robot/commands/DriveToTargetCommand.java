@@ -40,6 +40,13 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			targetLeft = distances[0];
 			targetRight = distances[1];
 
+			if(targetLeft < 0){
+				targetLeft = 18;
+			}
+			if(targetRight < 0){
+				targetRight = 18;
+			}
+
 			averageError = getAverageError(drivebase);
 			lastErrorChange = System.currentTimeMillis();
 		}else{
@@ -63,10 +70,14 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 			drivebase.drive(reachedLeft ? 0.2 : 0.2, reachedRight ? 0.2 : 0.2);
 
-			if(System.currentTimeMillis() > lastErrorChange + 1000 || (reachedLeft || reachedRight)/* || System.currentTimeMillis() > startTime + 1000*/){
-				drivebase.drive(0, 0);
+			if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L)){
 				return CommandResult.COMPLETE;
 			}
+
+			// if(System.currentTimeMillis() > lastErrorChange + 1000 || (reachedLeft || reachedRight)/* || System.currentTimeMillis() > startTime + 1000*/){
+			// 	drivebase.drive(0, 0);
+			// 	//return CommandResult.COMPLETE;
+			// }
 		}
         
 		return CommandResult.IN_PROGRESS;

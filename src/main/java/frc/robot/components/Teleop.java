@@ -40,20 +40,22 @@ public class Teleop extends Component{
 
     @Override
     public void periodic(final Robot robot){
-        final Drivebase drivebase = robot.getDrivebase();
-        // xbox controllers have inverted controls
-        final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-        final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
-        if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
-          drivebase.disableAllPID();
+        if(driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)")){
+          final Drivebase drivebase = robot.getDrivebase();
+          // xbox controllers have inverted controls
+          final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+          final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+          if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
+            drivebase.disableAllPID();
 
-          drivebase.setControlMode(ControlMode.MANUAL);
-          drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+            drivebase.setControlMode(ControlMode.MANUAL);
+            drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+          }
+
+          final Climber climber = robot.getClimber();
+          climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
         }
 
-        final Climber climber = robot.getClimber();
-        climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
-        
         final Elevator elevator = robot.getElevator();
         final double elevPower = -operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y);
         if(elevPower != 0 || (elevPower == 0 && robot.getElevator().getControlMode() == ControlMode.MANUAL)){

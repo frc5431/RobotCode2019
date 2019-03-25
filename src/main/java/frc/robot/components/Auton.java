@@ -349,7 +349,7 @@ public class Auton extends Component{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
-                return goToPosition(robot, 0.1558, 260, List.of(new JayCommand(JayState.RETRACTED)));
+                return goToPosition(robot, 0.1558, 245, List.of(new JayCommand(JayState.RETRACTED)));
             }
         };
 
@@ -398,9 +398,9 @@ public class Auton extends Component{
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 262));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, ()->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 245));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 250));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_3, ()->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 245));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, ()->goToPosition(robot, 0.3030, 90));
 

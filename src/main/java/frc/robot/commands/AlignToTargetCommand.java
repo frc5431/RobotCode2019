@@ -34,13 +34,13 @@ public class AlignToTargetCommand extends Titan.Command<Robot> {
 		final double[] distances = robot.getVision().getDistancesToTarget();
 		System.out.println(distances[2]);
 		//System.out.println(distances[0] +", " + distances[1] + ", " + distances[2]);
-		if((distances[0] != 0 && distances[1] != 0 && Titan.approxEquals(distances[2], 0, 0.5)) || foundTarget > 0){
+		if((distances[0] != 0 && distances[1] != 0 && Titan.approxEquals(distances[2], 0, 1.5)) || foundTarget > 0){
 			drivebase.drive(0, 0);
 			if(foundTarget == -1){
 				foundTarget = System.currentTimeMillis();
 			}else if(!Titan.approxEquals(distances[2], 0, 2)){
 				foundTarget = -1;
-			}else if(System.currentTimeMillis() > foundTarget + 200){
+			}else if(System.currentTimeMillis() > foundTarget + 100){
 				robot.getVision().setLEDState(Vision.LEDState.OFF);
 				return CommandResult.COMPLETE;
 			} 
