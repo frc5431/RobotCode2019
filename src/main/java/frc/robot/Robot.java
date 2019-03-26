@@ -5,7 +5,6 @@ import java.util.List;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.util.Component;
-import frc.robot.util.Titan;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
@@ -47,13 +46,6 @@ public class Robot extends TimedRobot {
     compressor.setClosedLoopControl(true);
     //compressor.stop();
 
-    //elevator brake is 0
-    //arm brake is 7
-    //wrist is 6
-    //hatch left is 3
-    //hatch right is 4
-    //fingers is 5
-
     climber = new Climber();
     drivebase = new Drivebase();
     elevator = new Elevator();
@@ -70,31 +62,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    dashboard.periodic(this);
-    vision.periodic(this);
+    getComponents().forEach((com)->com.tick(this));
   }
   
   @Override
   public void teleopInit() {
     mode = Mode.TELEOP;
-    auton.init(this);
-    vision.init(this);
-    
-    drivebase.setHome();
+    getComponents().forEach((com)->com.init(this));
   }
 
   @Override
   public void teleopPeriodic() {
     //compressor.stop();
 
-    teleop.periodic(this);
-    auton.periodic(this);
-
-    drivebase.periodic(this);
-    elevator.periodic(this);
-    intake.periodic(this);
-    arm.periodic(this);
-    climber.periodic(this);
+    getComponents().forEach((com)->com.periodic(this));
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -102,10 +83,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
-    auton.init(this);
-    vision.init(this);
-
-    drivebase.setHome();
+    getComponents().forEach((com)->com.init(this));
   }
 
   @Override
@@ -116,8 +94,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit(){
     mode = Mode.TEST;
-    auton.init(this);
-    vision.init(this);
+    getComponents().forEach((com)->com.init(this));
   }
 
   @Override
@@ -128,8 +105,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit(){
     mode = Mode.DISABLED;
-    auton.disabled(this);
-    vision.disabled(this);
+    getComponents().forEach((com)->com.disabled(this));
   }
 
   public Mode getMode(){
@@ -173,6 +149,6 @@ public class Robot extends TimedRobot {
   }
 
   public List<Component> getComponents(){
-    return List.of(teleop, auton, dashboard, arm, climber, drivebase, elevator, intake, vision);
+    return List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake);
   }
 }

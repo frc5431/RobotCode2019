@@ -21,17 +21,17 @@ import frc.robot.util.Titan;
 
 import frc.robot.commands.ElevateToCommand;
 import frc.robot.commands.ArmMoveToCommand;
-import frc.robot.commands.AlignToTargetCommand;
 import frc.robot.commands.ArmBrakeCommand;
 import frc.robot.commands.FingerCommand;
 import frc.robot.commands.GrabBallCommand;
 import frc.robot.commands.JayCommand;
-import frc.robot.commands.DriveCommand;
+import frc.robot.commands.MimicDriveCommand;
 import frc.robot.commands.DriveToTargetCommand;
 import frc.robot.commands.RollerCommand;
 import frc.robot.components.Dashboard.MimicFile;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
+import frc.robot.components.Vision.TargetingDirection;
 
 public class Auton extends Component{
     public static enum Sequence {
@@ -145,7 +145,7 @@ public class Auton extends Component{
                 rightDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
             }
 
-            out.add(new DriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
+            out.add(new MimicDriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
 
             if(out.size() == 1){
                 outCommands.add(out.get(0));
@@ -180,16 +180,15 @@ public class Auton extends Component{
         sequenceCommands.init(robot);
     }
 
-    private List<Titan.Command<Robot>> getAutoAim(final Robot robot, final Sequence preSequence, final Sequence postSequence){
+    private List<Titan.Command<Robot>> getAutoAim(final Robot robot, final Sequence preSequence, final Sequence postSequence, final Vision.TargetingDirection direction){
         final List<Titan.Command<Robot>> out = new ArrayList<>();
-        out.add(new AlignToTargetCommand());
         if(preSequence != null){
             out.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(robot, SequenceType.HATCH, preSequence);
             }));
             out.add(new Titan.ConditionalCommand<>((rob)->sequenceCommands.isEmpty()));
         }
-        out.add(new DriveToTargetCommand());
+        out.add(new DriveToTargetCommand(direction));
         out.add(new Titan.ConsumerCommand<>((rob)->{
             runSequence(robot, SequenceType.HATCH, postSequence);
         }));
@@ -250,35 +249,33 @@ public class Auton extends Component{
         final double currentArmPos = robot.getArm().getArmAngle();
 
         final List<Titan.Command<Robot>> out = new ArrayList<>();
-        out.addAll(preCommands);
-
         // can't move the elevator up or down if the arm is in a stowed position
         if((currentElevatorPos > 0 && isArmInStowPosition(targetArmPos) && isArmInStowPosition(currentArmPos)) || (targetElevatorPos > 0 && isArmInStowPosition(currentArmPos)) || (currentArmDirection != targetArmDirection && isArmInStowPosition(currentArmPos))){
-            out.add(new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED * 1.5));
+            out.add(new ArmMoveToCommand(getStowAngle(currentArmDirection)));
         }
 
         if(currentArmDirection != targetArmDirection){
             if(elevatorAllowsIntakeFlip(currentElevatorPos) && elevatorAllowsIntakeFlip(targetElevatorPos)){
                 final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
-                queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
-                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(targetElevatorPos));
+                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos));
                 out.add(queue);
             }else{
                 final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
                 if(elevatorAllowsIntakeFlip(targetElevatorPos)){
-                    queue.addCommand(robot, new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
-                }else if(!elevatorAllowsIntakeFlip(currentElevatorPos)){
-                    queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_INTAKE_FLIP_LIMIT + (int)(0.0500 * Constants.ELEVATOR_ENCODER_CALIBRATION), Constants.AUTO_ELEVATOR_SPEED));
+                    queue.addCommand(robot, new ElevateToCommand(targetElevatorPos));
+                }else/* if(!elevatorAllowsIntakeFlip(currentElevatorPos))*/{
+                    queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_INTAKE_FLIP_LIMIT + (int)(0.0500 * Constants.ELEVATOR_ENCODER_CALIBRATION)));
                 }
                 final Titan.CommandQueue<Robot> subArmQueue = new Titan.CommandQueue<>();
                 if(robot.getArm().getArmAngle() < 80){
-                    subArmQueue.add(new ArmMoveToCommand(90, Constants.AUTO_ARM_SPEED));
+                    subArmQueue.add(new ArmMoveToCommand(90));
                 }
                 subArmQueue.add(new Titan.ConditionalCommand<>((rob)->elevatorAllowsIntakeFlip(rob.getElevator().getEncoderPosition())));
                 if(isArmInStowPosition(targetArmPos)){
-                    subArmQueue.add(new ArmMoveToCommand(getStowAngle(targetArmDirection), Constants.AUTO_ARM_SPEED));
+                    subArmQueue.add(new ArmMoveToCommand(getStowAngle(targetArmDirection)));
                 }else{
-                    subArmQueue.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+                    subArmQueue.add(new ArmMoveToCommand(targetArmPos));
                 }
                 queue.addQueue(robot, subArmQueue);
                 if(!elevatorAllowsIntakeFlip(targetElevatorPos)){
@@ -290,52 +287,60 @@ public class Auton extends Component{
                     }else{
                         subElevatorQueue.add(new Titan.ConditionalCommand<>((rob)->rob.getArm().getArmAngle() >= getStowAngle(targetArmDirection)));
                     }
-                    subElevatorQueue.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                    subElevatorQueue.add(new ElevateToCommand(targetElevatorPos));
                     queue.addQueue(robot, subElevatorQueue);
                 }
                 out.add(queue);
-                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+                out.add(new ArmMoveToCommand(targetArmPos));
             }
         }else /* if target is in the same direction as current*/{
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             if(isInFloorIntake(targetElevatorPos, targetArmPos) && targetElevatorPos < Constants.ELEVATOR_BOTTOM_LIMIT){
-                queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT, Constants.AUTO_ELEVATOR_SPEED));
+                queue.addCommand(robot, new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT));
             }else{
                 final Titan.CommandQueue<Robot> subQueue = new Titan.CommandQueue<>();
                 if(isElevatorInStage2(targetElevatorPos) && isArmInStowPosition(currentArmPos)){
                     subQueue.add(new Titan.ConditionalCommand<>((rob)->!isArmInStowPosition(rob.getArm().getArmAngle())));
                 }
-                subQueue.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
+                subQueue.add(new ElevateToCommand(targetElevatorPos));
                 queue.addQueue(robot, subQueue);
             }
             if(currentElevatorPos > 0 && isArmInStowPosition(targetArmPos)){
-                queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED));    
+                queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection)));    
             }else if(isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE) && currentArmPos > 120){
-                queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection), Constants.AUTO_ARM_SPEED));    
+                queue.addCommand(robot, new ArmMoveToCommand(getStowAngle(currentArmDirection)));    
             }else{
-                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+                queue.addCommand(robot, new ArmMoveToCommand(targetArmPos));
             }
             out.add(queue);
 
             if(isInFloorIntake(targetElevatorPos, targetArmPos)){
-                out.add(new ElevateToCommand(targetElevatorPos, Constants.AUTO_ELEVATOR_SPEED));
-                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED, false));
+                out.add(new ElevateToCommand(targetElevatorPos));
+                out.add(new ArmMoveToCommand(targetArmPos, false));
             }else if(!isArmInStowPosition(targetArmPos) && targetElevatorPos > 0){
                 /* when the elevator goes really high up, the arm sags because of the movement.
                 these next two commands check when the elevator is done moving and corrects for any sag.
                 */
                 out.add(new Titan.ConditionalCommand<Robot>((rob)->Titan.approxEquals(0, rob.getElevator().getEncoderVelocity(), 2)));
-                out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+                out.add(new ArmMoveToCommand(targetArmPos));
             }
         }
 
         // if we are in stow and done everything else, actually go to stow, or correct for any sag.
         if(isArmInStowPosition(targetArmPos) || (isElevatorInStage2(targetElevatorPos) && Titan.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE))){
-            out.add(new ArmMoveToCommand(targetArmPos, Constants.AUTO_ARM_SPEED));
+            out.add(new ArmMoveToCommand(targetArmPos));
         }
 
         out.addAll(postCommands);
-        return out;
+
+        if(preCommands.isEmpty()){
+            return out;
+        }else{
+            final Titan.ParallelCommandGroup<Robot> outQueue = new Titan.ParallelCommandGroup<>();
+            outQueue.addQueue(robot, preCommands);
+            outQueue.addQueue(robot, out);
+            return List.of(outQueue);
+        }
     }
 
     @Override
@@ -461,32 +466,19 @@ public class Auton extends Component{
             if(file.getStartHatchFile() != null){
                 drivebaseCommands.addAll(loadMimicFile(robot, file.getStartHatchFile(), file.isSwapped()));
                 if(file.getSequence() != null){
-                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE));
+                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE, TargetingDirection.FRONT));
                 }
             }
             if(file.getLoadingStationFile() != null){
                 drivebaseCommands.addAll(loadMimicFile(robot, file.getLoadingStationFile(), file.isSwapped()));
-                drivebaseCommands.addAll(getAutoAim(robot, Sequence.LOADING_STATION, Sequence.INTAKE));
+                drivebaseCommands.addAll(getAutoAim(robot, Sequence.LOADING_STATION, Sequence.INTAKE, TargetingDirection.FRONT));
             }
             if(file.getSecondHatchFile() != null){
                 drivebaseCommands.addAll(loadMimicFile(robot, file.getSecondHatchFile(), file.isSwapped()));
                 if(file.getSequence() != null){
-                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE));
+                    drivebaseCommands.addAll(getAutoAim(robot, file.getSequence(), Sequence.OUTTAKE, TargetingDirection.FRONT));
                 }
             }
-            // final MoveToTargetCommand targettingCommand = new MoveToTargetCommand();
-            // final Titan.ParallelCommandGroup<Robot> targettingQueue = new Titan.ParallelCommandGroup<>();
-            // targettingQueue.addCommand(robot, new MoveToTargetCommand());
-            // final Titan.CommandQueue<Robot> intakeQueue = new Titan.CommandQueue<>();
-            // intakeQueue.add(new Titan.ConditionalCommand<>((rob)->targettingCommand.isMovingTowardsTarget()));
-            // intakeQueue.add(new Titan.ConsumerCommand<>((rob)->{
-            //     runSequence(robot, SequenceType.HATCH, Sequence.CARGO_SHIP);
-            // }));
-            // targettingQueue.addQueue(robot, intakeQueue);
-            // drivebaseCommands.add(targettingQueue);
-            // drivebaseCommands.add(new Titan.ConsumerCommand<>((rob)->{
-            //     runSequence(robot, SequenceType.HATCH, Sequence.OUTTAKE);
-            // }));
         }else if(robot.getMode() == Robot.Mode.TEST){
             robot.getDrivebase().setHome();
             observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
@@ -512,9 +504,11 @@ public class Auton extends Component{
             }
         }
 
-        if(drivebaseCommands.isEmpty() && robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R)){
+        final boolean leftBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L);
+        final boolean rightBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R);
+        if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
             final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
-            drivebaseCommands.addAll(getAutoAim(robot, preSequence, Sequence.OUTTAKE));
+            drivebaseCommands.addAll(getAutoAim(robot, preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.INTAKE : Sequence.OUTTAKE, leftBumperTriggered ? TargetingDirection.BACK : TargetingDirection.FRONT));
             //drivebaseCommands.add(new MoveToTargetCommand());
             drivebaseCommands.init(robot);
         }

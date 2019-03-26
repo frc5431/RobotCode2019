@@ -4,13 +4,13 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
+import frc.robot.util.Titan;
 
 public class Intake extends Component{
     public static enum FingerState{
@@ -23,8 +23,8 @@ public class Intake extends Component{
 
     private final WPI_TalonSRX rollers;
 
-    private final Solenoid jay;
-    private final DoubleSolenoid finger;
+    private final Titan.Solenoid jay;
+    private final Titan.DoubleSolenoid finger;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
@@ -37,9 +37,9 @@ public class Intake extends Component{
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
+        finger = new Titan.DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 
-        jay = new Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
+        jay = new Titan.Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
     }
 
     @Override
@@ -50,7 +50,6 @@ public class Intake extends Component{
     @Override
     public void periodic(final Robot robot){
         rollers.set(rollerSpeed);
-
         
         finger.set(fingerState == FingerState.DEPLOYED ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
 

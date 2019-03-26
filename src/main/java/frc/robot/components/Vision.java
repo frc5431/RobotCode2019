@@ -2,54 +2,87 @@ package frc.robot.components;
 
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
-import frc.robot.util.ListenerThread;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 
-import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Vision extends Component{
+    public static class TargetInfo{
+        private boolean exists;
+        private double xAngle, yAngle, area;
+
+        TargetInfo(final boolean exists, final double xAngle, final double yAngle, final double area){
+            this.exists = exists;
+            this.xAngle = xAngle;
+            this.yAngle = yAngle;
+            this.area = area;
+        }
+
+        public boolean exists(){
+            return exists;
+        }
+
+        public double getXAngle(){
+            return xAngle;
+        }
+
+        public double getYAngle(){
+            return yAngle;
+        }
+
+        public double getArea(){
+            return area;
+        }
+    };
+
+    public static enum TargetingDirection{
+        FRONT, BACK
+    };
+
     public static enum LEDState{
         ON, OFF
     };
 
-    private final double[] distances = new double[]{0, 0, 0};
-
-    private final ListenerThread dataThread;
-
-    private final DigitalOutput led;
+    private final NetworkTable frontLimelightTable, backLimelightTable;
     private LEDState ledState = LEDState.OFF;
+    private TargetingDirection direction = TargetingDirection.FRONT;
 
     public Vision(){
-        dataThread = new ListenerThread(5431, (message)->{
-            final String[] comps = message.split(",", 3);
-            if(!comps[0].equals("null") && !comps[0].equals("nan")){
-                distances[0] = Double.parseDouble(comps[0]);
-            }
-            if(!comps[1].equals("null") && !comps[1].equals("nan")){
-                distances[1] = Double.parseDouble(comps[1]);
-            }
-            if(!comps[2].equals("null") && !comps[2].equals("nan")){
-                distances[2] = Double.parseDouble(comps[2]) - 2;
-            }
+        frontLimelightTable = NetworkTableInstance.getDefault().getTable("limelight");
+        backLimelightTable = NetworkTableInstance.getDefault().getTable("backLimelight");
+    }
 
-            System.out.println(message);
-        });
-        dataThread.start();
-
-        led = new DigitalOutput(2);
-        //led = new Relay(1, Relay.Direction.kBoth);
+    private NetworkTable getSelectedTable(){
+        switch(direction){
+            case BACK:
+                return backLimelightTable;
+            case FRONT:
+            default:
+                return frontLimelightTable;
+        }
     }
 
     @Override
     public void init(final Robot robot){
         ledState = LEDState.OFF;
+        direction = TargetingDirection.FRONT;
     }
 
     @Override
     public void periodic(final Robot robot){
-        led.set(ledState == LEDState.ON || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A));
-       //led.set(ledState == LEDState.ON || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A) ? Value.kOn : Value.kOff);
+    }
+
+    @Override
+    public void tick(final Robot robot){
+        if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.X)){
+            frontLimelightTable.getEntry("ledMode").setNumber(2);
+            backLimelightTable.getEntry("ledMode").setNumber(2);
+        }else{
+            frontLimelightTable.getEntry("ledMode").setNumber((direction == TargetingDirection.FRONT && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
+            backLimelightTable.getEntry("ledMode").setNumber((direction == TargetingDirection.BACK && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.B) ? 3 : 1);
+        }
     }
 
     @Override
@@ -57,8 +90,9 @@ public class Vision extends Component{
         ledState = LEDState.OFF;
     }
 
-    public double[] getDistancesToTarget(){
-        return distances;
+    public TargetInfo getTargetInfo(){
+        final NetworkTable table = getSelectedTable();
+        return new TargetInfo(table.getEntry("tv").getBoolean(false), table.getEntry("tx").getDouble(0), table.getEntry("ty").getDouble(0), table.getEntry("ta").getDouble(0));
     }
 
     public void setLEDState(final LEDState state){
@@ -69,15 +103,16 @@ public class Vision extends Component{
         return ledState;
     }
 
-    public boolean isConnected(){
-        return dataThread.isConnected();
+    public void setDirection(final TargetingDirection dir){
+        this.direction = dir;
+    }
+
+    public TargetingDirection getDirection(){
+        return direction;
     }
 
     @Override
     public String getTestResult(){
-        if(!isConnected()){
-            return "No connection to vision data";
-        }
         return Testable.SUCCESS;
     }
 }

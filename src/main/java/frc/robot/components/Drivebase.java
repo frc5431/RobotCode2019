@@ -47,7 +47,7 @@ public class Drivebase extends Component{
 
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
-    private final PIDController leftDistancePID = new PIDController(Constants.AUTO_DISTANCE_P, Constants.AUTO_DISTANCE_I, Constants.AUTO_DISTANCE_D, new PIDSource(){
+    private final PIDController leftDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
 
         
         @Override
@@ -69,9 +69,9 @@ public class Drivebase extends Component{
 		public void pidWrite(final double output) {
             leftCorrection = output;
 		}
-    }, 0.2);
+    }, 0.02);
 
-    private final PIDController rightDistancePID = new PIDController(Constants.AUTO_DISTANCE_P, Constants.AUTO_DISTANCE_I, Constants.AUTO_DISTANCE_D, new PIDSource(){
+    private final PIDController rightDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
 
         
         @Override
@@ -93,7 +93,7 @@ public class Drivebase extends Component{
 		public void pidWrite(final double output) {
             rightCorrection = output;
 		}
-    }, 0.2);
+    }, 0.02);
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
@@ -148,7 +148,7 @@ public class Drivebase extends Component{
     
     @Override
     public void init(final Robot robot){
-        
+        setHome();
     }
 
     @Override

@@ -11,6 +11,8 @@ import frc.robot.util.Testable;
 
 public class Climber extends Component{
     private final CANSparkMax left, right;
+
+    private double climbSpeed = 0.0;
     
     public Climber(){
         left = new CANSparkMax(Constants.CLIMBER_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -32,6 +34,7 @@ public class Climber extends Component{
 
     @Override
     public void periodic(final Robot robot){
+        left.set(climbSpeed);
     }
     
     @Override
@@ -40,7 +43,7 @@ public class Climber extends Component{
     }
     
     public void climb(final double val){
-        left.set(val);
+        climbSpeed = val;
         //right.set(0.0);
     }
 

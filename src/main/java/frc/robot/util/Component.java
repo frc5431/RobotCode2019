@@ -9,4 +9,8 @@ public abstract class Component implements Testable{
     public abstract void periodic(final Robot robot);
 
     public abstract void disabled(final Robot robot);
+
+    public void tick(final Robot robot){
+        //do nothing
+    }
 }

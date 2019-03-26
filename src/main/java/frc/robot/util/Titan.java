@@ -650,6 +650,10 @@ public final class Titan {
 			queues.add(queue);
 		}
 
+		public void addQueue(final T robot, final List<Command<T>> list){
+			addQueue(robot, new CommandQueue<T>(list));
+		}
+
 		public void init(final T robot){
 			for(final CommandQueue<T> queue : queues){
 				queue.init(robot);

@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
@@ -7,77 +8,77 @@ import frc.robot.components.Vision;
 import frc.robot.components.Drivebase;
 
 public class DriveToTargetCommand extends Titan.Command<Robot> {
-	private double startLeft, startRight, targetLeft = 0, targetRight = 0;
-	private double averageError = 0;
-	private double lastErrorChange = -1;
+	private final Vision.TargetingDirection direction;
+
+	public DriveToTargetCommand(){
+		this(Vision.TargetingDirection.FRONT);
+	}
+
+	public DriveToTargetCommand(final Vision.TargetingDirection direction){
+		this.direction = direction;
+
+		name = "Drive to vision target";
+	}
 
     @Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
-
-		lastErrorChange = System.currentTimeMillis();
-
-		//drivebase.enableDistancePID();
-
-		name = "Drive to vision target";
+	
+		robot.getVision().setDirection(direction);
 	}
 
 	@Override
 	public CommandResult update(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
+		final Vision vision = robot.getVision();
 
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
-		
-		final double[] distances = robot.getVision().getDistancesToTarget();
-		if(targetLeft == 0 || targetRight == 0){
-			startLeft = drivebase.getLeftDistance();
-			startRight = drivebase.getRightDistance();
 
-			targetLeft = distances[0];
-			targetRight = distances[1];
+		vision.setLEDState(Vision.LEDState.ON);
 
-			if(targetLeft < 0){
-				targetLeft = 18;
-			}
-			if(targetRight < 0){
-				targetRight = 18;
-			}
+		final Vision.TargetInfo target = vision.getTargetInfo();
+		if(target.exists()){
+			/*
+			Cheeky little trick right here to make the code smaller.
+			FRONT's ordinal is 0
+			BACK's ordinal is 1
 
-			averageError = getAverageError(drivebase);
-			lastErrorChange = System.currentTimeMillis();
-		}else{
-			//System.out.println(targetLeft + ", " + targetRight);
-			// drivebase.enableDistancePID();
+			-1^0 = 1
+			-1^1 = -1
 
-			// drivebase.setDistancePIDTarget(distances);
+			Thus, when it is FRONT, directionSignum is 1. When it is BACK, directionSignum is -1
+			*/
+			final double directionSignum = Math.pow(-1, direction.ordinal());
 
-			final double newAverageError = getAverageError(drivebase);
-			if(averageError != newAverageError){
-				lastErrorChange = System.currentTimeMillis();
-			}
-			averageError = newAverageError;
+			/*
+			When the elevator is running, to avoid breaking the carriage, we want to slow down.
+			*/
+			final boolean isRunningElevator = robot.getElevator().getEncoderVelocity() != 0;
 
-			System.out.println(targetLeft + ", " + targetRight);
+			/*
+			When in reverse, the angles are flipped
+			*/
+			final double angleError = directionSignum * target.getXAngle();
+			final double distanceError = target.getYAngle();
 
-			final boolean reachedLeft = drivebase.getLeftDistance() > startLeft + targetLeft;
-			final boolean reachedRight = drivebase.getRightDistance() > startRight + targetRight;
+			// you are allowed to be too close, as the intake will just ram the hatch into the rocket
+			if(Titan.approxEquals(angleError, 0, 1) && distanceError <= 0){
+				robot.getDrivebase().drive(0, 0);
 
-			//System.out.println("Reached: " + reachedLeft + ", " + reachedRight);
-
-			drivebase.drive(reachedLeft ? 0.2 : 0.2, reachedRight ? 0.2 : 0.2);
-
-			if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L)){
+				robot.getVision().setLEDState(Vision.LEDState.OFF);
 				return CommandResult.COMPLETE;
 			}
 
-			// if(System.currentTimeMillis() > lastErrorChange + 1000 || (reachedLeft || reachedRight)/* || System.currentTimeMillis() > startTime + 1000*/){
-			// 	drivebase.drive(0, 0);
-			// 	//return CommandResult.COMPLETE;
-			// }
+			final double rawPower = directionSignum * (isRunningElevator ? 0.0 : Constants.AUTO_AIM_DISTANCE_P * distanceError);
+			final double angleAdjust = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_ANGLE_P * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
+
+			drivebase.drive(rawPower - angleAdjust, rawPower + angleAdjust);
+		}else{
+			drivebase.drive(0.0, 0.0);
 		}
         
 		return CommandResult.IN_PROGRESS;
@@ -85,20 +86,5 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 	@Override
 	public void done(final Robot robot) {
-		robot.getDrivebase().drive(0, 0);
-
-		robot.getVision().setLEDState(Vision.LEDState.OFF);
-	}
-
-	private double getLeftError(final Drivebase drivebase){
-		return drivebase.getLeftDistance() - (startLeft + targetLeft);
-	}
-
-	private double getRightError(final Drivebase drivebase){
-		return drivebase.getRightDistance() - (startRight + targetRight);
-	}
-
-	private double getAverageError(final Drivebase drivebase){
-		return (getLeftError(drivebase) + getRightError(drivebase)) / 2.0;
 	}
 }

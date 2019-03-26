@@ -9,12 +9,12 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
+import frc.robot.util.Titan;
 
 public class Elevator extends Component{
     public static enum BrakeState{
@@ -23,7 +23,7 @@ public class Elevator extends Component{
 
     private final WPI_TalonSRX bottom, top;
 
-    private final Solenoid brakePad;
+    private final Titan.Solenoid brakePad;
 
     private final DigitalInput carriageUp;
     private final DigitalInput carriageDown;
@@ -63,8 +63,8 @@ public class Elevator extends Component{
         bottom.config_kF(0, 1023.0 / Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY, 0);
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
 		bottom.config_IntegralZone(0, 300, 0);
-        bottom.configMotionAcceleration((int)(1.4 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
-        bottom.configMotionCruiseVelocity((int)(1.0 * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
+        bottom.configMotionAcceleration((int)(Constants.ELEVATOR_MM_ACCELERATION * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
+        bottom.configMotionCruiseVelocity((int)(Constants.ELEVATOR_MM_CRUISE_VELOCITY * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
         bottom.configClosedLoopPeakOutput(0, 1);
         //bottom.configClosedLoopPeakOutput(0, Constants.kGains_Distanc.kPeakOutput, 0);
         
@@ -76,7 +76,7 @@ public class Elevator extends Component{
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
         top.setNeutralMode(NeutralMode.Brake);
 
-        brakePad = new Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
+        brakePad = new Titan.Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
 
         elevatorDown = new DigitalInput(Constants.ELEVATOR_DOWN_PORT);
 

@@ -4,7 +4,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.IdleMode;
 
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
@@ -23,7 +22,7 @@ public class Arm extends Component{
     };
 
     final CANSparkMax pivot;
-    final Solenoid brakePad;
+    final Titan.Solenoid brakePad;
 
     final AnalogInput armEncoder;
 
@@ -33,20 +32,22 @@ public class Arm extends Component{
 
     private double armPower = 0.0;
 
+    private double lastArmAngle = 0;
+
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
+        pivot.getEncoder().setPosition(0);
         
         setBrakeMode(BrakeMode.BREAK);
     
-        brakePad = new Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
+        brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
     }
 
     @Override
     public void init(final Robot robot){
-        pivot.getEncoder().setPosition(0);
     }
 
     @Override
@@ -69,6 +70,8 @@ public class Arm extends Component{
         // USE THIS FOR BETTER EQUATION:
         //pivot.set(armPower + (0.2 * (Math.signum(armPower) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
         pivot.set(power);
+
+        lastArmAngle = getArmAngle();
     }
     
     @Override
@@ -111,8 +114,8 @@ public class Arm extends Component{
     public double getArmAngle(){
         //return pivot.getEncoder().getPosition() / 237.5;
         //System.out.println(pivot.getEncoder().getPosition());
-        // final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
-        final double position = (360.0 * (pivot.getEncoder().getPosition() / 237.5) + Constants.ARM_STOW_ANGLE) % 360;
+        final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
+        //final double position = (360.0 * (pivot.getEncoder().getPosition() / 237.5) + Constants.ARM_STOW_ANGLE) % 360;
         if(position < 0){
             return 360 + position;
         }
@@ -121,6 +124,10 @@ public class Arm extends Component{
 
     public void setBrakeMode(final BrakeMode mode){
         pivot.setIdleMode(mode == BrakeMode.BREAK ? IdleMode.kBrake : IdleMode.kCoast);
+    }
+
+    public double getArmVelocity(){
+        return getArmAngle() - lastArmAngle;
     }
 
     @Override

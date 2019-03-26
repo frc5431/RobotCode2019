@@ -7,16 +7,13 @@ import frc.robot.util.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
 	private final int targetPosition;
-	private final double speed;
 	private int startPosition = -1;
 
-	public ElevateToCommand(final int position, final double spd) {
+	public ElevateToCommand(final int position) {
         this.targetPosition = position;
-        /* sped */
-        this.speed = spd;
 
 		name = "ElevateToCommand";
-		properties = "Position: " + position + " ; Speed: " + speed;
+		properties = "Position: " + position;
 	}
 
 	// private double getElevatorSpeed(final Robot robot){
@@ -39,7 +36,7 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	private void runElevator(final Robot robot){
 		if(targetPosition <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
 			// if trying to stow, and the elevator is almost there, just run it at a constant speed down as motion magic could undershoot
-			robot.getElevator().elevate(-speed * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
+			robot.getElevator().elevate(-Constants.AUTO_ELEVATOR_SPEED * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
 		}else if(Math.abs(targetPosition - startPosition) < 10000){
 			// motion magic jerks in short ranges, so manually run it when the initial error is low
 			//robot.getElevator().elevate(getElevatorSpeed(robot));

@@ -2,14 +2,9 @@ package frc.robot.components;
 
 import java.util.List;
 
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-
 import java.util.ArrayList;
-import java.util.Base64;
 
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.CvSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 import frc.robot.util.Component;
-import frc.robot.util.ListenerThread;
 import frc.robot.util.Testable;
 import frc.robot.components.Auton.Sequence;
 
@@ -82,18 +76,10 @@ public class Dashboard extends Component{
 
     private final Titan.Toggle selfTest = new Titan.Toggle();
 
-    private final CvSource cameraStream;
-
     //private String frontCameraData = null;
 
     public Dashboard(){
         final CameraServer cameraServer = CameraServer.getInstance();
-
-        cameraStream = cameraServer.putVideo("Realsense", 100, 100);
-
-        new ListenerThread(5432, (message)->{
-            cameraStream.putFrame(Imgcodecs.imdecode(new MatOfByte(Base64.getDecoder().decode(message)), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED));
-        }).start();
 
         final UsbCamera intakeCamera = cameraServer.startAutomaticCapture("Intake Camera", 0);
         intakeCamera.setConnectVerbose(0);
@@ -114,9 +100,12 @@ public class Dashboard extends Component{
 
     @Override
     public void periodic(final Robot robot){
-        SmartDashboard.putData("MimicChooser", mimicChooser);
-
         robot.getAuton().getButtonBoard().setOutput(3, robot.getAuton().isRunningSequence() || (robot.getAuton().isRunningMimic() && System.currentTimeMillis() % 1000 > 500) || (robot.getAuton().isRecording() && System.currentTimeMillis() % 250 >= 125));
+    }
+
+    @Override
+    public void tick(final Robot robot){
+        SmartDashboard.putData("MimicChooser", mimicChooser);
 
         SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());
         SmartDashboard.putNumber("ElevatorPosition", robot.getElevator().getEncoderPosition());
@@ -130,7 +119,11 @@ public class Dashboard extends Component{
         SmartDashboard.putNumber("LeftDistance", robot.getDrivebase().getLeftDistance());
         SmartDashboard.putNumber("RightDistance", robot.getDrivebase().getRightDistance());
 
-        SmartDashboard.putBoolean("VisionConnected", robot.getVision().isConnected());
+        final Vision.TargetInfo info = robot.getVision().getTargetInfo();
+        SmartDashboard.putNumber("TargetXAngle", info.getXAngle());
+        SmartDashboard.putNumber("TargetYAngle", info.getYAngle());
+        SmartDashboard.putNumber("TargetArea", info.getArea());
+        SmartDashboard.putBoolean("TargetExists", info.exists());
 
         SmartDashboard.putString("Mode", robot.getMode().toString());
 

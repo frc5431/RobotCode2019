@@ -6,27 +6,22 @@ import frc.robot.Robot;
 
 public class DriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
-	private final double leftDistance, rightDistance;
+	private final long time;
 
-	public DriveCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double battery) {
+	public DriveCommand(final double left, final double right, final long time) {
 		name = "DriveCommand";
 
 		this.left = left;
 		this.right = right;
 
-		this.leftDistance = leftDistance;
-		this.rightDistance = rightDistance;
+		this.time = time;
 
-		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%);";
+		properties = "Left: " + left + "; Right: " + right + "; Time: " + time;
 	}
 	
 	@Override
 	public void init(final Robot robot) {
 		robot.getDrivebase().setControlMode(ControlMode.AUTO);
-
-		robot.getDrivebase().enableDistancePID();
-
-		robot.getDrivebase().setDistancePIDTarget(leftDistance, rightDistance);
 	}
 
 	@Override
@@ -37,8 +32,13 @@ public class DriveCommand extends Titan.Command<Robot> {
 		}
 
 		robot.getDrivebase().drive(left, right);
-		
-		return CommandResult.COMPLETE;
+
+		if(System.currentTimeMillis() > startTime + time){
+			robot.getDrivebase().drive(0.0, 0.0);
+			return CommandResult.COMPLETE;
+		}else{
+			return CommandResult.IN_PROGRESS;
+		}
 	}
 
 	@Override

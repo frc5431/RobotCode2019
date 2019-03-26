@@ -5,7 +5,7 @@ public final class Constants {
         PRACTICE, COMPETITION;
     }
 
-    public static final Robot ROBOT_TYPE = Robot.COMPETITION;
+    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -117,23 +117,29 @@ public final class Constants {
     public final static double ARM_MAX_ANGLE = 280;
 
     // PID
-    public final static double AUTO_DISTANCE_P = 0.010;//0.00635
-	public final static double AUTO_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
-    public final static double AUTO_DISTANCE_D = 0.000915; // 0.000915;
+    public final static double DRIVEBASE_DISTANCE_P = 0.010;//0.00635
+	public final static double DRIVEBASE_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
+    public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
-
-    // 115, 85
-
-    public final static double DRIVE_MIMICK_P = 0.016; //0.025
-	public final static double DRIVE_MIMICK_I = 0.00;
-	public final static double DRIVE_MIMICK_D = 0.060;
-    public final static double DRIVE_MIMICK_MIN_MAX = 0.35; //0.4
+    public final static double AUTO_AIM_DISTANCE_P = 0.005;
+    public final static double AUTO_AIM_ANGLE_P = 0.0;
+    public final static double AUTO_AIM_ANGLE_MIN = 0.05;
 
     //motion magic
     public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;
     public final static double ELEVATOR_MM_I = 0;
     public final static double ELEVATOR_MM_D = 0;
-    public final static int ELEVATOR_MM_PEAK_SENSOR_VELOCITY = ROBOT_TYPE == Robot.COMPETITION ? 5100 : 5200;
+    public final static double ELEVATOR_MM_PEAK_SENSOR_VELOCITY = ROBOT_TYPE == Robot.COMPETITION ? 5100 : 5200;
+    public final static double ELEVATOR_MM_CRUISE_VELOCITY = 1.0;
+    public final static double ELEVATOR_MM_ACCELERATION = 1.4;
+
+    //motion profiling
+    public final static double ARM_MP_P = 0.0;
+    public final static double ARM_MP_I = 0.0;
+    public final static double ARM_MP_D = 0.0;
+    public final static double ARM_MP_PEAK_SENSOR_VELOCITY = 1.0;
+    public final static double ARM_MP_CRUISE_VELOCITY = 1.0;
+    public final static double ARM_MP_ACCELERATION = 0.5;
 
     // SPEEDS
 
