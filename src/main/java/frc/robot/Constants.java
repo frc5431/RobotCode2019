@@ -9,7 +9,7 @@ public final class Constants {
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
-    public final static double DRIVER_JOYSTICK_DEADZONE = 0.1;
+    public final static double DRIVER_JOYSTICK_DEADZONE = 0.13;
 
     public final static int OPERATOR_JOYSTICK_ID = 1;
     public final static double OPERATOR_JOYSTICK_DEADZONE = 0.1;
@@ -122,8 +122,8 @@ public final class Constants {
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.005;
-    public final static double AUTO_AIM_ANGLE_P = 0.0;
-    public final static double AUTO_AIM_ANGLE_MIN = 0.05;
+    public final static double AUTO_AIM_ANGLE_P = 0.07;
+    public final static double AUTO_AIM_ANGLE_MIN = 0.01;
 
     //motion magic
     public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;

@@ -190,6 +190,7 @@ public class Auton extends Component{
         }
         out.add(new DriveToTargetCommand(direction));
         out.add(new Titan.ConsumerCommand<>((rob)->{
+            System.out.println("Hello");
             runSequence(robot, SequenceType.HATCH, postSequence);
         }));
         return out;
@@ -382,13 +383,13 @@ public class Auton extends Component{
             return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
-        final double hatchLoadingStationPos = 0.1936;
+        final double hatchLoadingStationPos = 0.1674;
         hatchSequences.put(Sequence.LOADING_STATION, ()->{
             final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
-            if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 90, 5)){
+            if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
                 return deploymentSequence;
             }
-            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 92);
+            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 95);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
@@ -508,7 +509,7 @@ public class Auton extends Component{
         final boolean rightBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R);
         if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
             final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
-            drivebaseCommands.addAll(getAutoAim(robot, preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.INTAKE : Sequence.OUTTAKE, leftBumperTriggered ? TargetingDirection.BACK : TargetingDirection.FRONT));
+            drivebaseCommands.addAll(getAutoAim(robot, preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, leftBumperTriggered ? TargetingDirection.BACK : TargetingDirection.FRONT));
             //drivebaseCommands.add(new MoveToTargetCommand());
             drivebaseCommands.init(robot);
         }

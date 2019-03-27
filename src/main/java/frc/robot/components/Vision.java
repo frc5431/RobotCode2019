@@ -50,8 +50,8 @@ public class Vision extends Component{
     private TargetingDirection direction = TargetingDirection.FRONT;
 
     public Vision(){
-        frontLimelightTable = NetworkTableInstance.getDefault().getTable("limelight");
-        backLimelightTable = NetworkTableInstance.getDefault().getTable("backLimelight");
+        frontLimelightTable = NetworkTableInstance.getDefault().getTable("limelight-front");
+        backLimelightTable = NetworkTableInstance.getDefault().getTable("limelight-back");
     }
 
     private NetworkTable getSelectedTable(){
@@ -92,7 +92,7 @@ public class Vision extends Component{
 
     public TargetInfo getTargetInfo(){
         final NetworkTable table = getSelectedTable();
-        return new TargetInfo(table.getEntry("tv").getBoolean(false), table.getEntry("tx").getDouble(0), table.getEntry("ty").getDouble(0), table.getEntry("ta").getDouble(0));
+        return new TargetInfo(table.getEntry("tv").getDouble(0) == 1.0, table.getEntry("tx").getDouble(0), table.getEntry("ty").getDouble(0), table.getEntry("ta").getDouble(0));
     }
 
     public void setLEDState(final LEDState state){
