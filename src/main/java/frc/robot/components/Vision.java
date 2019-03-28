@@ -43,18 +43,23 @@ public class Vision extends Component{
     };
 
     public static enum Limelight{
-        FRONT(false, "limelight-front"), BACK(true, "limelight-back");
+        FRONT(false, "limelight-front", false), BACK(true, "limelight-back", true);
         
         private final NetworkTable table;
-        private final boolean centered;
+        private final boolean centered, inverted;
 
-        private Limelight(final boolean centered, final String name){
+        private Limelight(final boolean centered, final String name, final boolean inverted){
             this.centered = centered;
             this.table = NetworkTableInstance.getDefault().getTable(name);
+            this.inverted = inverted;
         }
 
         public boolean isCentered(){
             return centered;
+        }
+
+        public boolean isInverted(){
+            return inverted;
         }
 
         public NetworkTable getTable(){
@@ -63,7 +68,7 @@ public class Vision extends Component{
     };
 
     public static enum TargetType{
-        FRONT_RIGHT(Limelight.FRONT, 0), BACK(Limelight.BACK, 0), FRONT_LEFT(Limelight.FRONT, 1);
+        FRONT_RIGHT(Limelight.FRONT, 0), FRONT_LEFT(Limelight.FRONT, 1), BACK(Limelight.BACK, 0);
 
         private final Limelight llight;
         private final int pipeline;

@@ -61,24 +61,14 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			lastDistanceChange = System.currentTimeMillis();
 		}
 
-		final Vision.TargetInfo target = vision.getTargetInfo();
-		/*
-		Cheeky little trick right here to make the code smaller.
-		FRONT's ordinal is 0
-		BACK's ordinal is 1
-
-		-1^0 = 1
-		-1^1 = -1
-
-		Thus, when it is FRONT, directionSignum is 1. When it is BACK, directionSignum is -1
-		*/
-		final double directionSignum = Math.pow(-1, ttype.ordinal());
+		final double directionSignum = ttype.getLimelight().isInverted() ? -1 : 1;
 
 		/*
 		When the elevator is running, to avoid breaking the carriage, we want to slow down.
 		*/
 		final boolean isRunningElevator = !Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
 
+		final Vision.TargetInfo target = vision.getTargetInfo();
 		/*
 		When in reverse, the angles are flipped
 		*/
@@ -108,11 +98,9 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			return CommandResult.COMPLETE;
 		}
 
-		System.out.println(angleError);
-
 		double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.2 + (Constants.AUTO_AIM_DISTANCE_P * distanceError));
 		rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
-		final double angleAdjust = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_ANGLE_P * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
+		final double angleAdjust = ((Constants.AUTO_AIM_ANGLE_P * angleError) * (isRunningElevator ? 0.3 : 0.0)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
 
 		drivebase.drive(rawPower + angleAdjust, rawPower - angleAdjust);
         

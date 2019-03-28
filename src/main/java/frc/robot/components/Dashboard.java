@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import frc.robot.Robot;
+import frc.robot.Robot.Mode;
 import frc.robot.util.Titan;
 import frc.robot.util.Component;
 import frc.robot.util.Testable;
@@ -73,6 +74,7 @@ public class Dashboard extends Component{
     };
 
     private final SendableChooser<MimicFile> mimicChooser = new SendableChooser<>();
+    private MimicFile currentFile = null;
 
     private final Titan.Toggle selfTest = new Titan.Toggle();
 
@@ -128,6 +130,11 @@ public class Dashboard extends Component{
         SmartDashboard.putBoolean("TargetExists", info.exists());
 
         SmartDashboard.putString("Mode", robot.getMode().toString());
+
+        if(currentFile != mimicChooser.getSelected() || (robot.getMode() == Mode.DISABLED && !robot.getAuton().hasPreloadedAuto())){
+            currentFile = mimicChooser.getSelected();
+            robot.getAuton().preloadAuto(currentFile);
+        }
 
         if(!selfTest.getState() && selfTest.isToggled(RobotController.getUserButton())){
             final List<Testable> testables = new ArrayList<>();

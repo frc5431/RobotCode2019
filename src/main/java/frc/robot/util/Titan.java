@@ -634,24 +634,21 @@ public final class Titan {
 			properties = "Runs a group of commands in parallel";
 		}
 
-		public void addCommand(final T robot, final Command<T> command){
+		public void addCommand(final Command<T> command){
 			final CommandQueue<T> newQueue = new CommandQueue<T>();
 			newQueue.add(command);
-			if(init){
-				newQueue.init(robot);
-			}
-			queues.add(newQueue);
+			addQueue(newQueue);
 		}
 
-		public void addQueue(final T robot, final CommandQueue<T> queue){
+		public void addQueue(final CommandQueue<T> queue){
 			if(init){
-				queue.init(robot);
+				throw new IllegalArgumentException("Can't add new commands to a ParallelCommandGroup after init() was called");
 			}
 			queues.add(queue);
 		}
 
-		public void addQueue(final T robot, final List<Command<T>> list){
-			addQueue(robot, new CommandQueue<T>(list));
+		public void addQueue(final List<Command<T>> list){
+			addQueue(new CommandQueue<T>(list));
 		}
 
 		public void init(final T robot){
