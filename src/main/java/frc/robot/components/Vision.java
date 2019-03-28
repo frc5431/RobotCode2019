@@ -7,6 +7,7 @@ import frc.robot.util.Titan;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Vision extends Component{
     public static class TargetInfo{
@@ -37,37 +38,65 @@ public class Vision extends Component{
         }
     };
 
-    public static enum TargetingDirection{
-        FRONT, BACK
-    };
-
     public static enum LEDState{
         ON, OFF
     };
 
-    private final NetworkTable frontLimelightTable, backLimelightTable;
+    public static enum Limelight{
+        FRONT(false, "limelight-front"), BACK(true, "limelight-back");
+        
+        private final NetworkTable table;
+        private final boolean centered;
+
+        private Limelight(final boolean centered, final String name){
+            this.centered = centered;
+            this.table = NetworkTableInstance.getDefault().getTable(name);
+        }
+
+        public boolean isCentered(){
+            return centered;
+        }
+
+        public NetworkTable getTable(){
+            return table;
+        }
+    };
+
+    public static enum TargetType{
+        FRONT_RIGHT(Limelight.FRONT, 0), BACK(Limelight.BACK, 0), FRONT_LEFT(Limelight.FRONT, 1);
+
+        private final Limelight llight;
+        private final int pipeline;
+
+        private TargetType(final Limelight light, final int pipe){
+            this.llight = light;
+            this.pipeline = pipe;
+        }
+
+        public Limelight getLimelight(){
+            return llight;
+        }
+
+        public int getPipeline(){
+            return pipeline;
+        }
+    };
+
     private LEDState ledState = LEDState.OFF;
-    private TargetingDirection direction = TargetingDirection.FRONT;
+    private TargetType ttype = TargetType.FRONT_RIGHT;
 
     public Vision(){
-        frontLimelightTable = NetworkTableInstance.getDefault().getTable("limelight-front");
-        backLimelightTable = NetworkTableInstance.getDefault().getTable("limelight-back");
+
     }
 
     private NetworkTable getSelectedTable(){
-        switch(direction){
-            case BACK:
-                return backLimelightTable;
-            case FRONT:
-            default:
-                return frontLimelightTable;
-        }
+        return ttype.getLimelight().getTable();
     }
 
     @Override
     public void init(final Robot robot){
         ledState = LEDState.OFF;
-        direction = TargetingDirection.FRONT;
+        ttype = TargetType.FRONT_RIGHT;
     }
 
     @Override
@@ -77,12 +106,15 @@ public class Vision extends Component{
     @Override
     public void tick(final Robot robot){
         if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.X)){
-            frontLimelightTable.getEntry("ledMode").setNumber(2);
-            backLimelightTable.getEntry("ledMode").setNumber(2);
+            for(final Limelight l : Limelight.values()){
+                l.getTable().getEntry("ledMode").setNumber(2);
+            }
         }else{
-            frontLimelightTable.getEntry("ledMode").setNumber((direction == TargetingDirection.FRONT && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
-            backLimelightTable.getEntry("ledMode").setNumber((direction == TargetingDirection.BACK && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.B) ? 3 : 1);
+            Limelight.FRONT.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.FRONT && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
+            Limelight.BACK.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.BACK && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.B) ? 3 : 1);
         }
+
+        getSelectedTable().getEntry("pipeline").setNumber(ttype.getPipeline());
     }
 
     @Override
@@ -92,6 +124,9 @@ public class Vision extends Component{
 
     public TargetInfo getTargetInfo(){
         final NetworkTable table = getSelectedTable();
+        if(table.getEntry("ts").getDouble(0) > -60){
+            return new TargetInfo(false, 0, 0, 0);
+        }
         return new TargetInfo(table.getEntry("tv").getDouble(0) == 1.0, table.getEntry("tx").getDouble(0), table.getEntry("ty").getDouble(0), table.getEntry("ta").getDouble(0));
     }
 
@@ -103,12 +138,12 @@ public class Vision extends Component{
         return ledState;
     }
 
-    public void setDirection(final TargetingDirection dir){
-        this.direction = dir;
+    public void setTargetType(final TargetType ttype){
+        this.ttype = ttype;
     }
 
-    public TargetingDirection getDirection(){
-        return direction;
+    public TargetType getTargetType(){
+        return ttype;
     }
 
     @Override

@@ -5,10 +5,11 @@ import frc.robot.Robot;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.components.Vision;
+import frc.robot.components.Vision.TargetType;
 import frc.robot.components.Drivebase;
 
 public class DriveToTargetCommand extends Titan.Command<Robot> {
-	private final Vision.TargetingDirection direction;
+	private final Vision.TargetType ttype;
 
 	private double lastDistance = 0;
 	private long lastDistanceChange = 0;
@@ -17,13 +18,14 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 
 	public DriveToTargetCommand(){
-		this(Vision.TargetingDirection.FRONT);
+		this(Vision.TargetType.FRONT_RIGHT);
 	}
 
-	public DriveToTargetCommand(final Vision.TargetingDirection direction){
-		this.direction = direction;
+	public DriveToTargetCommand(final Vision.TargetType type){
+		this.ttype = type;
 
 		name = "Drive to vision target";
+		properties = "Type: " + type.name();
 	}
 
     @Override
@@ -31,7 +33,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
 	
-		robot.getVision().setDirection(direction);
+		robot.getVision().setTargetType(ttype);
 
 		lastDistanceChange = System.currentTimeMillis();
 	}
@@ -42,9 +44,13 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final Vision vision = robot.getVision();
 
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
-			vision.setLEDState(Vision.LEDState.OFF);
-			robot.getAuton().abort(robot);
-			return CommandResult.CLEAR_QUEUE;
+			if(!robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R)){
+				vision.setLEDState(Vision.LEDState.OFF);
+				robot.getAuton().abort(robot);
+				return CommandResult.CLEAR_QUEUE;
+			}else{
+				drivebase.setControlMode(ControlMode.AUTO);
+			}
 		}
 
 		vision.setLEDState(Vision.LEDState.ON);
@@ -66,12 +72,12 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 		Thus, when it is FRONT, directionSignum is 1. When it is BACK, directionSignum is -1
 		*/
-		final double directionSignum = Math.pow(-1, direction.ordinal());
+		final double directionSignum = Math.pow(-1, ttype.ordinal());
 
 		/*
 		When the elevator is running, to avoid breaking the carriage, we want to slow down.
 		*/
-		final boolean isRunningElevator = Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 5);
+		final boolean isRunningElevator = !Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
 
 		/*
 		When in reverse, the angles are flipped
@@ -79,7 +85,11 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		//double angleError = directionSignum * target.getXAngle();
 		double angleError;
 		if(target.exists()){
-			angleError = (target.getXAngle() / target.getYAngle()) - 1;
+			if(ttype.getLimelight().isCentered()){
+				angleError = target.getXAngle();
+			}else{
+				angleError = (target.getXAngle() / target.getYAngle()) - 1.1;
+			}
 			lastErrorAngle = angleError;
 		}else{
 			angleError = lastErrorAngle;
@@ -91,16 +101,17 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final double distanceError = target.getYAngle();
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
-		if(distanceError < 0 || (angleError == 0 && System.currentTimeMillis() > lastDistanceChange + 500))
-		
-		{
+		if((target.exists() && distanceError < 0)/* || (angleError == 0 && System.currentTimeMillis() > lastDistanceChange + 500)*/){
 			robot.getDrivebase().drive(0, 0);
 
 			robot.getVision().setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}
 
-		final double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.3);
+		System.out.println(angleError);
+
+		double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.2 + (Constants.AUTO_AIM_DISTANCE_P * distanceError));
+		rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
 		final double angleAdjust = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_ANGLE_P * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
 
 		drivebase.drive(rawPower + angleAdjust, rawPower - angleAdjust);

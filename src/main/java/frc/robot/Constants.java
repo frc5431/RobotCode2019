@@ -121,9 +121,9 @@ public final class Constants {
 	public final static double DRIVEBASE_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
-    public final static double AUTO_AIM_DISTANCE_P = 0.005;
-    public final static double AUTO_AIM_ANGLE_P = 0.07;
-    public final static double AUTO_AIM_ANGLE_MIN = 0.01;
+    public final static double AUTO_AIM_DISTANCE_P = 0.01;
+    public final static double AUTO_AIM_ANGLE_P = 0.075;
+    public final static double AUTO_AIM_ANGLE_MIN = 0.012;
 
     //motion magic
     public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;
@@ -134,18 +134,18 @@ public final class Constants {
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
     //motion profiling
-    public final static double ARM_MP_P = 0.0;
-    public final static double ARM_MP_I = 0.0;
+    public final static double ARM_MP_P = 0.007;//0.02758, corrected: 0.01671
+    public final static double ARM_MP_I = 0.000;
     public final static double ARM_MP_D = 0.0;
-    public final static double ARM_MP_PEAK_SENSOR_VELOCITY = 1.0;
-    public final static double ARM_MP_CRUISE_VELOCITY = 1.0;
-    public final static double ARM_MP_ACCELERATION = 0.5;
+    public final static double ARM_MP_PEAK_SENSOR_VELOCITY = 2.5;
+    public final static double ARM_MP_CRUISE_VELOCITY = 0.6;//0.88
+    public final static double ARM_MP_ACCELERATION = 0.03;
 
     // SPEEDS
 
     // TELEOPERATED SPEEDS
-    public final static double ARM_PIVOT_UP_SPEED = 0.2;
-    public final static double ARM_PIVOT_DOWN_SPEED = 0.15;
+    public final static double ARM_PIVOT_UP_SPEED = 0.2;//0.2
+    public final static double ARM_PIVOT_DOWN_SPEED = 0.15;//0.15
     public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 1.0;
 

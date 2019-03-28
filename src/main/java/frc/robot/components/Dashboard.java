@@ -108,6 +108,8 @@ public class Dashboard extends Component{
         SmartDashboard.putData("MimicChooser", mimicChooser);
 
         SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());
+        SmartDashboard.putNumber("ArmEncoderPosition", robot.getArm().getEncoderPosition());
+        SmartDashboard.putNumber("ArmEncoderVelocity", robot.getArm().getEncoderVelocity());
         SmartDashboard.putNumber("ElevatorPosition", robot.getElevator().getEncoderPosition());
         SmartDashboard.putNumber("ElevatorVelocity", robot.getElevator().getEncoderVelocity());
         SmartDashboard.putBoolean("CarriageDown", robot.getElevator().isCarriageDown());

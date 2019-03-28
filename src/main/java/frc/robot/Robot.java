@@ -5,6 +5,7 @@ import java.util.List;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.util.Component;
+import frc.robot.util.Titan;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
@@ -40,6 +41,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     //Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
+
+    Titan.DEBUG = true;
 
     compressor = new Compressor(30);
     compressor.start();

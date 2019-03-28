@@ -32,8 +32,6 @@ public class Arm extends Component{
 
     private double armPower = 0.0;
 
-    private double lastArmAngle = 0;
-
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
@@ -44,6 +42,9 @@ public class Arm extends Component{
         brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
+
+        pivot.getEncoder().setPositionConversionFactor(360.0 / 237.5);
+        pivot.getEncoder().setVelocityConversionFactor(360.0 / 237.5);
     }
 
     @Override
@@ -56,22 +57,21 @@ public class Arm extends Component{
             setBrakeMode(BrakeMode.BREAK);
         }
 
-        if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
-            pivot.getEncoder().setPosition(0);
-        }
+        pivot.getEncoder().setPosition(getArmAngle());
+        // if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
+        //     pivot.getEncoder().setPosition(0);
+        // }
 
         //System.out.println(pivot.getIdleMode().name());
 
         brakePad.set(brakeState == BrakeState.DISENGAGED);
 
-        final double power = Math.signum(armPower) * (Math.abs(armPower) + (0.1 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90)))));
+        final double power = Math.signum(armPower) * (Math.abs(armPower) + (0.16 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90)))));
         //System.out.println(power);
         // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
         // USE THIS FOR BETTER EQUATION:
         //pivot.set(armPower + (0.2 * (Math.signum(armPower) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
         pivot.set(power);
-
-        lastArmAngle = getArmAngle();
     }
     
     @Override
@@ -122,12 +122,16 @@ public class Arm extends Component{
         return position;
     }
 
-    public void setBrakeMode(final BrakeMode mode){
-        pivot.setIdleMode(mode == BrakeMode.BREAK ? IdleMode.kBrake : IdleMode.kCoast);
+    public double getEncoderPosition(){
+        return pivot.getEncoder().getPosition();
     }
 
-    public double getArmVelocity(){
-        return getArmAngle() - lastArmAngle;
+    public double getEncoderVelocity(){
+        return pivot.getEncoder().getVelocity();
+    }
+
+    public void setBrakeMode(final BrakeMode mode){
+        pivot.setIdleMode(mode == BrakeMode.BREAK ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
     @Override
