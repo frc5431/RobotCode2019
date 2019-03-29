@@ -78,7 +78,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			if(ttype.getLimelight().isCentered()){
 				angleError = target.getXAngle();
 			}else{
-				angleError = (target.getXAngle() / target.getYAngle()) - 1.1;
+				angleError = (target.getXAngle() / target.getYAngle()) - 1.18;
 			}
 			lastErrorAngle = angleError;
 		}else{
@@ -91,16 +91,17 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final double distanceError = target.getYAngle();
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
-		if((target.exists() && distanceError < 0)/* || (angleError == 0 && System.currentTimeMillis() > lastDistanceChange + 500)*/){
+		if((target.exists() && distanceError < 0) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){
 			robot.getDrivebase().drive(0, 0);
 
 			robot.getVision().setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}
+		System.out.println(angleError);
 
 		double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.2 + (Constants.AUTO_AIM_DISTANCE_P * distanceError));
 		rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
-		final double angleAdjust = ((Constants.AUTO_AIM_ANGLE_P * angleError) * (isRunningElevator ? 0.3 : 0.0)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
+		final double angleAdjust = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_ANGLE_P * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
 
 		drivebase.drive(rawPower + angleAdjust, rawPower - angleAdjust);
         

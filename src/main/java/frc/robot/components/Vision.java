@@ -129,7 +129,9 @@ public class Vision extends Component{
 
     public TargetInfo getTargetInfo(){
         final NetworkTable table = getSelectedTable();
-        if(table.getEntry("ts").getDouble(0) > -60){
+        final double ts = table.getEntry("ts").getDouble(0);
+        if(ts > -60 && ts < -10){
+            System.out.println("SKEW: " + table.getEntry("ts").getDouble(0));
             return new TargetInfo(false, 0, 0, 0);
         }
         return new TargetInfo(table.getEntry("tv").getDouble(0) == 1.0, table.getEntry("tx").getDouble(0), table.getEntry("ty").getDouble(0), table.getEntry("ta").getDouble(0));

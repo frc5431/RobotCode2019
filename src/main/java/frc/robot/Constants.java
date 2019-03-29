@@ -122,7 +122,7 @@ public final class Constants {
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;
-    public final static double AUTO_AIM_ANGLE_P = 0.075;
+    public final static double AUTO_AIM_ANGLE_P = 0.05;
     public final static double AUTO_AIM_ANGLE_MIN = 0.012;
 
     //motion magic

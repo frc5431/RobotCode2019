@@ -71,6 +71,8 @@ public class Auton extends Component{
 
     private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
 
+    private boolean mimicLoaded = false;
+
     public Auton(){
         sequenceCommands = new Titan.CommandQueue<>();
         drivebaseCommands = new Titan.CommandQueue<>();
@@ -82,6 +84,7 @@ public class Auton extends Component{
 
         new Thread(()->{
             System.out.println("Beginning Mimic file sweep of " + Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
+            mimicLoaded = false;
             final File folder = new File(Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
             if(!folder.exists()){
                 System.err.println("Mimic directory not found!");
@@ -93,6 +96,7 @@ public class Auton extends Component{
                     mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
                 }
             }
+            mimicLoaded = true;
         }).start();
 
          // BUTTON MAPPINGS
@@ -495,7 +499,15 @@ public class Auton extends Component{
         final boolean rightBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R);
         if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
             final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
-            drivebaseCommands.addAll(getAutoAim(preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, leftBumperTriggered ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
+            final TargetType ttype;
+            if(getArmDirection(robot.getArm().getEncoderPosition()) == ArmDirection.REVERSE){
+                ttype = TargetType.BACK;
+            }else if(leftBumperTriggered){
+                ttype = TargetType.FRONT_LEFT;
+            }else{
+                ttype = TargetType.FRONT_RIGHT;
+            }
+            drivebaseCommands.addAll(getAutoAim(preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, ttype));
             //drivebaseCommands.add(new MoveToTargetCommand());
             drivebaseCommands.init(robot);
         }
@@ -577,24 +589,32 @@ public class Auton extends Component{
     }
 
     public void preloadAuto(final MimicFile file){
-        Titan.l("Preloading auto: " + file.toString());
-        preloadedAutoCommands.clear();
-        if(file.getStartHatchFile() != null){
-            preloadedAutoCommands.addAll(loadMimicFile(file.getStartHatchFile(), file.isSwapped()));
-            if(file.getSequence() != null){
-                preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_LEFT));
+        if(file == null || !mimicLoaded){
+            return;
+        }
+        new Thread(()->{
+            mimicLoaded = false;
+            Titan.l("Preloading auto: " + file.toString());
+            preloadedAutoCommands.clear();
+            if(file.getStartHatchFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(file.getStartHatchFile(), file.isSwapped()));
+                if(file.getSequence() != null){
+                    preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_LEFT));
+                }
             }
-        }
-        if(file.getLoadingStationFile() != null){
-            preloadedAutoCommands.addAll(loadMimicFile(file.getLoadingStationFile(), file.isSwapped()));
-            preloadedAutoCommands.addAll(getAutoAim(Sequence.LOADING_STATION, Sequence.INTAKE, TargetType.FRONT_RIGHT));
-        }
-        if(file.getSecondHatchFile() != null){
-            preloadedAutoCommands.addAll(loadMimicFile(file.getSecondHatchFile(), file.isSwapped()));
-            if(file.getSequence() != null){
-                preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_RIGHT));
+            if(file.getLoadingStationFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(file.getLoadingStationFile(), file.isSwapped()));
+                preloadedAutoCommands.addAll(getAutoAim(Sequence.LOADING_STATION, Sequence.INTAKE, TargetType.FRONT_RIGHT));
             }
-        }
+            if(file.getSecondHatchFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(file.getSecondHatchFile(), file.isSwapped()));
+                if(file.getSequence() != null){
+                    preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_RIGHT));
+                }
+            }
+            Titan.l("Finished preloading");
+            mimicLoaded = true;
+        }).start();
     }
 
     public boolean hasPreloadedAuto(){
