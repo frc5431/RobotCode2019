@@ -1,15 +1,16 @@
-package frc.robot.commands;
+package frc.robot.auto.commands;
 
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.components.Vision;
-import frc.robot.components.Vision.TargetType;
 import frc.robot.components.Drivebase;
+import frc.robot.auto.vision.TargetInfo;
+import frc.robot.auto.vision.TargetType;
 
 public class DriveToTargetCommand extends Titan.Command<Robot> {
-	private final Vision.TargetType ttype;
+	private final TargetType ttype;
 
 	private double lastDistance = 0;
 	private long lastDistanceChange = 0;
@@ -18,10 +19,10 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 
 	public DriveToTargetCommand(){
-		this(Vision.TargetType.FRONT_RIGHT);
+		this(TargetType.FRONT_RIGHT);
 	}
 
-	public DriveToTargetCommand(final Vision.TargetType type){
+	public DriveToTargetCommand(final TargetType type){
 		this.ttype = type;
 
 		name = "Drive to vision target";
@@ -44,7 +45,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final Vision vision = robot.getVision();
 
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
-			if(!robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R)){
+			if(!robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R) && !robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L)){
 				vision.setLEDState(Vision.LEDState.OFF);
 				robot.getAuton().abort(robot);
 				return CommandResult.CLEAR_QUEUE;
@@ -68,7 +69,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		*/
 		final boolean isRunningElevator = !Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
 
-		final Vision.TargetInfo target = vision.getTargetInfo();
+		final TargetInfo target = vision.getTargetInfo();
 		/*
 		When in reverse, the angles are flipped
 		*/

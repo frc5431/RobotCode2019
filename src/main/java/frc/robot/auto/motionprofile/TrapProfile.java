@@ -1,4 +1,4 @@
-package frc.robot.util.motionprofile;
+package frc.robot.auto.motionprofile;
 
 import java.util.ArrayList;
 

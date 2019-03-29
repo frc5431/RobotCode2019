@@ -13,61 +13,30 @@ import java.util.function.Function;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
-import frc.robot.util.MimicPropertyValue;
+import frc.robot.auto.MimicPropertyValue;
 import frc.robot.util.Testable;
 import frc.robot.util.Component;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 
-import frc.robot.commands.ElevateToCommand;
-import frc.robot.commands.ArmMoveToCommand;
-import frc.robot.commands.ArmBrakeCommand;
-import frc.robot.commands.FingerCommand;
-import frc.robot.commands.GrabBallCommand;
-import frc.robot.commands.JayCommand;
-import frc.robot.commands.MimicDriveCommand;
-import frc.robot.commands.DriveToTargetCommand;
-import frc.robot.commands.RollerCommand;
-import frc.robot.components.Dashboard.MimicFile;
+import frc.robot.auto.commands.ElevateToCommand;
+import frc.robot.auto.commands.ArmMoveToCommand;
+import frc.robot.auto.commands.ArmBrakeCommand;
+import frc.robot.auto.commands.FingerCommand;
+import frc.robot.auto.commands.GrabBallCommand;
+import frc.robot.auto.commands.JayCommand;
+import frc.robot.auto.commands.MimicDriveCommand;
+import frc.robot.auto.commands.DriveToTargetCommand;
+import frc.robot.auto.commands.RollerCommand;
+import frc.robot.auto.Routine;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
-import frc.robot.components.Vision.TargetType;
+import frc.robot.auto.vision.TargetType;
+import frc.robot.auto.Sequence;
+import frc.robot.auto.SequenceType;
+import frc.robot.auto.ArmDirection;
 
 public class Auton extends Component{
-    public static enum ArmDirection{
-        FORWARD, REVERSE
-    };
-
-    public static enum Sequence {
-        FLOOR(ArmDirection.FORWARD),
-        LOADING_STATION(ArmDirection.FORWARD),
-        CARGO_SHIP(ArmDirection.FORWARD),
-        ROCKET_FORWARD_1(ArmDirection.FORWARD),
-        ROCKET_FORWARD_2(ArmDirection.FORWARD),
-        ROCKET_FORWARD_3(ArmDirection.FORWARD),
-        ROCKET_REVERSE_1(ArmDirection.REVERSE),
-        ROCKET_REVERSE_2(ArmDirection.REVERSE),
-        ROCKET_REVERSE_3(ArmDirection.REVERSE),
-        STOW(ArmDirection.FORWARD),
-        CLIMB(ArmDirection.REVERSE),
-        INTAKE(ArmDirection.FORWARD),
-        OUTTAKE(ArmDirection.FORWARD);
-
-        private final ArmDirection direction;
-
-        private Sequence(final ArmDirection dir){
-            this.direction = dir;
-        }
-
-        public ArmDirection getDirection(){
-            return direction;
-        }
-    };
-
-    public static enum SequenceType {
-        HATCH, CARGO
-    };
-
     private Titan.CommandQueue<Robot> sequenceCommands, drivebaseCommands, preloadedAutoCommands;
     private Titan.Joystick buttonBoard;
 
@@ -103,7 +72,9 @@ public class Auton extends Component{
                 if(f.isFile()){
                     final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
                     System.out.println("Found Mimic file with name " + name);
-                    mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+                    final List<Titan.Mimic.Step<MimicPropertyValue>> steps = Titan.Mimic.load(name, MimicPropertyValue.class);
+                    mimicFiles.put(name, steps);
+                    mimicFiles.put(name + "_optimized", Titan.Mimic.optimize(steps, MimicPropertyValue.LEFT_DISTANCE, MimicPropertyValue.RIGHT_DISTANCE, MimicPropertyValue.LEFT_POWER, MimicPropertyValue.RIGHT_POWER, 1));
                 }
             }
             mimicLoaded = true;
@@ -228,6 +199,92 @@ public class Auton extends Component{
         //switch is 16
     }
 
+    @Override
+    public void init(final Robot robot){
+        switch(robot.getMode()){
+        case AUTO:
+            robot.getDrivebase().setHome();
+            drivebaseCommands.addAll(preloadedAutoCommands);
+            preloadedAutoCommands.clear();
+            break;
+        case TEST:
+            robot.getDrivebase().setHome();
+            observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
+            break;
+        case TELEOP:
+        case DISABLED:
+        default:
+            abort(robot);
+            break;
+        }
+        
+        drivebaseCommands.init(robot);
+        sequenceCommands.init(robot);
+    }
+
+    @Override
+    public void periodic(final Robot robot){
+        final SequenceType sequenceType = getCurrentSequenceType();
+
+        if(sequenceCommands.isEmpty()){
+            runningSequence = null;
+            for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
+                if(buttonBoard.getRawButton(e.getKey())){
+                    runSequence(robot, sequenceType, e.getValue());
+                    break;
+                }
+            }
+        }
+
+        final boolean leftBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L);
+        final boolean rightBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R);
+        if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
+            final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
+            final TargetType ttype;
+            if(getTargetArmDirection(robot) == ArmDirection.REVERSE){
+                ttype = TargetType.BACK;
+            }else if(leftBumperTriggered){
+                ttype = TargetType.FRONT_LEFT;
+            }else{
+                ttype = TargetType.FRONT_RIGHT;
+            }
+            drivebaseCommands.addAll(getAutoAim(preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, ttype));
+            //drivebaseCommands.add(new MoveToTargetCommand());
+            drivebaseCommands.init(robot);
+        }
+
+        sequenceCommands.update(robot);
+        drivebaseCommands.update(robot);
+
+        if(robot.getMode() == Robot.Mode.TEST){
+            observer.addStep(robot, MimicPropertyValue.class);
+        }
+    }
+
+    @Override
+    public void disabled(final Robot robot){
+        abort(robot);
+
+        if(observer.save()){
+            final String name = SmartDashboard.getString("MimicRecordingName", "TEST");
+            mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
+        }
+    }
+
+    public void abort(final Robot robot){
+        sequenceCommands.done(robot);
+        sequenceCommands.clear();
+
+        drivebaseCommands.done(robot);
+        drivebaseCommands.clear();
+
+        robot.getDrivebase().setControlMode(ControlMode.MANUAL);
+        robot.getArm().setControlMode(ControlMode.MANUAL);
+        robot.getElevator().setControlMode(ControlMode.MANUAL);
+        robot.getIntake().setControlMode(ControlMode.MANUAL);
+    }
+
+
     public List<Titan.Command<Robot>> loadMimicFile(final String name){
         return loadMimicFile(name, false);
     }
@@ -313,7 +370,7 @@ public class Auton extends Component{
         sequenceCommands.init(robot);
     }
 
-    private List<Titan.Command<Robot>> getAutoAim(final Sequence preSequence, final Sequence postSequence, final Vision.TargetType ttype){
+    private List<Titan.Command<Robot>> getAutoAim(final Sequence preSequence, final Sequence postSequence, final TargetType ttype){
         final List<Titan.Command<Robot>> out = new ArrayList<>();
         if(preSequence != null){
             out.add(new Titan.ConsumerCommand<>((rob)->{
@@ -474,90 +531,6 @@ public class Auton extends Component{
         }
     }
 
-    @Override
-    public void init(final Robot robot){
-        switch(robot.getMode()){
-        case AUTO:
-            robot.getDrivebase().setHome();
-            drivebaseCommands.addAll(preloadedAutoCommands);
-            preloadedAutoCommands.clear();
-            break;
-        case TEST:
-            robot.getDrivebase().setHome();
-            observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
-            break;
-        case TELEOP:
-        case DISABLED:
-        default:
-            abort(robot);
-            break;
-        }
-        
-        drivebaseCommands.init(robot);
-        sequenceCommands.init(robot);
-    }
-
-    @Override
-    public void periodic(final Robot robot){
-        final SequenceType sequenceType = getCurrentSequenceType();
-
-        if(sequenceCommands.isEmpty()){
-            runningSequence = null;
-            for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
-                if(buttonBoard.getRawButton(e.getKey())){
-                    runSequence(robot, sequenceType, e.getValue());
-                    break;
-                }
-            }
-        }
-
-        final boolean leftBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L);
-        final boolean rightBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R);
-        if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
-            final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
-            final TargetType ttype;
-            if(getArmDirection(robot.getArm().getEncoderPosition()) == ArmDirection.REVERSE){
-                ttype = TargetType.BACK;
-            }else if(leftBumperTriggered){
-                ttype = TargetType.FRONT_LEFT;
-            }else{
-                ttype = TargetType.FRONT_RIGHT;
-            }
-            drivebaseCommands.addAll(getAutoAim(preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, ttype));
-            //drivebaseCommands.add(new MoveToTargetCommand());
-            drivebaseCommands.init(robot);
-        }
-
-        sequenceCommands.update(robot);
-        drivebaseCommands.update(robot);
-
-        if(robot.getMode() == Robot.Mode.TEST){
-            observer.addStep(robot, MimicPropertyValue.class);
-        }
-    }
-
-    @Override
-    public void disabled(final Robot robot){
-        abort(robot);
-
-        if(observer.save()){
-            final String name = SmartDashboard.getString("MimicRecordingName", "TEST");
-            mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
-        }
-    }
-
-    public void abort(final Robot robot){
-        sequenceCommands.done(robot);
-        sequenceCommands.clear();
-
-        drivebaseCommands.done(robot);
-        drivebaseCommands.clear();
-
-        robot.getDrivebase().setControlMode(ControlMode.MANUAL);
-        robot.getArm().setControlMode(ControlMode.MANUAL);
-        robot.getElevator().setControlMode(ControlMode.MANUAL);
-        robot.getIntake().setControlMode(ControlMode.MANUAL);
-    }
 
     public boolean isRecording(){
         return observer.isRecording();
@@ -592,6 +565,14 @@ public class Auton extends Component{
         return buttonBoard.getRawButton(9) ? SequenceType.HATCH : SequenceType.CARGO;
     }
 
+    public ArmDirection getTargetArmDirection(final Robot robot){
+        if(runningSequence == null){
+            return getArmDirection(robot.getArm().getArmAngle());
+        }
+
+        return runningSequence.getDirection();
+    }
+
     public Titan.CommandQueue<Robot> getDrivebaseCommands(){
         return drivebaseCommands;
     }
@@ -604,28 +585,29 @@ public class Auton extends Component{
         return preloadedAutoCommands;
     }
 
-    public void preloadAuto(final MimicFile file){
-        if(file == null || !mimicLoaded){
+    public void preloadRoutine(final Routine r){
+        if(r == null || !mimicLoaded){
             return;
         }
         new Thread(()->{
             mimicLoaded = false;
-            Titan.l("Preloading auto: " + file.toString());
+            Titan.l("Preloading auto routine: " + r.toString());
             preloadedAutoCommands.clear();
-            if(file.getStartHatchFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(file.getStartHatchFile(), file.isSwapped()));
-                if(file.getSequence() != null){
-                    preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_LEFT));
+            if(r.getStartHatchFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(r.getStartHatchFile(), r.isSwapped()));
+                if(r.getFirstSequence() != null){
+                    preloadedAutoCommands.addAll(getAutoAim(r.getFirstSequence(), Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT));
                 }
             }
-            if(file.getLoadingStationFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(file.getLoadingStationFile(), file.isSwapped()));
+            if(r.getLoadingStationFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(r.getLoadingStationFile(), r.isSwapped()));
                 preloadedAutoCommands.addAll(getAutoAim(Sequence.LOADING_STATION, Sequence.INTAKE, TargetType.FRONT_RIGHT));
             }
-            if(file.getSecondHatchFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(file.getSecondHatchFile(), file.isSwapped()));
-                if(file.getSequence() != null){
-                    preloadedAutoCommands.addAll(getAutoAim(file.getSequence(), Sequence.OUTTAKE, TargetType.FRONT_RIGHT));
+            if(r.getSecondHatchFile() != null){
+                preloadedAutoCommands.addAll(loadMimicFile(r.getSecondHatchFile(), r.isSwapped()));
+                final Sequence secondSequence = r.getSecondSequence();
+                if(secondSequence != null){
+                    preloadedAutoCommands.addAll(getAutoAim(secondSequence, Sequence.OUTTAKE, secondSequence.getDirection() == ArmDirection.REVERSE ? TargetType.BACK : r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
                 }
             }
             Titan.l("Finished preloading");
@@ -633,7 +615,7 @@ public class Auton extends Component{
         }).start();
     }
 
-    public boolean hasPreloadedAuto(){
+    public boolean hasPreloadedRoutine(){
         return !preloadedAutoCommands.isEmpty();
     }
 

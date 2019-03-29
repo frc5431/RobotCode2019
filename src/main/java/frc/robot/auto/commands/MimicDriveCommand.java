@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.auto.commands;
 
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
