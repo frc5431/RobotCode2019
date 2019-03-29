@@ -97,7 +97,6 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			robot.getVision().setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}
-		System.out.println(angleError);
 
 		double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.2 + (Constants.AUTO_AIM_DISTANCE_P * distanceError));
 		rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
