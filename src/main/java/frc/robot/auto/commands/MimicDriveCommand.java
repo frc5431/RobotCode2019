@@ -1,5 +1,6 @@
 package frc.robot.auto.commands;
 
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
@@ -7,6 +8,7 @@ import frc.robot.Robot;
 public class MimicDriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
 	private final double leftDistance, rightDistance;
+	private final double battery;
 	
 	public MimicDriveCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double battery) {
 		name = "MimicDriveCommand";
@@ -16,6 +18,8 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
+
+		this.battery = battery;
 
 		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%);";
 	}
@@ -36,7 +40,9 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		robot.getDrivebase().drive(left, right);
+		final double voltageCompensation = battery / RobotController.getBatteryVoltage();
+
+		robot.getDrivebase().drive(left * voltageCompensation, right * voltageCompensation);
 		
 		return CommandResult.COMPLETE;
 	}

@@ -513,11 +513,12 @@ public final class Titan {
 
 		@Override
 		public void init(final T robot) {
-			consumer.accept(robot);
 		}
 
 		@Override
 		public CommandResult update(T robot) {
+			consumer.accept(robot);
+
 			return CommandResult.COMPLETE;
 		}
 
@@ -856,7 +857,7 @@ public final class Titan {
 				drivePowerLeft = (drivePowerLeft + stepLeftPower) / 2.0;
 				drivePowerRight = (drivePowerRight + stepRightPower) / 2.0;
 				
-				if(deltaLeft >= tolerance || deltaRight >= tolerance){
+				if(/*i > in.size() - 20 || */deltaLeft >= tolerance || deltaRight >= tolerance){
 					final EnumMap<PV, Object> newValues = step.getValues();
 					newValues.put(leftPower, drivePowerLeft);
 					newValues.put(rightPower, drivePowerRight);

@@ -103,6 +103,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic(){
     teleopPeriodic();
+    compressor.stop();
   }
 
   @Override

@@ -16,6 +16,7 @@ public enum Routine{
     CARGOSHIP_1_ROCKET_CLOSE_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_crocket"),
     CARGOSHIP_1_ROCKET_CLOSE_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_cargo", "cargo_to_ls", "ls_to_crocket", true),
     TEST(null, "TEST", null, null),
+    TEST_OPTIMIZED(null, "TEST_optimized_1", null, null),
     DO_NOTHING(null, null, null, null);
 
     private final String startHatch, loadingStation, secondHatch;

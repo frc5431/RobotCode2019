@@ -74,7 +74,9 @@ public class Auton extends Component{
                     System.out.println("Found Mimic file with name " + name);
                     final List<Titan.Mimic.Step<MimicPropertyValue>> steps = Titan.Mimic.load(name, MimicPropertyValue.class);
                     mimicFiles.put(name, steps);
-                    mimicFiles.put(name + "_optimized", Titan.Mimic.optimize(steps, MimicPropertyValue.LEFT_DISTANCE, MimicPropertyValue.RIGHT_DISTANCE, MimicPropertyValue.LEFT_POWER, MimicPropertyValue.RIGHT_POWER, 1));
+                    for(double i = 1; i <= 10; ++i){
+                        mimicFiles.put(name + "_optimized_" + (int)i, Titan.Mimic.optimize(steps, MimicPropertyValue.LEFT_DISTANCE, MimicPropertyValue.RIGHT_DISTANCE, MimicPropertyValue.LEFT_POWER, MimicPropertyValue.RIGHT_POWER, 0.5 * i));
+                    }
                 }
             }
             mimicLoaded = true;
@@ -121,7 +123,7 @@ public class Auton extends Component{
             return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
-        final double hatchLoadingStationPos = 0.1800;
+        final double hatchLoadingStationPos = 0.1085;
         hatchSequences.put(Sequence.LOADING_STATION, (robot)->{
             final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
@@ -135,16 +137,16 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5957, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5319, 100));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 1.0, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9574, 100));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 245));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 265));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8936, 245));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8510, 265));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3030, 90));
 
@@ -285,11 +287,11 @@ public class Auton extends Component{
     }
 
 
-    public List<Titan.Command<Robot>> loadMimicFile(final String name){
-        return loadMimicFile(name, false);
+    public List<Titan.Command<Robot>> loadMimicFile(final String name, final Sequence sequence){
+        return loadMimicFile(name, sequence, false);
     }
 
-    public List<Titan.Command<Robot>> loadMimicFile(final String name, final boolean swapped){
+    public List<Titan.Command<Robot>> loadMimicFile(final String name, final Sequence sequence, final boolean swapped){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             rob.getDrivebase().setHome();
@@ -301,7 +303,7 @@ public class Auton extends Component{
 
         //Collect the mimic file
         //mimicChooser.getSelected()
-        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.get(name);
+        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.getOrDefault(name, List.of());
         for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
             final List<Titan.Command<Robot>> out = new ArrayList<>();
             if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -311,9 +313,10 @@ public class Auton extends Component{
             }
 
             final int stepSequence = step.getInteger(MimicPropertyValue.RUNNING_SEQUENCE);
-            if(stepSequence >= 0 && stepSequence != lastRunningSequence){
+            if(sequence != null && stepSequence >= 0 && stepSequence != lastRunningSequence){
                 out.add(new Titan.ConsumerCommand<>((rob)->{
-                    runSequence(rob, SequenceType.values()[step.getInteger(MimicPropertyValue.SEQUENCE_TYPE)], Sequence.values()[stepSequence]);
+                    //Sequence.values()[stepSequence];
+                    runSequence(rob, SequenceType.values()[step.getInteger(MimicPropertyValue.SEQUENCE_TYPE)], sequence);
                 }));
             }
             lastRunningSequence = stepSequence;
@@ -348,6 +351,7 @@ public class Auton extends Component{
             }
         }
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+            System.out.println("Finished mimic file");
             rob.getDrivebase().disableAllPID();
 		    rob.getDrivebase().drive(0.0, 0.0);
         }));
@@ -594,20 +598,24 @@ public class Auton extends Component{
             Titan.l("Preloading auto routine: " + r.toString());
             preloadedAutoCommands.clear();
             if(r.getStartHatchFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(r.getStartHatchFile(), r.isSwapped()));
-                if(r.getFirstSequence() != null){
-                    preloadedAutoCommands.addAll(getAutoAim(r.getFirstSequence(), Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT));
+                final Sequence firstSequence = r.getFirstSequence();
+                preloadedAutoCommands.addAll(loadMimicFile(r.getStartHatchFile(), firstSequence, r.isSwapped()));
+                if(firstSequence != null){
+                    preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
+                    preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT));
                 }
             }
             if(r.getLoadingStationFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(r.getLoadingStationFile(), r.isSwapped()));
-                preloadedAutoCommands.addAll(getAutoAim(Sequence.LOADING_STATION, Sequence.INTAKE, TargetType.FRONT_RIGHT));
+                preloadedAutoCommands.addAll(loadMimicFile(r.getLoadingStationFile(), Sequence.LOADING_STATION, r.isSwapped()));
+                preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
+                preloadedAutoCommands.addAll(getAutoAim(null, Sequence.INTAKE, TargetType.FRONT_RIGHT));
             }
             if(r.getSecondHatchFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(r.getSecondHatchFile(), r.isSwapped()));
                 final Sequence secondSequence = r.getSecondSequence();
+                preloadedAutoCommands.addAll(loadMimicFile(r.getSecondHatchFile(), secondSequence, r.isSwapped()));
                 if(secondSequence != null){
-                    preloadedAutoCommands.addAll(getAutoAim(secondSequence, Sequence.OUTTAKE, secondSequence.getDirection() == ArmDirection.REVERSE ? TargetType.BACK : r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
+                    preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
+                    preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, secondSequence.getDirection() == ArmDirection.REVERSE ? TargetType.BACK : r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
                 }
             }
             Titan.l("Finished preloading");

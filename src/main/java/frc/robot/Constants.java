@@ -71,7 +71,7 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 144;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 134;
     // to calculate this, move the elevator to the max operational height and record the number
     public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 43000 : 47000;
 
@@ -121,9 +121,11 @@ public final class Constants {
 	public final static double DRIVEBASE_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
-    public final static double AUTO_AIM_DISTANCE_P = 0.01;
-    public final static double AUTO_AIM_ANGLE_P = 0.05;
-    public final static double AUTO_AIM_ANGLE_MIN = 0.012;
+    public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
+    public final static double AUTO_AIM_DISTANCE_MIN = 0.1;//gentle: 0.05 rough: 0.2
+    public final static double AUTO_AIM_ANGLE_CENTERED_P = 0.005;//0.05
+    public final static double AUTO_AIM_ANGLE_UNCENTERED_P = 0.05;
+    public final static double AUTO_AIM_ANGLE_MIN = 0.0;
 
     //motion magic
     public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;

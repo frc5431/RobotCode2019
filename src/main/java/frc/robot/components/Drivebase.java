@@ -43,8 +43,6 @@ public class Drivebase extends Component{
 
     private double leftPower, rightPower;
 
-    private double leftCorrection, rightCorrection;
-
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
     private final PIDController leftDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
@@ -66,9 +64,7 @@ public class Drivebase extends Component{
         }
     }, new PIDOutput() {
 		@Override
-		public void pidWrite(final double output) {
-            leftCorrection = output;
-		}
+		public void pidWrite(final double output) {}
     }, 0.02);
 
     private final PIDController rightDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
@@ -90,9 +86,7 @@ public class Drivebase extends Component{
         }
     }, new PIDOutput() {
 		@Override
-		public void pidWrite(final double output) {
-            rightCorrection = output;
-		}
+		public void pidWrite(final double output) {}
     }, 0.02);
 
     private ControlMode controlMode = ControlMode.MANUAL;
@@ -157,6 +151,17 @@ public class Drivebase extends Component{
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
+        final double leftCorrection, rightCorrection;
+        if(leftDistancePID.isEnabled()){
+            leftCorrection = leftDistancePID.get();
+        }else{
+            leftCorrection = 0;
+        }
+        if(rightDistancePID.isEnabled()){
+            rightCorrection = rightDistancePID.get();
+        }else{
+            rightCorrection = 0;
+        }
         backLeft.set(leftPower + leftCorrection);
         frontLeft.set(leftPower + leftCorrection);
 
@@ -221,8 +226,6 @@ public class Drivebase extends Component{
     public final void disableDistancePID(){
         leftDistancePID.disable();
         rightDistancePID.disable();
-        leftCorrection = 0;
-        rightCorrection = 0;
     }
     
 	public final void disableAllPID() {
@@ -260,7 +263,6 @@ public class Drivebase extends Component{
     public void setDistancePIDTarget(final double leftSetpoint, final double rightSetpoint){
         //leftDistancePID.reset();
         //rightDistancePID.reset();
-        
         leftDistancePID.setSetpoint(leftSetpoint);
         rightDistancePID.setSetpoint(rightSetpoint);
 

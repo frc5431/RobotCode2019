@@ -56,19 +56,18 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 		vision.setLEDState(Vision.LEDState.ON);
 
-		final double currentDistance = (drivebase.getLeftDistance() + drivebase.getRightDistance()) / 2.0;
-		if(currentDistance != lastDistance){
-			lastDistance = currentDistance;
-			lastDistanceChange = System.currentTimeMillis();
-		}
-
-		final double directionSignum = ttype.getLimelight().isInverted() ? -1 : 1;
-
 		/*
 		When the elevator is running, to avoid breaking the carriage, we want to slow down.
 		*/
 		final boolean isRunningElevator = !Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
 
+		final double currentDistance = (drivebase.getLeftDistance() + drivebase.getRightDistance()) / 2.0;
+		if(currentDistance != lastDistance || !isRunningElevator){
+			lastDistance = currentDistance;
+			lastDistanceChange = System.currentTimeMillis();
+		}
+
+		final double directionSignum = ttype.getLimelight().isInverted() ? -1 : 1;
 		final TargetInfo target = vision.getTargetInfo();
 		/*
 		When in reverse, the angles are flipped
@@ -79,32 +78,42 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			if(ttype.getLimelight().isCentered()){
 				angleError = target.getXAngle();
 			}else{
-				angleError = (target.getXAngle() / target.getYAngle()) - 1.18;
+				angleError = (target.getXAngle() / target.getYAngle()) - 1.33;//1.18
 			}
 			lastErrorAngle = angleError;
 		}else{
 			angleError = lastErrorAngle;
 		}
-		angleError *= directionSignum;
+		//angleError *= directionSignum;
 		if(Titan.approxEquals(angleError, 1, 0.1)){
 			angleError = 0;
 		}
-		final double distanceError = target.getYAngle();
+		final double distanceError = directionSignum * target.getYAngle();
+
+		final boolean atTarget;
+		if(ttype.getLimelight().isCentered()){
+			atTarget = target.getArea() > 16;
+		}else{
+			atTarget = target.getArea() > 8;
+		}
+
+		System.out.println(angleError);
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
-		if((target.exists() && distanceError < 0) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){
+		if((target.exists() && atTarget) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){
 			robot.getDrivebase().drive(0, 0);
 
 			robot.getVision().setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}
 
-		double rawPower = directionSignum * (isRunningElevator ? 0.0 : 0.2 + (Constants.AUTO_AIM_DISTANCE_P * distanceError));
-		rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
-		final double angleAdjust = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_ANGLE_P * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
+		double rawPower = directionSignum * (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_DISTANCE_MIN + (Constants.AUTO_AIM_DISTANCE_P * distanceError)));
+		final double angleP = ttype.getLimelight().isCentered() ? Constants.AUTO_AIM_ANGLE_CENTERED_P : Constants.AUTO_AIM_ANGLE_UNCENTERED_P;
+		//rawPower *= (5.0 - Math.min(Math.abs(angleError), 5)) / 5.0;
+		final double angleAdjust = (isRunningElevator ? 0.0 : (angleP * angleError)) + (Math.signum(angleError) * Constants.AUTO_AIM_ANGLE_MIN);
 
 		drivebase.drive(rawPower + angleAdjust, rawPower - angleAdjust);
-        
+        //drivebase.drive(rawPower, rawPower);
 		return CommandResult.IN_PROGRESS;
 	}
 

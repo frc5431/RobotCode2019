@@ -101,7 +101,6 @@ public class Elevator extends Component{
         //}
 
         if(isCarriageUp() && isElevatorDown()){
-            System.out.println("RESET");
             bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
             //bagged robot: 27000
         }else if(isCarriageDown() && isElevatorDown()){
@@ -150,6 +149,11 @@ public class Elevator extends Component{
         }else{
             lastBrake = -1;
         }
+
+        // if(brakeState == BrakeState.ENGAGED && getEncoderVelocity() < -100){
+        //     bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
+        // }
+
         brakePad.set(brakeState == BrakeState.DISENGAGED);
     }
 
