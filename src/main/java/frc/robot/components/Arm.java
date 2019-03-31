@@ -114,7 +114,7 @@ public class Arm extends Component{
     public double getArmAngle(){
         //return pivot.getEncoder().getPosition() / 237.5;
         //System.out.println(pivot.getEncoder().getPosition());
-        final double position = (((armEncoder.getAverageVoltage() / 5.0) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
+        final double position = (((5.0 - (armEncoder.getAverageVoltage() / 5.0)) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
         //final double position = (360.0 * (pivot.getEncoder().getPosition() / 237.5) + Constants.ARM_STOW_ANGLE) % 360;
         if(position < 0){
             return 360 + position;

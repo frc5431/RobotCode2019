@@ -58,7 +58,7 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = false;
+    public final static boolean INTAKE_ROLLER_INVERTED = true;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
     public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
@@ -71,7 +71,7 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 134;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 100;
     // to calculate this, move the elevator to the max operational height and record the number
     public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 43000 : 47000;
 
@@ -122,10 +122,10 @@ public final class Constants {
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
-    public final static double AUTO_AIM_DISTANCE_MIN = 0.1;//gentle: 0.05 rough: 0.2
+    public final static double AUTO_AIM_DISTANCE_MIN = 0.24;//gentle: 0.05 rough: 0.2
     public final static double AUTO_AIM_ANGLE_CENTERED_P = 0.005;//0.05
-    public final static double AUTO_AIM_ANGLE_UNCENTERED_P = 0.05;
-    public final static double AUTO_AIM_ANGLE_MIN = 0.0;
+    public final static double AUTO_AIM_ANGLE_UNCENTERED_P = 0.005;
+    public final static double AUTO_AIM_ANGLE_MIN = 0.005;
 
     //motion magic
     public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;
@@ -159,12 +159,12 @@ public final class Constants {
 
     public final static double AUTO_ROBOT_DEFAULT_SPEED = 0.3;
 
-    public final static double AUTO_ELEVATOR_SPEED = 0.5;//old: 0.4
+    public final static double AUTO_ELEVATOR_SPEED = 0.2;//old: 0.4
     public final static double AUTO_ELEVATOR_ACCELERATION = 0.35;// old: 0.35
     public final static double AUTO_ELEVATOR_ACCELERATION_MAX_ERROR = 20000;
     public final static double AUTO_ELEVATOR_STAGE_2_FEEDFORWARD = 0.1;// old: 0.15
 
-    public final static double AUTO_ARM_SPEED = 0.1;//old: 0.15
+    public final static double AUTO_ARM_SPEED = 0.02;//old: 0.15
     public final static double AUTO_ARM_ACCELERATION = 0.9;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 120;
 
@@ -180,7 +180,7 @@ public final class Constants {
 
     // LIMITS
     // The minimum height the elevator needs to be to have the intake flip
-    public final static int ELEVATOR_INTAKE_FLIP_LIMIT = (int)(0.3191 * ELEVATOR_ENCODER_CALIBRATION);
+    public final static int ELEVATOR_INTAKE_FLIP_LIMIT = (int)(0.4255 * ELEVATOR_ENCODER_CALIBRATION);
     // The minimum height the elevator needs to be in to consider the second stage engaged
     public final static int ELEVATOR_FIRST_STAGE_LIMIT = (int)(0.5106 * ELEVATOR_ENCODER_CALIBRATION);
     // The max operational height of the elevator

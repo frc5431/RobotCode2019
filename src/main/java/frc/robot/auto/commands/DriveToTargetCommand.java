@@ -75,11 +75,11 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		//double angleError = directionSignum * target.getXAngle();
 		double angleError;
 		if(target.exists()){
-			if(ttype.getLimelight().isCentered()){
+			//if(ttype.getLimelight().isCentered()){
 				angleError = target.getXAngle();
-			}else{
-				angleError = (target.getXAngle() / target.getYAngle()) - 1.33;//1.18
-			}
+			// }else{
+			// 	angleError = (target.getXAngle() / target.getYAngle()) - 1.33;//1.18
+			// }
 			lastErrorAngle = angleError;
 		}else{
 			angleError = lastErrorAngle;
@@ -94,10 +94,8 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		if(ttype.getLimelight().isCentered()){
 			atTarget = target.getArea() > 16;
 		}else{
-			atTarget = target.getArea() > 8;
+			atTarget = target.getArea() > 12;
 		}
-
-		System.out.println(angleError);
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
 		if((target.exists() && atTarget) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){

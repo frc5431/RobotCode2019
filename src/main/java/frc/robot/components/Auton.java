@@ -120,16 +120,16 @@ public class Auton extends Component{
             if(isInFloorIntake(robot.getElevator().getEncoderPosition(), robot.getArm().getArmAngle())){
                 return List.of(new GrabBallCommand());
             }
-            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1234, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
+            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1829, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
-        final double hatchLoadingStationPos = 0.1085;
         hatchSequences.put(Sequence.LOADING_STATION, (robot)->{
             final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
             //     return deploymentSequence;
             // }
-            return goToPosition(robot, deploymentSequence, hatchLoadingStationPos, 100);
+            return goToPosition(robot, deploymentSequence, 0, 115);
+            //return goToPosition(robot, deploymentSequence, 0.1085, 100);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
@@ -137,16 +137,16 @@ public class Auton extends Component{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5319, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.6170, 100));
         //flusH: 31000
         hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9574, 100));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 265));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 240));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8510, 265));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8510, 240));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3030, 90));
 
