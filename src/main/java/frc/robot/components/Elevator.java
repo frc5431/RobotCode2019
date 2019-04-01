@@ -100,10 +100,8 @@ public class Elevator extends Component{
             //bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
         //}
 
-        System.out.println(getEncoderVelocity());
-
         if(isCarriageUp() && isElevatorDown()){
-            System.out.println("RESET");
+            System.out.println("RESET: ELEVATOR TOP LIMIT");
             bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
             //bagged robot: 27000
         }else if(isCarriageDown() && isElevatorDown()){

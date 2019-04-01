@@ -89,6 +89,7 @@ public class Auton extends Component{
 
         final Function<Robot, List<Titan.Command<Robot>>> climb = (robot)->{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
+                System.out.println("HELLO");
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
                 return goToPosition(robot, 0.1558, 245, List.of(new JayCommand(JayState.RETRACTED)));
@@ -144,7 +145,8 @@ public class Auton extends Component{
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
 
-        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 240));
+        hatchSequences.put(Sequence.ROCKET_REVERSE_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 240
+        ));
 
         hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8510, 240));
 
