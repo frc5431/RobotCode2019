@@ -162,6 +162,7 @@ public class Drivebase extends Component{
         }else{
             rightCorrection = 0;
         }
+
         backLeft.set(leftPower + leftCorrection);
         frontLeft.set(leftPower + leftCorrection);
 
@@ -224,8 +225,10 @@ public class Drivebase extends Component{
     }
 
     public final void disableDistancePID(){
-        leftDistancePID.disable();
-        rightDistancePID.disable();
+        leftDistancePID.reset();
+        rightDistancePID.reset();
+
+        setDistancePIDTarget(0, 0);
     }
     
 	public final void disableAllPID() {
@@ -307,10 +310,18 @@ public class Drivebase extends Component{
     //     drivePID.setSetpoint(angle);
     // }
 
-    // public final boolean hasTravelled(final double leftDistance, final double rightDistance) {
-    //     return rightDistance < 0 ? getRightDistance() <= rightDistance : getRightDistance() >= rightDistance
-    //     && leftDistance < 0 ? getLeftDistance() <= leftDistance : getLeftDistance() >= leftDistance;
-    // }
+    public final boolean hasTravelledLeft(final double leftDistance){
+        return leftDistance < 0 ? getLeftDistance() <= leftDistance : getLeftDistance() >= leftDistance;
+    }
+
+    public final boolean hasTravelledRight(final double rightDistance){
+        return rightDistance < 0 ? getRightDistance() <= rightDistance : getRightDistance() >= rightDistance;
+    }
+
+    public final boolean hasTravelled(final double leftDistance, final double rightDistance) {
+        return hasTravelledRight(rightDistance)
+        && hasTravelledLeft(leftDistance);
+    }
 
     public ControlMode getControlMode(){
         return controlMode;

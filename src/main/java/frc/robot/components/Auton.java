@@ -26,6 +26,8 @@ import frc.robot.auto.commands.FingerCommand;
 import frc.robot.auto.commands.GrabBallCommand;
 import frc.robot.auto.commands.JayCommand;
 import frc.robot.auto.commands.MimicDriveCommand;
+import frc.robot.auto.commands.DriveToCommand;
+import frc.robot.auto.commands.DriveToArcCommand;
 import frc.robot.auto.commands.DriveToTargetCommand;
 import frc.robot.auto.commands.RollerCommand;
 import frc.robot.auto.Routine;
@@ -79,6 +81,7 @@ public class Auton extends Component{
                     }
                 }
             }
+
             mimicLoaded = true;
         }).start();
 
@@ -89,7 +92,6 @@ public class Auton extends Component{
 
         final Function<Robot, List<Titan.Command<Robot>>> climb = (robot)->{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
-                System.out.println("HELLO");
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
                 return goToPosition(robot, 0.1558, 245, List.of(new JayCommand(JayState.RETRACTED)));
@@ -301,60 +303,88 @@ public class Auton extends Component{
             rob.getDrivebase().setControlMode(ControlMode.AUTO);
         }));
 
-        int lastRunningSequence = -1;
+        if(name.equalsIgnoreCase("hab_to_frocket_gen")){
+            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                runSequence(rob, SequenceType.HATCH, sequence);
+            }));
+            outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
+            //outCommands.add(new DriveToCommand(-0.5, 0.5, -2, 2));
+        }else if(name.equalsIgnoreCase("ls_to_crocket_gen")){
+            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                runSequence(rob, SequenceType.HATCH, sequence);
+            }));
+            outCommands.add(new DriveToArcCommand(-0.7, -0.7, -140, -60));
+        }else if(name.equalsIgnoreCase("hab_to_ccargo_gen")){
+            // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+            //     //Sequence.values()[stepSequence];
+            //     runSequence(rob, SequenceType.HATCH, Sequence.ROCKET_FORWARD_1);
+            // }));
+            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                //Sequence.values()[stepSequence];
+                runSequence(rob, SequenceType.HATCH, Sequence.ROCKET_FORWARD_1);
+            }));
+            outCommands.add(new DriveToCommand(0.7, 0.7, 70, 70));
+            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                //Sequence.values()[stepSequence];
+                runSequence(rob, SequenceType.HATCH, Sequence.ROCKET_FORWARD_1);
+            }));
+        }else{
+            int lastRunningSequence = -1;
 
-        //Collect the mimic file
-        //mimicChooser.getSelected()
-        final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.getOrDefault(name, List.of());
-        for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
-            final List<Titan.Command<Robot>> out = new ArrayList<>();
-            if(step.getBoolean(MimicPropertyValue.HOME)){
-                out.add(new Titan.ConsumerCommand<>((rob)->{
-                    rob.getDrivebase().reset();
-                }));
-            }
-
-            final int stepSequence = step.getInteger(MimicPropertyValue.RUNNING_SEQUENCE);
-            if(sequence != null && stepSequence >= 0 && stepSequence != lastRunningSequence){
-                out.add(new Titan.ConsumerCommand<>((rob)->{
-                    //Sequence.values()[stepSequence];
-                    runSequence(rob, SequenceType.values()[step.getInteger(MimicPropertyValue.SEQUENCE_TYPE)], sequence);
-                }));
-            }
-            lastRunningSequence = stepSequence;
-
-            final double leftPower, leftDistance;
-            final double rightPower, rightDistance;
-
-            if(swapped){
-                leftPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
-                rightPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
-
-                leftDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
-                rightDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
-            }else{
-                leftPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
-                rightPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
-
-                leftDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
-                rightDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
-            }
-
-            out.add(new MimicDriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
-
-            if(out.size() == 1){
-                outCommands.add(out.get(0));
-            }else{
-                final Titan.ParallelCommandGroup<Robot> group = new Titan.ParallelCommandGroup<>();
-                for(final Titan.Command<Robot> com : out){
-                    group.addCommand(com);
+            //Collect the mimic file
+            //mimicChooser.getSelected()
+            final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.getOrDefault(name, List.of());
+            for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
+                final List<Titan.Command<Robot>> out = new ArrayList<>();
+                if(step.getBoolean(MimicPropertyValue.HOME)){
+                    out.add(new Titan.ConsumerCommand<>((rob)->{
+                        rob.getDrivebase().reset();
+                    }));
                 }
-                outCommands.add(group);
+
+                final int stepSequence = step.getInteger(MimicPropertyValue.RUNNING_SEQUENCE);
+                if(sequence != null && stepSequence >= 0 && stepSequence != lastRunningSequence){
+                    out.add(new Titan.ConsumerCommand<>((rob)->{
+                        //Sequence.values()[stepSequence];
+                        runSequence(rob, SequenceType.values()[step.getInteger(MimicPropertyValue.SEQUENCE_TYPE)], sequence);
+                    }));
+                }
+                lastRunningSequence = stepSequence;
+
+                final double leftPower, leftDistance;
+                final double rightPower, rightDistance;
+
+                if(swapped){
+                    leftPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
+                    rightPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
+
+                    leftDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
+                    rightDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
+                }else{
+                    leftPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
+                    rightPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
+
+                    leftDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
+                    rightDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
+                }
+
+                out.add(new MimicDriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
+
+                if(out.size() == 1){
+                    outCommands.add(out.get(0));
+                }else{
+                    final Titan.ParallelCommandGroup<Robot> group = new Titan.ParallelCommandGroup<>();
+                    for(final Titan.Command<Robot> com : out){
+                        group.addCommand(com);
+                    }
+                    outCommands.add(group);
+                }
             }
         }
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             System.out.println("Finished mimic file");
-            rob.getDrivebase().disableAllPID();
+            rob.getDrivebase().setHome();
+            rob.getDrivebase().setControlMode(ControlMode.MANUAL);
 		    rob.getDrivebase().drive(0.0, 0.0);
         }));
 

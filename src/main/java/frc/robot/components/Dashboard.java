@@ -37,7 +37,7 @@ public class Dashboard extends Component{
         for(final Routine r : Routine.values()){
             routineChooser.addOption(r.toString(), r);
         }
-        routineChooser.setDefaultOption(Routine.CARGOSHIP_2_HATCH_RIGHT.toString(), Routine.CARGOSHIP_2_HATCH_RIGHT);
+        routineChooser.setDefaultOption(Routine.ROCKET_TIER_2_RIGHT.toString(), Routine.ROCKET_TIER_2_RIGHT);
         SmartDashboard.putData("RoutineChooser", routineChooser);
     }
 

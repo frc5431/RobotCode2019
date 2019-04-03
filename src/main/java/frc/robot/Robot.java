@@ -40,6 +40,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    Titan.DEBUG = false;
     //Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
 
     Titan.DEBUG = true;
@@ -72,6 +73,8 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     mode = Mode.TELEOP;
     getComponents().forEach((com)->com.init(this));
+
+    compressor.setClosedLoopControl(true);
   }
 
   @Override
@@ -92,6 +95,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     teleopPeriodic();
+
+    compressor.stop();
   }
 
   @Override

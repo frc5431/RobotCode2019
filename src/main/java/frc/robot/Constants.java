@@ -47,13 +47,13 @@ public final class Constants {
     public final static int DRIVEBASE_BACK_RIGHT_ID = 6;
     public final static boolean DRIVEBASE_BACK_RIGHT_INVERTED = false;
 
-    public final static int CLIMBER_LEFT_ID = 8;
+    public final static int CLIMBER_LEFT_ID = ROBOT_TYPE == Robot.COMPETITION ? 8 : 10;
     public final static boolean CLIMBER_LEFT_INVERTED = false;
 
     public final static int CLIMBER_RIGHT_ID = 9;
     public final static boolean CLIMBER_RIGHT_INVERTED = true;
 
-    public final static int ARM_PIVOT_ID = 10;
+    public final static int ARM_PIVOT_ID = ROBOT_TYPE == Robot.COMPETITION ? 10 : 8;
     public final static boolean ARM_PIVOT_INVERTED = true;
 
     // Talon SRX's
@@ -118,7 +118,10 @@ public final class Constants {
 
     // PID
     public final static double DRIVEBASE_DISTANCE_P = 0.010;//0.00635
-	public final static double DRIVEBASE_DISTANCE_I = 0.000000025; // 0.0003; //0.0022;
+    //0.000000025
+    public final static double DRIVEBASE_DISTANCE_I = 0.0
+    
+    ; // 0.0003; //0.0022;
     public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
