@@ -94,7 +94,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		if(ttype.getLimelight().isCentered()){
 			atTarget = target.getArea() > 16;
 		}else{
-			atTarget = target.getArea() > 12;
+			atTarget = target.getArea() > 11.5;
 		}
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket

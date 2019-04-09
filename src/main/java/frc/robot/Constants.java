@@ -5,7 +5,7 @@ public final class Constants {
         PRACTICE, COMPETITION;
     }
 
-    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
+    public static final Robot ROBOT_TYPE = Robot.COMPETITION;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -58,7 +58,7 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = true;
+    public final static boolean INTAKE_ROLLER_INVERTED = false;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
     public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
@@ -71,9 +71,9 @@ public final class Constants {
     // analog inputs
     public final static int ARM_ENCODER_PORT = 3;
 
-    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 74 : 100;
+    public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 100 : 100;
     // to calculate this, move the elevator to the max operational height and record the number
-    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 43000 : 47000;
+    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 46000 : 47000;
 
     // digital inputs
 

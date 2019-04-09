@@ -94,7 +94,7 @@ public class Auton extends Component{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
-                return goToPosition(robot, 0.1558, 245, List.of(new JayCommand(JayState.RETRACTED)));
+                return goToPosition(robot, 0.2444, 245, List.of(new JayCommand(JayState.RETRACTED)));
             }
         };
 
@@ -123,7 +123,7 @@ public class Auton extends Component{
             if(isInFloorIntake(robot.getElevator().getEncoderPosition(), robot.getArm().getArmAngle())){
                 return List.of(new GrabBallCommand());
             }
-            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.1829, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
+            return goToPosition(robot, List.of(new RollerCommand(Constants.INTAKE_ROLLER_SPEED, -1)), 0.0953, 80, List.of(new ArmBrakeCommand(false), new GrabBallCommand()));
         });
 
         hatchSequences.put(Sequence.LOADING_STATION, (robot)->{
@@ -142,7 +142,7 @@ public class Auton extends Component{
         //flush: 8000
         hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.6170, 100));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9574, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 1.0, 105));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
@@ -154,7 +154,7 @@ public class Auton extends Component{
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3030, 90));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7340, 92));
+        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7340, 96));
 
         ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 1.0010, 115));
 
@@ -635,6 +635,7 @@ public class Auton extends Component{
                 if(firstSequence != null){
                     preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
                     preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT));
+                    preloadedAutoCommands.add(new Titan.WaitCommand<>(500));
                 }
             }
             if(r.getLoadingStationFile() != null){

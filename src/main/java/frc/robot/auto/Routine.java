@@ -1,12 +1,12 @@
 package frc.robot.auto;
 
 public enum Routine{
-    ROCKET_TIER_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_1),
-    ROCKET_TIER_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_1, true),
-    ROCKET_TIER_2_RIGHT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_2),
-    ROCKET_TIER_2_LEFT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_1, true),
-    ROCKET_TIER_3_RIGHT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_1),
-    ROCKET_TIER_3_LEFT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket_optimized_1", "frocket_to_ls", "ls_to_crocket", Sequence.ROCKET_FORWARD_1, true),
+    ROCKET_TIER_1_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_1),
+    ROCKET_TIER_1_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_1, true),
+    ROCKET_TIER_2_RIGHT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_2),
+    ROCKET_TIER_2_LEFT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_1, true),
+    ROCKET_TIER_3_RIGHT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_1),
+    ROCKET_TIER_3_LEFT(Sequence.ROCKET_FORWARD_3, "hab_to_frocket_optimized_1", null, null, Sequence.ROCKET_FORWARD_1, true),
     CARGOSHIP_LEFT_TO_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", "ccargo_to_ls", "ls_to_ccargo_optimized_2"),
     CCARGO_TO_LS(Sequence.LOADING_STATION, "ccargo_to_ls", null, null),
     LS_TO_CCARGO(Sequence.ROCKET_FORWARD_1, "ls_to_ccargo", null, null),
