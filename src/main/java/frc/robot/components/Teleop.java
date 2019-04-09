@@ -5,6 +5,7 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
+import frc.robot.components.Climber.ForkState;
 import frc.robot.auto.Sequence;
 import frc.robot.auto.SequenceType;
 import frc.robot.components.Intake.FingerState;
@@ -12,15 +13,13 @@ import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
 import frc.robot.Robot;
 
-public class Teleop extends Component{
+public class Teleop extends Titan.Component<Robot>{
     private Titan.Xbox driver;
     private Titan.LogitechExtreme3D operator;
 
-    private Titan.Toggle fingers, jay;
+    private Titan.Toggle fingers, jay, forks;
 
     public Teleop(){
         driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
@@ -31,6 +30,7 @@ public class Teleop extends Component{
 
         fingers = new Titan.Toggle();
         jay = new Titan.Toggle();
+        forks = new Titan.Toggle();
     }
 
     @Override
@@ -54,6 +54,15 @@ public class Teleop extends Component{
 
           final Climber climber = robot.getClimber();
           climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
+
+          forks.setState(climber.getForkState() == ForkState.DEPLOYED);
+          climber.fork(forks.isToggled(driver.getRawButton(Titan.Xbox.Button.BACK)) ? ForkState.DEPLOYED : ForkState.RETRACTED);
+
+          if(driver.getRawButton(Titan.Xbox.Button.START)){
+            climber.winch(Constants.CLIMBER_WINCH_SPEED);
+          }else{
+            climber.winch(0.0);
+          }
         }
 
         final Elevator elevator = robot.getElevator();
@@ -102,10 +111,5 @@ public class Teleop extends Component{
 
     public Titan.LogitechExtreme3D getOperator(){
       return operator;
-    }
-
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
     }
 }

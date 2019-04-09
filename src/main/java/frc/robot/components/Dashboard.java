@@ -1,28 +1,21 @@
 package frc.robot.components;
 
-import java.util.List;
-
-import java.util.ArrayList;
-
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import frc.robot.Robot;
 import frc.robot.Robot.Mode;
 import frc.robot.util.Titan;
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
 import frc.robot.auto.Routine;
 import frc.robot.auto.vision.TargetInfo;
 
-public class Dashboard extends Component{
+public class Dashboard extends Titan.Component<Robot>{
     private final SendableChooser<Routine> routineChooser = new SendableChooser<>();
     private Routine currentRoutine = null;
 
-    private final Titan.Toggle selfTest = new Titan.Toggle();
+    // private final Titan.Toggle selfTest = new Titan.Toggle();
 
     //private String frontCameraData = null;
 
@@ -82,20 +75,20 @@ public class Dashboard extends Component{
             robot.getAuton().preloadRoutine(currentRoutine);
         }
 
-        if(!selfTest.getState() && selfTest.isToggled(RobotController.getUserButton())){
-            final List<Testable> testables = new ArrayList<>();
-            testables.addAll(robot.getComponents());
+        // if(!selfTest.getState() && selfTest.isToggled(RobotController.getUserButton())){
+        //     final List<Testable> testables = new ArrayList<>();
+        //     testables.addAll(robot.getComponents());
 
-            final StringBuilder builder = new StringBuilder();
-            for(final Testable t : testables){
-                builder.append(t.getClass().getName()).append(": ").append(t.getTestResult()).append(System.lineSeparator());
-            }
+        //     final StringBuilder builder = new StringBuilder();
+        //     for(final Testable t : testables){
+        //         builder.append(t.getClass().getName()).append(": ").append(t.getTestResult()).append(System.lineSeparator());
+        //     }
 
-            SmartDashboard.putString("SelfTest", builder.toString());
+        //     SmartDashboard.putString("SelfTest", builder.toString());
             
-            // PERFORM SELF TEST
-            selfTest.setState(false);
-        }
+        //     // PERFORM SELF TEST
+        //     selfTest.setState(false);
+        // }
     }
 
     @Override
@@ -104,10 +97,5 @@ public class Dashboard extends Component{
 
     public Routine getChosenRoutine(){
         return routineChooser.getSelected();
-    }
-
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
     }
 }

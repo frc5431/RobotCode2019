@@ -1,18 +1,16 @@
 package frc.robot.components;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
 import frc.robot.util.Titan;
 
-public class Intake extends Component{
+public class Intake extends Titan.Component<Robot>{
     public static enum FingerState{
         DEPLOYED, RETRACTED
     };
@@ -21,7 +19,7 @@ public class Intake extends Component{
         DEPLOYED, RETRACTED
     };
 
-    private final WPI_TalonSRX rollers;
+    private final CANSparkMax rollers;
 
     private final Titan.Solenoid jay;
     private final Titan.DoubleSolenoid finger;
@@ -33,9 +31,9 @@ public class Intake extends Component{
     private double rollerSpeed = 0.0;
 
     public Intake(){
-        rollers = new WPI_TalonSRX(Constants.INTAKE_ROLLER_ID);
+        rollers = new CANSparkMax(Constants.INTAKE_ROLLER_ID, MotorType.kBrushed);
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
-        rollers.setNeutralMode(NeutralMode.Brake);
+        rollers.setIdleMode(IdleMode.kBrake);
 
         finger = new Titan.DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 
@@ -102,10 +100,5 @@ public class Intake extends Component{
 
     public void setControlMode(final ControlMode mode){
         controlMode = mode;
-    }
-
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
     }
 }

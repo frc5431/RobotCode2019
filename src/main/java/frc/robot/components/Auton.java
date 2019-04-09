@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.auto.MimicPropertyValue;
-import frc.robot.util.Testable;
-import frc.robot.util.Component;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 
@@ -38,7 +36,7 @@ import frc.robot.auto.Sequence;
 import frc.robot.auto.SequenceType;
 import frc.robot.auto.ArmDirection;
 
-public class Auton extends Component{
+public class Auton extends Titan.Component<Robot>{
     private Titan.CommandQueue<Robot> sequenceCommands, drivebaseCommands, preloadedAutoCommands;
     private Titan.Joystick buttonBoard;
 
@@ -232,14 +230,20 @@ public class Auton extends Component{
     public void periodic(final Robot robot){
         final SequenceType sequenceType = getCurrentSequenceType();
 
+        Sequence requestedSequence = null;
+        for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
+            if(buttonBoard.getRawButton(e.getKey())){
+                requestedSequence = e.getValue();
+                break;
+            }
+        }
+
         if(sequenceCommands.isEmpty()){
             runningSequence = null;
-            for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
-                if(buttonBoard.getRawButton(e.getKey())){
-                    runSequence(robot, sequenceType, e.getValue());
-                    break;
-                }
-            }
+        }
+
+        if(requestedSequence != null && requestedSequence != runningSequence){
+            runSequence(robot, sequenceType, requestedSequence);
         }
 
         final boolean leftBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L);
@@ -353,6 +357,7 @@ public class Auton extends Component{
 
                 final double leftPower, leftDistance;
                 final double rightPower, rightDistance;
+                final double angle;
 
                 if(swapped){
                     leftPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
@@ -360,15 +365,19 @@ public class Auton extends Component{
 
                     leftDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
                     rightDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
+
+                    angle = -step.getDouble(MimicPropertyValue.ANGLE);
                 }else{
                     leftPower = step.getDouble(MimicPropertyValue.LEFT_POWER);
                     rightPower = step.getDouble(MimicPropertyValue.RIGHT_POWER);
 
                     leftDistance = step.getDouble(MimicPropertyValue.LEFT_DISTANCE);
                     rightDistance = step.getDouble(MimicPropertyValue.RIGHT_DISTANCE);
+
+                    angle = step.getDouble(MimicPropertyValue.ANGLE);
                 }
 
-                out.add(new MimicDriveCommand(leftPower, rightPower, leftDistance, rightDistance, step.getDouble(MimicPropertyValue.BATTERY)));
+                out.add(new MimicDriveCommand(leftPower, rightPower, leftDistance, rightDistance, angle, step.getDouble(MimicPropertyValue.BATTERY)));
 
                 if(out.size() == 1){
                     outCommands.add(out.get(0));
@@ -661,10 +670,5 @@ public class Auton extends Component{
 
     public Titan.Joystick getButtonBoard(){
         return buttonBoard;
-    }
-
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
     }
 }

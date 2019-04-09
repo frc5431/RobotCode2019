@@ -12,11 +12,9 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
 import frc.robot.util.Titan;
 
-public class Elevator extends Component{
+public class Elevator extends Titan.Component<Robot>{
     public static enum BrakeState{
         ENGAGED, DISENGAGED
     };
@@ -208,15 +206,5 @@ public class Elevator extends Component{
 
     public boolean isCarriageDown(){
         return !carriageDown.get();
-    }
-
-    @Override
-    public String getTestResult(){
-        if(isCarriageDown()&&isCarriageUp()){
-            return "Carriage sensor mismatch";
-        }else if(isCarriageDown() && getEncoderPosition() != 0){
-            return "Bottom limit switch logic failure";
-        }
-        return Testable.SUCCESS;
     }
 }

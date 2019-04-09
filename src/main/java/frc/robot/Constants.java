@@ -17,6 +17,8 @@ public final class Constants {
     public final static int BUTTONBOARD_JOYSTICK_ID = 2;
 
     //pneumatic definitions
+    public final static int COMPRESSOR_PCM_ID = 30;
+
     public final static int ELEVATOR_BRAKE_PCM_ID = 30;
     public final static int ELEVATOR_BRAKE_ID = 0;
 
@@ -30,7 +32,18 @@ public final class Constants {
     public final static int INTAKE_FINGER_FORWARD_ID = 6;
     public final static int INTAKE_FINGER_REVERSE_ID = ROBOT_TYPE == Robot.COMPETITION ? 4 : 7;
 
+    public final static int CLIMBER_FORK_PCM_ID = 30;
+    public final static int CLIMBER_FORK_ID = 2;
+
     //motor controller definitions
+
+    // Victor SPX's
+    // These are PWM ID's, not CAN ID's
+    public final static int CLIMBER_WINCH_LEFT_ID = 0;
+    public final static boolean CLIMBER_WINCH_LEFT_INVERTED = false;
+
+    public final static int CLIMBER_WINCH_RIGHT_ID = 1;
+    public final static boolean CLIMBER_WINCH_RIGHT_INVERTED = false;
 
     //Spark MAX's
     public final static int DRIVEBASE_FRONT_LEFT_ID = 4;
@@ -53,11 +66,11 @@ public final class Constants {
     public final static int CLIMBER_RIGHT_ID = 9;
     public final static boolean CLIMBER_RIGHT_INVERTED = true;
 
-    public final static int ARM_PIVOT_ID = ROBOT_TYPE == Robot.COMPETITION ? 10 : 8;
+    public final static int ARM_PIVOT_ID = 1;
     public final static boolean ARM_PIVOT_INVERTED = true;
 
     // Talon SRX's
-    public final static int INTAKE_ROLLER_ID = 1;
+    public final static int INTAKE_ROLLER_ID = ROBOT_TYPE == Robot.COMPETITION ? 10 : 8;
     public final static boolean INTAKE_ROLLER_INVERTED = true;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
@@ -117,12 +130,13 @@ public final class Constants {
     public final static double ARM_MAX_ANGLE = 280;
 
     // PID
-    public final static double DRIVEBASE_DISTANCE_P = 0.010;//0.00635
-    //0.000000025
-    public final static double DRIVEBASE_DISTANCE_I = 0.0
-    
-    ; // 0.0003; //0.0022;
-    public final static double DRIVEBASE_DISTANCE_D = 0.000915; // 0.000915;
+    public final static double DRIVEBASE_DISTANCE_P = 0.010;
+    public final static double DRIVEBASE_DISTANCE_I = 0.0;
+    public final static double DRIVEBASE_DISTANCE_D = 0.000915;
+
+    public final static double DRIVEBASE_ANGLE_P = 0.00325;
+	public final static double DRIVEBASE_ANGLE_I = 0.000185;
+	public final static double DRIVEBASE_ANGLE_D = 0.0000095;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
     public final static double AUTO_AIM_DISTANCE_MIN = 0.24;//gentle: 0.05 rough: 0.2
@@ -138,21 +152,20 @@ public final class Constants {
     public final static double ELEVATOR_MM_CRUISE_VELOCITY = 1.0;
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
-    //motion profiling
-    public final static double ARM_MP_P = 0.007;//0.02758, corrected: 0.01671
-    public final static double ARM_MP_I = 0.000;
-    public final static double ARM_MP_D = 0.0;
-    public final static double ARM_MP_PEAK_SENSOR_VELOCITY = 2.5;
-    public final static double ARM_MP_CRUISE_VELOCITY = 0.6;//0.88
-    public final static double ARM_MP_ACCELERATION = 0.03;
+    public final static double ARM_MM_P = 0.007;
+    public final static double ARM_MM_I = 0;
+    public final static double ARM_MM_D = 0;
+    public final static double ARM_MM_PEAK_SENSOR_VELOCITY = 2.5;
+    public final static double ARM_MM_CRUISE_VELOCITY = 0.6;
+    public final static double ARM_MM_ACCELERATION = 0.03;
 
     // SPEEDS
 
     // TELEOPERATED SPEEDS
     public final static double ARM_PIVOT_UP_SPEED = 0.2;//0.2
     public final static double ARM_PIVOT_DOWN_SPEED = 0.15;//0.15
-    public final static double CLIMBER_SPEED = 0.1;
     public final static double INTAKE_ROLLER_SPEED = 1.0;
+    public final static double CLIMBER_WINCH_SPEED = 0.1;
 
     // TELEOPERATED MULTIPLIERS
     public final static double ELEVATOR_DOWN_MULTIPLIER = 0.6;
@@ -196,6 +209,8 @@ public final class Constants {
     // TOLERANCES
     public final static double ARM_ANGLE_TOLERANCE = 0.5;
     public final static int ELEVATOR_POSITION_TOLERANCE = 300;
+    public final static double DRIVEBASE_DISTANCE_TOLERNACE = 1;
+    public final static double DRIVEBASE_ANGLE_TOLERANCE = 1.0; 
 
     //AMPS
     public final static int ROLLER_BALL_AMPS = 73;

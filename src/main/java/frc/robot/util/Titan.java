@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalSource;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.TimedRobot;
 
 /**
  * Namespace for TitanUtil
@@ -194,7 +195,7 @@ public final class Titan {
 		}
 	}
 
-	public static class AssignableJoystick<T> extends Titan.Joystick {
+	public static class AssignableJoystick<T extends Robot<T>> extends Titan.Joystick {
 		private final Map<Integer, Supplier<CommandQueue<T>>> assignments = new HashMap<>();
 		private final CommandQueue<T> currentQueue = new CommandQueue<>();
 
@@ -389,7 +390,23 @@ public final class Titan {
 		}
 	}
 
-	public static abstract class Command<T> {
+	public static abstract class Component<T extends Robot<T>>{
+		public abstract void init(final T robot);
+	
+		public abstract void periodic(final T robot);
+	
+		public abstract void disabled(final T robot);
+	
+		public void tick(final T robot){
+			//do nothing
+		}
+	}
+
+	public static abstract class Robot<T extends Robot<T>> extends TimedRobot{
+		public abstract List<Component<T>> getComponents();
+	}
+
+	public static abstract class Command<T extends Robot<T>> {
 		public String name = "Command";
 		public String properties = "None";
 		public long startTime = 0;
@@ -425,7 +442,7 @@ public final class Titan {
 		}
 	}
 	
-	public static class WaitCommand<T> extends Command<T> {
+	public static class WaitCommand<T extends Robot<T>> extends Command<T> {
 
 		private final long durationMS;
 		private long startTime;
@@ -455,7 +472,7 @@ public final class Titan {
 		}
 	}
 	
-	public static class ClearQueueCommand<T> extends Command<T>{
+	public static class ClearQueueCommand<T extends Robot<T>> extends Command<T>{
 
 		@Override
 		public void init(final T robot) {
@@ -471,7 +488,7 @@ public final class Titan {
 		}
 	}
 	
-	public static class SpeedCommand<T> extends Command<T> {
+	public static class SpeedCommand<T extends Robot<T>> extends Command<T> {
 		private final SpeedController controller;
 		private final double speed;
 		private final long durationMS;
@@ -504,7 +521,7 @@ public final class Titan {
 		}
 	}
 
-	public static class ConsumerCommand<T> extends Command<T> {
+	public static class ConsumerCommand<T extends Robot<T>> extends Command<T> {
 		private final Consumer<T> consumer;
 		
 		public ConsumerCommand(final Consumer<T> consumer) {
@@ -527,7 +544,7 @@ public final class Titan {
 		}
 	}
 
-	public static class ConditionalCommand<T> extends Command<T>{
+	public static class ConditionalCommand<T extends Robot<T>> extends Command<T>{
 		private final Function<T, Boolean> func;
 
 		public ConditionalCommand(final Function<T, Boolean> func) {
@@ -552,7 +569,7 @@ public final class Titan {
 		}
 	}
 
-	public static class CommandQueue<T> extends LinkedList<Command<T>> {
+	public static class CommandQueue<T extends Robot<T>> extends LinkedList<Command<T>> {
 		/**
 		 * 
 		 */
@@ -625,7 +642,7 @@ public final class Titan {
 		}
 	}
 
-	public static class ParallelCommandGroup<T> extends Command<T>{
+	public static class ParallelCommandGroup<T extends Robot<T>> extends Command<T>{
 		private final List<CommandQueue<T>> queues = new ArrayList<>();
 
 		private boolean init = false;
