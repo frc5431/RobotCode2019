@@ -1,7 +1,5 @@
 package frc.robot.components;
 
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 
@@ -11,7 +9,7 @@ import frc.robot.auto.vision.Limelight;
 
 import edu.wpi.first.networktables.NetworkTable;
 
-public class Vision extends Component{
+public class Vision extends Titan.Component<Robot>{
     public static enum LEDState{
         ON, OFF
     };
@@ -79,10 +77,5 @@ public class Vision extends Component{
 
     public TargetType getTargetType(){
         return ttype;
-    }
-
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
     }
 }

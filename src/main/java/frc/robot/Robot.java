@@ -2,34 +2,32 @@ package frc.robot;
 
 import java.util.List;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.util.Component;
 import frc.robot.util.Titan;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
 import frc.robot.components.Arm;
 import frc.robot.components.Intake;
+import frc.robot.components.Pneumatics;
 import frc.robot.components.Teleop;
 import frc.robot.components.Auton;
 import frc.robot.components.Dashboard;
 import frc.robot.components.Vision;
 
-public class Robot extends TimedRobot {
+public class Robot extends Titan.Robot<Robot> {
   public static enum Mode{
     DISABLED, AUTO, TELEOP, TEST
   }
 
   private Mode mode = Mode.DISABLED;
 
-  private Compressor compressor;
-
   private Climber climber;
   private Drivebase drivebase;
   private Elevator elevator;
   private Arm arm;
   private Intake intake;
+
+  private Pneumatics pneumatics;
 
   private Teleop teleop;
   private Auton auton;
@@ -45,9 +43,6 @@ public class Robot extends TimedRobot {
 
     Titan.DEBUG = true;
 
-    compressor = new Compressor(30);
-    compressor.start();
-    compressor.setClosedLoopControl(true);
     //compressor.stop();
 
     climber = new Climber();
@@ -55,6 +50,8 @@ public class Robot extends TimedRobot {
     elevator = new Elevator();
     arm = new Arm();
     intake = new Intake();
+
+    pneumatics = new Pneumatics();
 
     teleop = new Teleop();
     auton = new Auton();
@@ -73,8 +70,6 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     mode = Mode.TELEOP;
     getComponents().forEach((com)->com.init(this));
-
-    compressor.setClosedLoopControl(true);
   }
 
   @Override
@@ -95,8 +90,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     teleopPeriodic();
-
-    compressor.stop();
   }
 
   @Override
@@ -108,7 +101,6 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic(){
     teleopPeriodic();
-    compressor.stop();
   }
 
   @Override
@@ -157,7 +149,8 @@ public class Robot extends TimedRobot {
     return vision;
   }
 
-  public List<Component> getComponents(){
-    return List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake);
+  @Override
+  public List<Titan.Component<Robot>> getComponents(){
+    return List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
   }
 }

@@ -3,8 +3,8 @@ package frc.robot.components;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
-import frc.robot.util.Component;
-import frc.robot.util.Testable;
+import frc.robot.util.Titan;
+import frc.robot.util.TitanNavx;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -16,32 +16,18 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 
-public class Drivebase extends Component{
-    // public class DriveBasePIDSource implements PIDSource {
-	// 	@Override
-	// 	public void setPIDSourceType(final PIDSourceType pidSource) {
-	// 		//do nothing
-	// 	}
-
-	// 	@Override
-	// 	public PIDSourceType getPIDSourceType() {
-	// 		return PIDSourceType.kDisplacement;
-	// 	}
-
-	// 	@Override
-	// 	public double pidGet() {
-	// 		return navx.getAngle();
-	// 	}
-    // }
-
-
+public class Drivebase extends Titan.Component<Robot>{
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
+
+    private final SpeedControllerGroup left, right;
 
     private final Encoder leftEncoder, rightEncoder;
 
     private double leftPower, rightPower;
+    private double leftTarget, rightTarget, angleTarget;
 
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
@@ -55,7 +41,7 @@ public class Drivebase extends Component{
     
         @Override
         public double pidGet() {
-            return getLeftDistance();
+            return leftTarget - getLeftDistance();
         }
     
         @Override
@@ -77,7 +63,29 @@ public class Drivebase extends Component{
     
         @Override
         public double pidGet() {
-            return getRightDistance();
+            return rightTarget - getRightDistance();
+        }
+    
+        @Override
+        public PIDSourceType getPIDSourceType() {
+            return PIDSourceType.kDisplacement;
+        }
+    }, new PIDOutput() {
+		@Override
+		public void pidWrite(final double output) {}
+    }, 0.02);
+
+    private final PIDController anglePID = new PIDController(Constants.DRIVEBASE_ANGLE_P, Constants.DRIVEBASE_ANGLE_I, Constants.DRIVEBASE_ANGLE_D, new PIDSource(){
+
+        
+        @Override
+        public void setPIDSourceType(final PIDSourceType pidSource) {
+            //do nothing
+        }
+    
+        @Override
+        public double pidGet() {
+            return angleTarget - getAngle();
         }
     
         @Override
@@ -91,7 +99,7 @@ public class Drivebase extends Component{
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
-    //private final TitanNavx navx;
+    private final TitanNavx navx;
     
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -120,6 +128,9 @@ public class Drivebase extends Component{
         backRight.setIdleMode(IdleMode.kBrake);
         backRight.burnFlash();
 
+        left = new SpeedControllerGroup(backLeft, frontLeft);
+        right = new SpeedControllerGroup(backRight, frontRight);
+
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
         leftEncoder.setMaxPeriod(Constants.DRIVEBASE_ENCODER_MAX_PERIOD);
         leftEncoder.setMinRate(Constants.DRIVEBASE_ENCODER_MIN_RATE);
@@ -136,7 +147,7 @@ public class Drivebase extends Component{
 
         disableAllPID();
 
-        //navx = new TitanNavx();
+        navx = new TitanNavx();
     }
 
     
@@ -151,7 +162,7 @@ public class Drivebase extends Component{
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
-        final double leftCorrection, rightCorrection;
+        final double leftCorrection, rightCorrection, angleCorrection;
         if(leftDistancePID.isEnabled()){
             leftCorrection = leftDistancePID.get();
         }else{
@@ -162,12 +173,14 @@ public class Drivebase extends Component{
         }else{
             rightCorrection = 0;
         }
+        if(anglePID.isEnabled()){
+            angleCorrection = anglePID.get();
+        }else{
+            angleCorrection = 0;
+        }
 
-        backLeft.set(leftPower + leftCorrection);
-        frontLeft.set(leftPower + leftCorrection);
-
-        backRight.set(rightPower + rightCorrection);
-        frontRight.set(rightPower + rightCorrection);
+        left.set(leftPower + leftCorrection + angleCorrection);
+        right.set(rightPower + rightCorrection - angleCorrection);
     }
 
     @Override
@@ -209,30 +222,36 @@ public class Drivebase extends Component{
         return rightEncoder.getDistance();
     }
 
-    // public void resetNavx(){
-    //     navx.reset();
-    //     navx.resetDisplacement();
-    //     navx.resetYaw();
-    // }
+    public void resetNavx(){
+        navx.reset();
+        navx.resetDisplacement();
+        navx.resetYaw();
+    }
 
-    // public TitanNavx getNavx(){
-    //     return navx;
-    // }
+    public TitanNavx getNavx(){
+        return navx;
+    }
 
     public void reset(){
         resetEncoders();
-        //resetNavx();
+        resetNavx();
     }
 
-    public final void disableDistancePID(){
+    public void disableDistancePID(){
         leftDistancePID.reset();
         rightDistancePID.reset();
 
         setDistancePIDTarget(0, 0);
     }
+
+    public void disableAnglePID(){
+        anglePID.reset();
+
+        setAnglePIDTarget(0);
+    }
     
 	public final void disableAllPID() {
-        //drivePID.disable();
+        disableAnglePID();
         disableDistancePID();
     }
 
@@ -246,7 +265,8 @@ public class Drivebase extends Component{
             leftDistancePID.setInputRange(-1000, 1000);
             leftDistancePID.setOutputRange(-1.0, 1.0);
             leftDistancePID.setContinuous(false);
-            leftDistancePID.setAbsoluteTolerance(3);
+            leftDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
+            leftDistancePID.setSetpoint(0);
             leftDistancePID.enable();
         }
 
@@ -254,8 +274,20 @@ public class Drivebase extends Component{
             rightDistancePID.setInputRange(-1000, 1000);
             rightDistancePID.setOutputRange(-1.0, 1.0);
             rightDistancePID.setContinuous(false);
-            rightDistancePID.setAbsoluteTolerance(3);
+            rightDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
+            rightDistancePID.setSetpoint(0);
             rightDistancePID.enable();
+        }
+    }
+
+    public void enableAnglePID(){
+        if(!anglePID.isEnabled()){
+            anglePID.setInputRange(-360, 360);
+            anglePID.setOutputRange(-1.0, 1.0);
+            anglePID.setContinuous(false);
+            anglePID.setAbsoluteTolerance(Constants.DRIVEBASE_ANGLE_TOLERANCE);
+            anglePID.setSetpoint(0);
+            anglePID.enable();
         }
     }
 
@@ -266,15 +298,23 @@ public class Drivebase extends Component{
     public void setDistancePIDTarget(final double leftSetpoint, final double rightSetpoint){
         //leftDistancePID.reset();
         //rightDistancePID.reset();
-        leftDistancePID.setSetpoint(leftSetpoint);
-        rightDistancePID.setSetpoint(rightSetpoint);
+        leftTarget = leftSetpoint;
+        rightTarget = rightSetpoint;
 
        // leftDistancePID.enable();
         //rightDistancePID.enable();
     }
 
+    public void setAnglePIDTarget(final double setpoint){
+        angleTarget = setpoint;
+    }
+
     public boolean isAtDistancePIDTarget(){
         return leftDistancePID.onTarget() && rightDistancePID.onTarget();
+    }
+
+    public boolean isAtAnglePIDTarget(){
+        return anglePID.onTarget();
     }
 
     public double getLeftError(){
@@ -285,30 +325,9 @@ public class Drivebase extends Component{
         return rightDistancePID.getError();
     }
 
-    // public final void setDrivePIDValues() {
-    //     drivePID.setPID(Constants.DRIVE_MIMICK_P, Constants.DRIVE_MIMICK_I, Constants.DRIVE_MIMICK_D, 0.0);
-    //     drivePID.setOutputRange(-Constants.DRIVE_MIMICK_MIN_MAX, Constants.DRIVE_MIMICK_MIN_MAX);
-    // }
-
-    // public final void driveAtAnglePID(final double leftSpeed, final double rightSpeed, final double angle) {
-    //     disableAllPID();
-    //     reset();
-
-    //     drive(leftSpeed, rightSpeed);
-		
-	// 	drivePID.reset();
-	// 	drivePID.setSetpoint(0);
-	// 	setDrivePIDValues();
-	// 	//drivePID.setOutputRange(-Constants.DRIVE_HEADING_MIN_MAX, Constants.DRIVE_HEADING_MIN_MAX);
-	// 	drivePID.setSetpoint(angle);
-	// 	drivePID.enable();
-    // }
-
-    // public final void updateStepResults(final double leftSpeed, final double rightSpeed, final double angle) {
-    //     drive(leftSpeed, rightSpeed);
-
-    //     drivePID.setSetpoint(angle);
-    // }
+    public double getAngleError(){
+        return anglePID.getError();
+    }
 
     public final boolean hasTravelledLeft(final double leftDistance){
         return leftDistance < 0 ? getLeftDistance() <= leftDistance : getLeftDistance() >= leftDistance;
@@ -331,12 +350,11 @@ public class Drivebase extends Component{
         controlMode = mode;
     }
 	
-// 	public final boolean hasTurned(final double wantedAngle) {
-// 		return Titan.approxEquals(wantedAngle, navx.getAngle(), Constants.TURN_PRECISION);
-// }
+	public final boolean hasTurned(final double wantedAngle) {
+		return Titan.approxEquals(wantedAngle, getAngle(), Constants.DRIVEBASE_ANGLE_TOLERANCE);
+    }
 
-    @Override
-    public String getTestResult(){
-        return Testable.SUCCESS;
+    public double getAngle(){
+        return navx.getAngle();
     }
 }

@@ -8,9 +8,10 @@ import frc.robot.Robot;
 public class MimicDriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
 	private final double leftDistance, rightDistance;
+	private final double angle;
 	private final double battery;
 	
-	public MimicDriveCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double battery) {
+	public MimicDriveCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle, final double battery) {
 		name = "MimicDriveCommand";
 
 		this.left = left;
@@ -19,9 +20,11 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
 
+		this.angle = angle;
+
 		this.battery = battery;
 
-		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%);";
+		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle;
 	}
 	
 	@Override
@@ -31,6 +34,10 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 		robot.getDrivebase().enableDistancePID();
 
 		robot.getDrivebase().setDistancePIDTarget(leftDistance, rightDistance);
+
+		robot.getDrivebase().enableAnglePID();
+
+		robot.getDrivebase().setAnglePIDTarget(angle);
 	}
 
 	@Override
