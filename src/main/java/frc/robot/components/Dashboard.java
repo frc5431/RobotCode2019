@@ -57,7 +57,7 @@ public class Dashboard extends Titan.Component<Robot>{
         SmartDashboard.putBoolean("CarriageUp", robot.getElevator().isCarriageUp());
         SmartDashboard.putBoolean("ElevatorDown", robot.getElevator().isElevatorDown());
 
-        //SmartDashboard.putNumber("NavxAngle", robot.getDrivebase().getNavx().getAngle());
+        SmartDashboard.putNumber("NavxAngle", robot.getDrivebase().getAngle());
 
         SmartDashboard.putNumber("LeftDistance", robot.getDrivebase().getLeftDistance());
         SmartDashboard.putNumber("RightDistance", robot.getDrivebase().getRightDistance());

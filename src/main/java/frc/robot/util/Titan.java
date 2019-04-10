@@ -836,12 +836,19 @@ public final class Titan {
 					Titan.e("The requested Mimic data was not found");
 				}
 				
+				Step<PV> lastStep = null;
 				String line;
 				while ((line = reader.readLine()) != null) {
 					try {
-						pathData.add(new Step<PV>(line, clazz));
+						pathData.add(lastStep = new Step<PV>(line, clazz));
 					} catch (Exception e) {
 						Titan.ee("MimicData", e);
+					}
+				}
+
+				if(lastStep != null){
+					for(int i = 0; i < 25; ++i){
+						pathData.add(lastStep);
 					}
 				}
 				

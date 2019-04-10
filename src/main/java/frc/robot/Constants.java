@@ -5,7 +5,7 @@ public final class Constants {
         PRACTICE, COMPETITION;
     }
 
-    public static final Robot ROBOT_TYPE = Robot.COMPETITION;
+    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -130,13 +130,13 @@ public final class Constants {
     public final static double ARM_MAX_ANGLE = 280;
 
     // PID
-    public final static double DRIVEBASE_DISTANCE_P = 0.010;
-    public final static double DRIVEBASE_DISTANCE_I = 0.0;
-    public final static double DRIVEBASE_DISTANCE_D = 0.000915;
+    public final static double DRIVEBASE_DISTANCE_P = 0.02;
+    public final static double DRIVEBASE_DISTANCE_I = 0.0001;
+    public final static double DRIVEBASE_DISTANCE_D = 0.04;
 
-    public final static double DRIVEBASE_ANGLE_P = 0.00325;
+    public final static double DRIVEBASE_ANGLE_P = 0.004;
 	public final static double DRIVEBASE_ANGLE_I = 0.000185;
-	public final static double DRIVEBASE_ANGLE_D = 0.0000095;
+	public final static double DRIVEBASE_ANGLE_D = 0.004;
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
     public final static double AUTO_AIM_DISTANCE_MIN = 0.24;//gentle: 0.05 rough: 0.2

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.CircularBuffer;
 
 public class Drivebase extends Titan.Component<Robot>{
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
@@ -28,6 +29,11 @@ public class Drivebase extends Titan.Component<Robot>{
 
     private double leftPower, rightPower;
     private double leftTarget, rightTarget, angleTarget;
+
+    private CircularBuffer leftAccumulator = new CircularBuffer(20), rightAccumulator = new CircularBuffer(20);
+
+    private double leftError = 0.0;
+    private double rightError = 0.0;
 
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
@@ -41,7 +47,7 @@ public class Drivebase extends Titan.Component<Robot>{
     
         @Override
         public double pidGet() {
-            return leftTarget - getLeftDistance();
+            return leftError;
         }
     
         @Override
@@ -63,7 +69,7 @@ public class Drivebase extends Titan.Component<Robot>{
     
         @Override
         public double pidGet() {
-            return rightTarget - getRightDistance();
+            return rightError;
         }
     
         @Override
@@ -164,23 +170,36 @@ public class Drivebase extends Titan.Component<Robot>{
         // rightCorrection = 0;
         final double leftCorrection, rightCorrection, angleCorrection;
         if(leftDistancePID.isEnabled()){
+            leftAccumulator.addFirst(leftTarget - getLeftDistance());
+            leftError = 0;
+            for(int i = 0; i < 20; ++i){
+                leftError += leftAccumulator.get(i);
+            }
             leftCorrection = leftDistancePID.get();
         }else{
             leftCorrection = 0;
         }
         if(rightDistancePID.isEnabled()){
+            rightAccumulator.addFirst(rightTarget - getRightDistance());
+            rightError = 0;
+            for(int i = 0; i < 20; ++i){
+                rightError += rightAccumulator.get(i);
+            }
             rightCorrection = rightDistancePID.get();
         }else{
             rightCorrection = 0;
         }
         if(anglePID.isEnabled()){
             angleCorrection = anglePID.get();
+            //angleCorrection = 0;
         }else{
             angleCorrection = 0;
         }
 
-        left.set(leftPower + leftCorrection + angleCorrection);
-        right.set(rightPower + rightCorrection - angleCorrection);
+        System.out.println(getLeftError() + ", " + getRightError());
+
+        left.set(leftPower - leftCorrection - angleCorrection);
+        right.set(rightPower - rightCorrection + angleCorrection);
     }
 
     @Override
@@ -242,6 +261,12 @@ public class Drivebase extends Titan.Component<Robot>{
         rightDistancePID.reset();
 
         setDistancePIDTarget(0, 0);
+
+        leftError = 0.0;
+        rightError = 0.0;
+
+        leftAccumulator.clear();
+        rightAccumulator.clear();
     }
 
     public void disableAnglePID(){
@@ -268,6 +293,10 @@ public class Drivebase extends Titan.Component<Robot>{
             leftDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
             leftDistancePID.setSetpoint(0);
             leftDistancePID.enable();
+
+            leftError = 0.0;
+
+            leftAccumulator.clear();
         }
 
         if(!rightDistancePID.isEnabled()){
@@ -277,6 +306,10 @@ public class Drivebase extends Titan.Component<Robot>{
             rightDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
             rightDistancePID.setSetpoint(0);
             rightDistancePID.enable();
+
+            rightError = 0.0;
+
+            rightAccumulator.clear();
         }
     }
 

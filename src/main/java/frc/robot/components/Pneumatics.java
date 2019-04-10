@@ -30,6 +30,7 @@ public class Pneumatics extends Titan.Component<Robot>{
         default:
             compressor.setClosedLoopControl(true);
         }
+        compressor.stop();
     }
 
     @Override

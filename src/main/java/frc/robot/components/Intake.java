@@ -1,8 +1,7 @@
 package frc.robot.components;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.Constants;
@@ -19,7 +18,7 @@ public class Intake extends Titan.Component<Robot>{
         DEPLOYED, RETRACTED
     };
 
-    private final CANSparkMax rollers;
+    private final WPI_TalonSRX rollers;
 
     private final Titan.Solenoid jay;
     private final Titan.DoubleSolenoid finger;
@@ -31,9 +30,9 @@ public class Intake extends Titan.Component<Robot>{
     private double rollerSpeed = 0.0;
 
     public Intake(){
-        rollers = new CANSparkMax(Constants.INTAKE_ROLLER_ID, MotorType.kBrushed);
+        rollers = new WPI_TalonSRX(Constants.INTAKE_ROLLER_ID);
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
-        rollers.setIdleMode(IdleMode.kBrake);
+        rollers.setNeutralMode(NeutralMode.Brake);
 
         finger = new Titan.DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 

@@ -1,11 +1,8 @@
 package frc.robot.components;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
@@ -22,7 +19,7 @@ public class Arm extends Titan.Component<Robot>{
         BREAK, COAST
     };
 
-    final WPI_TalonSRX pivot;
+    final CANSparkMax pivot;
     final Titan.Solenoid brakePad;
 
     final AnalogInput armEncoder;
@@ -34,37 +31,18 @@ public class Arm extends Titan.Component<Robot>{
     private double armPower = 0.0;
 
     public Arm(){
-        pivot = new WPI_TalonSRX(Constants.ARM_PIVOT_ID);
+        pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
-        pivot.configForwardSoftLimitEnable(false);
-        pivot.configReverseSoftLimitEnable(false);
-        pivot.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
-        pivot.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
-        pivot.configClearPositionOnLimitF(false, 0);
-        pivot.configClearPositionOnLimitR(false, 0);
-        
-        pivot.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0);
-
-        pivot.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 0);
-        pivot.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 0);
-
-        pivot.selectProfileSlot(0, 0);
-        pivot.setSensorPhase(Constants.ELEVATOR_ENCODER_SENSOR_PHASE);
-        pivot.config_kP(0, Constants.ARM_MM_P, 0);//7.5
-		pivot.config_kI(0, Constants.ARM_MM_I, 0);//0.004
-		pivot.config_kD(0, Constants.ARM_MM_D, 0);//40
-        pivot.config_kF(0, 1023.0 / Constants.ARM_MM_PEAK_SENSOR_VELOCITY, 0);
-        pivot.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
-		pivot.config_IntegralZone(0, 300, 0);
-        pivot.configMotionAcceleration((int)(Constants.ARM_MM_ACCELERATION * Constants.ARM_MM_PEAK_SENSOR_VELOCITY));
-        pivot.configMotionCruiseVelocity((int)(Constants.ARM_MM_CRUISE_VELOCITY * Constants.ARM_MM_PEAK_SENSOR_VELOCITY));
-        pivot.configClosedLoopPeakOutput(0, 1);
+        pivot.getEncoder().setPosition(0);
         
         setBrakeMode(BrakeMode.BREAK);
     
         brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
+
+        pivot.getEncoder().setPositionConversionFactor(360.0 / 237.5);
+        pivot.getEncoder().setVelocityConversionFactor(360.0 / 237.5);
     }
 
     @Override
@@ -76,6 +54,8 @@ public class Arm extends Titan.Component<Robot>{
         if(getControlMode() == ControlMode.MANUAL){
             setBrakeMode(BrakeMode.BREAK);
         }
+
+        pivot.getEncoder().setPosition(getArmAngle());
         // if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
         //     pivot.getEncoder().setPosition(0);
         // }
@@ -141,15 +121,15 @@ public class Arm extends Titan.Component<Robot>{
     }
 
     public double getEncoderPosition(){
-        return pivot.getSelectedSensorPosition();
+        return pivot.getEncoder().getPosition();
     }
 
     public double getEncoderVelocity(){
-        return pivot.getSelectedSensorVelocity();
+        return pivot.getEncoder().getVelocity();
     }
 
     public void setBrakeMode(final BrakeMode mode){
-        pivot.setNeutralMode(mode == BrakeMode.BREAK ? NeutralMode.Brake : NeutralMode.Coast);
+        pivot.setIdleMode(mode == BrakeMode.BREAK ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
 }
