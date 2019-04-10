@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
+import frc.robot.components.Drivebase;
+import frc.robot.components.Drivebase.PIDType;
 
 public class MimicDriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
@@ -29,27 +31,28 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 	
 	@Override
 	public void init(final Robot robot) {
-		robot.getDrivebase().setControlMode(ControlMode.AUTO);
+		final Drivebase drivebase = robot.getDrivebase();
+		drivebase.setControlMode(ControlMode.AUTO);
 
-		robot.getDrivebase().enableDistancePID();
+		drivebase.enableDistancePID(PIDType.MIMIC);
+		drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 
-		robot.getDrivebase().setDistancePIDTarget(leftDistance, rightDistance);
-
-		robot.getDrivebase().enableAnglePID();
-
-		robot.getDrivebase().setAnglePIDTarget(angle);
+		drivebase.enableAnglePID(PIDType.MIMIC);
+		drivebase.setAnglePIDTarget(angle);
 	}
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getDrivebase().getControlMode() == ControlMode.MANUAL){
+		final Drivebase drivebase = robot.getDrivebase();
+
+		if(drivebase.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
 		final double voltageCompensation = battery / RobotController.getBatteryVoltage();
 
-		robot.getDrivebase().drive(left * voltageCompensation, right * voltageCompensation);
+		drivebase.drive(left * voltageCompensation, right * voltageCompensation);
 		
 		return CommandResult.COMPLETE;
 	}

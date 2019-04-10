@@ -4,7 +4,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-
+import frc.robot.components.Drivebase.PIDType;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class DriveToArcCommand extends Titan.Command<Robot> {
@@ -39,7 +39,7 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 		drivebase.setHome();
 
-		drivebase.enableAnglePID();
+		drivebase.enableAnglePID(PIDType.STANDARD);
 		drivebase.setAnglePIDTarget(0);
 
 		// drivebase.enableDistancePID();

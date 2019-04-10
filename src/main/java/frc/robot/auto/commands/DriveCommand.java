@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
+import frc.robot.components.Drivebase;
 
 public class DriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
@@ -26,15 +27,17 @@ public class DriveCommand extends Titan.Command<Robot> {
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getDrivebase().getControlMode() == ControlMode.MANUAL){
+		final Drivebase drivebase = robot.getDrivebase();
+
+		if(drivebase.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		robot.getDrivebase().drive(left, right);
+		drivebase.drive(left, right);
 
 		if(System.currentTimeMillis() > startTime + time){
-			robot.getDrivebase().drive(0.0, 0.0);
+			drivebase.drive(0.0, 0.0);
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

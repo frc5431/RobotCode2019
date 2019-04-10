@@ -4,7 +4,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 public enum Limelight{
-    FRONT(false, "limelight-front", false), BACK(true, "limelight-back", true);
+    FRONT(false, "limelight-front", false);
     
     private final NetworkTable table;
     private final boolean centered, inverted;

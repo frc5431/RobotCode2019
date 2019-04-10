@@ -1,5 +1,7 @@
 package frc.robot;
 
+import frc.robot.util.PIDConstants;
+
 public final class Constants {
     public static enum Robot {
         PRACTICE, COMPETITION;
@@ -130,13 +132,11 @@ public final class Constants {
     public final static double ARM_MAX_ANGLE = 280;
 
     // PID
-    public final static double DRIVEBASE_DISTANCE_P = 0.02;
-    public final static double DRIVEBASE_DISTANCE_I = 0.0001;
-    public final static double DRIVEBASE_DISTANCE_D = 0.04;
+    public final static PIDConstants DRIVEBASE_DISTANCE_STANDARD_PID = new PIDConstants(0.02, 0.0001, 0.04);
+    public final static PIDConstants DRIVEBASE_DISTANCE_MIMIC_PID = new PIDConstants(0.02, 0.0001, 0.04);
 
-    public final static double DRIVEBASE_ANGLE_P = 0.01;//0.004
-	public final static double DRIVEBASE_ANGLE_I = 0.0;//0.000185
-	public final static double DRIVEBASE_ANGLE_D = 0.0;//0.04
+    public final static PIDConstants DRIVEBASE_ANGLE_STANDARD_PID = new PIDConstants(0.01, 0.0, 0.0);
+    public final static PIDConstants DRIVEBASE_ANGLE_MIMIC_PID = new PIDConstants(0.004, 0.000185, 0.04);
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
     public final static double AUTO_AIM_DISTANCE_MIN = 0.24;//gentle: 0.05 rough: 0.2
@@ -145,19 +145,16 @@ public final class Constants {
     public final static double AUTO_AIM_ANGLE_MIN = 0.005;
 
     //motion magic
-    public final static double ELEVATOR_MM_P = ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5;
-    public final static double ELEVATOR_MM_I = 0;
-    public final static double ELEVATOR_MM_D = 0;
+    public final static PIDConstants ELEVATOR_MM_PID = new PIDConstants(ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5, 0.0, 0.0);
     public final static double ELEVATOR_MM_PEAK_SENSOR_VELOCITY = ROBOT_TYPE == Robot.COMPETITION ? 5100 : 5200;
     public final static double ELEVATOR_MM_CRUISE_VELOCITY = 1.0;
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
-    public final static double ARM_MM_P = 0.007;
-    public final static double ARM_MM_I = 0;
-    public final static double ARM_MM_D = 0;
-    public final static double ARM_MM_PEAK_SENSOR_VELOCITY = 2.5;
-    public final static double ARM_MM_CRUISE_VELOCITY = 0.6;
-    public final static double ARM_MM_ACCELERATION = 0.03;
+    //smart motion
+    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.007, 0.0, 0.0);
+    public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 2.5;
+    public final static double ARM_SM_CRUISE_VELOCITY = 0.6;
+    public final static double ARM_SM_ACCELERATION = 0.03;
 
     // SPEEDS
 

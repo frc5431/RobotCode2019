@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.components.Intake;
 import frc.robot.util.ControlMode;
 
 public class GrabBallCommand extends Titan.Command<Robot>{
@@ -13,17 +14,18 @@ public class GrabBallCommand extends Titan.Command<Robot>{
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getIntake().getControlMode() == ControlMode.MANUAL){
+		final Intake intake = robot.getIntake();
+		if(intake.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		if(robot.getIntake().isBallIn()){
-			robot.getIntake().roll(0.0);
+		if(intake.isBallIn()){
+			intake.roll(0.0);
 			return CommandResult.COMPLETE;
 		}
 
-		robot.getIntake().roll(Constants.INTAKE_ROLLER_SPEED);
+		intake.roll(Constants.INTAKE_ROLLER_SPEED);
 
 		return CommandResult.IN_PROGRESS;
 	}

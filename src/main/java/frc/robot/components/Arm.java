@@ -1,12 +1,16 @@
 package frc.robot.components;
 
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
+import frc.robot.util.PIDConstants;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
 
@@ -20,6 +24,8 @@ public class Arm extends Titan.Component<Robot>{
     };
 
     final CANSparkMax pivot;
+    final CANEncoder pivotEncoder;
+    final CANPIDController pivotPid;
     final Titan.Solenoid brakePad;
 
     final AnalogInput armEncoder;
@@ -29,20 +35,33 @@ public class Arm extends Titan.Component<Robot>{
     private BrakeState brakeState = BrakeState.ENGAGED;
 
     private double armPower = 0.0;
+    private double targetPosition = -1;
 
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
-        pivot.getEncoder().setPosition(0);
-        
+
+        pivotEncoder = pivot.getEncoder();
+        pivotEncoder.setPosition(0);
+        pivotEncoder.setPositionConversionFactor(360.0 / 237.5);
+        pivotEncoder.setVelocityConversionFactor(360.0 / 237.5);
+
+        pivotPid = pivot.getPIDController();
+
+        final PIDConstants pid = Constants.ARM_SM_PID;
+        pivotPid.setP(pid.getP());
+        pivotPid.setI(pid.getI());
+        pivotPid.setD(pid.getD());
+
+        final double peakSensorVelocity = Constants.ARM_SM_PEAK_SENSOR_VELOCITY;
+        pivotPid.setSmartMotionMaxVelocity(Constants.ARM_SM_CRUISE_VELOCITY * peakSensorVelocity, 0);
+        pivotPid.setSmartMotionMaxAccel(Constants.ARM_SM_ACCELERATION * peakSensorVelocity, 0);
+
         setBrakeMode(BrakeMode.BREAK);
     
         brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
-
-        pivot.getEncoder().setPositionConversionFactor(360.0 / 237.5);
-        pivot.getEncoder().setVelocityConversionFactor(360.0 / 237.5);
     }
 
     @Override
@@ -55,7 +74,7 @@ public class Arm extends Titan.Component<Robot>{
             setBrakeMode(BrakeMode.BREAK);
         }
 
-        pivot.getEncoder().setPosition(getArmAngle());
+        pivotEncoder.setPosition(getArmAngle());
         // if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
         //     pivot.getEncoder().setPosition(0);
         // }
@@ -64,12 +83,12 @@ public class Arm extends Titan.Component<Robot>{
 
         brakePad.set(brakeState == BrakeState.DISENGAGED);
 
-        final double power = Math.signum(armPower) * (Math.abs(armPower) + (0.16 * Math.abs(Math.cos(Math.toRadians(getArmAngle() - 90)))));
-        //System.out.println(power);
-        // System.out.println((0.3 * Math.cos(Math.toRadians(getWristPosition() - 90))));
-        // USE THIS FOR BETTER EQUATION:
-        //pivot.set(armPower + (0.2 * (Math.signum(armPower) * Math.cos(Math.toRadians(getArmAngle() - 90)))));
-        pivot.set(power);
+        final double ff = 0.16 * Math.cos(Math.toRadians(getArmAngle() - 90));
+        if(targetPosition >= 0){
+            pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, ff);
+        }else{
+            pivotPid.setReference(Math.signum(armPower) * (Math.abs(armPower) + Math.abs(ff)), ControlType.kDutyCycle);
+        }
     }
     
     @Override
@@ -121,11 +140,11 @@ public class Arm extends Titan.Component<Robot>{
     }
 
     public double getEncoderPosition(){
-        return pivot.getEncoder().getPosition();
+        return pivotEncoder.getPosition();
     }
 
     public double getEncoderVelocity(){
-        return pivot.getEncoder().getVelocity();
+        return pivotEncoder.getVelocity();
     }
 
     public void setBrakeMode(final BrakeMode mode){

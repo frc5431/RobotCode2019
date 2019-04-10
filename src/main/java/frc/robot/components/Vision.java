@@ -32,13 +32,13 @@ public class Vision extends Titan.Component<Robot>{
 
     @Override
     public void tick(final Robot robot){
-        if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.X)){
+        final Titan.Xbox controller = robot.getTeleop().getDriver();
+        if(controller.getRawButton(Titan.Xbox.Button.X)){
             for(final Limelight l : Limelight.values()){
                 l.getTable().getEntry("ledMode").setNumber(2);
             }
         }else{
-            Limelight.FRONT.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.FRONT && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
-            Limelight.BACK.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.BACK && ledState == LEDState.ON) || robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.B) ? 3 : 1);
+            Limelight.FRONT.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.FRONT && ledState == LEDState.ON) || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
         }
 
         getSelectedTable().getEntry("pipeline").setNumber(ttype.getPipeline());

@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
+import frc.robot.components.Arm;
 import frc.robot.components.Arm.BrakeMode;
 import frc.robot.components.Arm.BrakeState;
 
@@ -23,10 +24,12 @@ public class ArmBrakeCommand extends Titan.Command<Robot>{
 
 	@Override
 	public void init(final Robot robot) {
-		robot.getArm().setControlMode(ControlMode.AUTO);
+		final Arm arm = robot.getArm();
 
-		robot.getArm().pivot(0.0, willBrake ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
-		robot.getArm().setBrakeMode(willBrake ? BrakeMode.BREAK : BrakeMode.COAST);
+		arm.setControlMode(ControlMode.AUTO);
+
+		arm.pivot(0.0, willBrake ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
+		arm.setBrakeMode(willBrake ? BrakeMode.BREAK : BrakeMode.COAST);
 	}
 
 	@Override

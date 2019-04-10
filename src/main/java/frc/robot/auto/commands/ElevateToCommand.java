@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.components.Elevator;
 import frc.robot.util.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
@@ -29,50 +30,52 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	// 	}
 	// }
 
-	private boolean isComplete(final Robot robot){
-		return (targetPosition > 0 && Titan.approxEquals(robot.getElevator().getEncoderPosition(), targetPosition, Constants.ELEVATOR_POSITION_TOLERANCE)) || (targetPosition <= 0 && robot.getElevator().isCarriageDown());
+	private boolean isComplete(final Elevator elevator){
+		return (targetPosition > 0 && Titan.approxEquals(elevator.getEncoderPosition(), targetPosition, Constants.ELEVATOR_POSITION_TOLERANCE)) || (targetPosition <= 0 && elevator.isCarriageDown());
 	}
 
-	private void runElevator(final Robot robot){
-		if(targetPosition <= 0 && robot.getElevator().getEncoderPosition() <= 1000 && !robot.getElevator().isCarriageDown()){
+	private void runElevator(final Elevator elevator){
+		if(targetPosition <= 0 && elevator.getEncoderPosition() <= 1000 && !elevator.isCarriageDown()){
 			// if trying to stow, and the elevator is almost there, just run it at a constant speed down as motion magic could undershoot
-			robot.getElevator().elevate(-Constants.AUTO_ELEVATOR_SPEED * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
+			elevator.elevate(-Constants.AUTO_ELEVATOR_SPEED * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
 		}else if(Math.abs(targetPosition - startPosition) < 10000){
 			// motion magic jerks in short ranges, so manually run it when the initial error is low
 			//robot.getElevator().elevate(getElevatorSpeed(robot));
-			robot.getElevator().elevateTo(targetPosition);
+			elevator.elevateTo(targetPosition);
 		}else{
 			// use motion magic
-			robot.getElevator().elevateTo(targetPosition);
+			elevator.elevateTo(targetPosition);
 		}
 	}
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getElevator().getControlMode() == ControlMode.MANUAL){
+		final Elevator elevator = robot.getElevator();
+		if(elevator.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		if (isComplete(robot)) {
+		if (isComplete(elevator)) {
 			// stop the elevator
-			robot.getElevator().elevate(0.0);
+			elevator.elevate(0.0);
 			return CommandResult.COMPLETE;
 		}
 
-		runElevator(robot);
+		runElevator(elevator);
 		
 		return CommandResult.IN_PROGRESS;
 	}
 
 	@Override
 	public void init(final Robot robot) {
-		robot.getElevator().setControlMode(ControlMode.AUTO);
+		final Elevator elevator = robot.getElevator();
+		elevator.setControlMode(ControlMode.AUTO);
 
-		startPosition = robot.getElevator().getEncoderPosition();
+		startPosition = elevator.getEncoderPosition();
 
-		if(!isComplete(robot)){
-			runElevator(robot);
+		if(!isComplete(elevator)){
+			runElevator(elevator);
 		}
 	}
 

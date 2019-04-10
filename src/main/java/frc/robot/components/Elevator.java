@@ -12,6 +12,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.util.PIDConstants;
 import frc.robot.util.Titan;
 
 public class Elevator extends Titan.Component<Robot>{
@@ -55,9 +56,12 @@ public class Elevator extends Titan.Component<Robot>{
 
         bottom.selectProfileSlot(0, 0);
         bottom.setSensorPhase(Constants.ELEVATOR_ENCODER_SENSOR_PHASE);
-        bottom.config_kP(0, Constants.ELEVATOR_MM_P, 0);//7.5
-		bottom.config_kI(0, Constants.ELEVATOR_MM_I, 0);//0.004
-		bottom.config_kD(0, Constants.ELEVATOR_MM_D, 0);//40
+
+        final PIDConstants pid = Constants.ELEVATOR_MM_PID;
+        bottom.config_kP(0, pid.getP(), 0);//7.5
+		bottom.config_kI(0, pid.getI(), 0);//0.004
+        bottom.config_kD(0, pid.getD(), 0);//40
+        
         bottom.config_kF(0, 1023.0 / Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY, 0);
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
 		bottom.config_IntegralZone(0, 300, 0);

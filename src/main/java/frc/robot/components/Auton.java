@@ -251,9 +251,7 @@ public class Auton extends Titan.Component<Robot>{
         if(drivebaseCommands.isEmpty() && (leftBumperTriggered || rightBumperTriggered)){
             final Sequence preSequence = isArmInStowPosition(robot.getArm().getArmAngle()) && robot.getElevator().getEncoderPosition() <= 2000 ? Sequence.ROCKET_FORWARD_1 : null;
             final TargetType ttype;
-            if(getTargetArmDirection(robot) == ArmDirection.REVERSE){
-                ttype = TargetType.BACK;
-            }else if(leftBumperTriggered){
+            if(leftBumperTriggered){
                 ttype = TargetType.FRONT_LEFT;
             }else{
                 ttype = TargetType.FRONT_RIGHT;
@@ -659,7 +657,7 @@ public class Auton extends Titan.Component<Robot>{
                 preloadedAutoCommands.addAll(loadMimicFile(r.getSecondHatchFile(), secondSequence, r.isSwapped()));
                 if(secondSequence != null){
                     preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
-                    preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, secondSequence.getDirection() == ArmDirection.REVERSE ? TargetType.BACK : r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
+                    preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
                 }
             }
             Titan.l("Finished preloading");

@@ -15,10 +15,6 @@ public class Dashboard extends Titan.Component<Robot>{
     private final SendableChooser<Routine> routineChooser = new SendableChooser<>();
     private Routine currentRoutine = null;
 
-    // private final Titan.Toggle selfTest = new Titan.Toggle();
-
-    //private String frontCameraData = null;
-
     public Dashboard(){
         final CameraServer cameraServer = CameraServer.getInstance();
 
@@ -74,21 +70,6 @@ public class Dashboard extends Titan.Component<Robot>{
             currentRoutine = routineChooser.getSelected();
             robot.getAuton().preloadRoutine(currentRoutine);
         }
-
-        // if(!selfTest.getState() && selfTest.isToggled(RobotController.getUserButton())){
-        //     final List<Testable> testables = new ArrayList<>();
-        //     testables.addAll(robot.getComponents());
-
-        //     final StringBuilder builder = new StringBuilder();
-        //     for(final Testable t : testables){
-        //         builder.append(t.getClass().getName()).append(": ").append(t.getTestResult()).append(System.lineSeparator());
-        //     }
-
-        //     SmartDashboard.putString("SelfTest", builder.toString());
-            
-        //     // PERFORM SELF TEST
-        //     selfTest.setState(false);
-        // }
     }
 
     @Override

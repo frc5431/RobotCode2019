@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
+import frc.robot.components.Intake;
 
 public class RollerCommand extends Titan.Command<Robot> {
     private final double power;
@@ -19,24 +20,23 @@ public class RollerCommand extends Titan.Command<Robot> {
 	
 	@Override
 	public void init(final Robot robot) {
-		//if(time >= 0){
-			robot.getIntake().setControlMode(ControlMode.AUTO);
-		//}
+		robot.getIntake().setControlMode(ControlMode.AUTO);
     }
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(time >= 0 && robot.getArm().getControlMode() == ControlMode.MANUAL){
+		final Intake intake = robot.getIntake();
+		if(time >= 0 && intake.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-        robot.getIntake().roll(power);
+    	intake.roll(power);
 		
 		if(time < 0){
 			return CommandResult.COMPLETE;
 		}else if(System.currentTimeMillis() > startTime + time) {
-			robot.getIntake().roll(0);
+			intake.roll(0);
 			return CommandResult.COMPLETE;
 		}
 

@@ -1,7 +1,7 @@
 package frc.robot.auto.vision;
 
 public enum TargetType{
-    FRONT_RIGHT(Limelight.FRONT, 0), FRONT_LEFT(Limelight.FRONT, 1), BACK(Limelight.BACK, 0);
+    FRONT_RIGHT(Limelight.FRONT, 0), FRONT_LEFT(Limelight.FRONT, 1);
 
     private final Limelight llight;
     private final int pipeline;

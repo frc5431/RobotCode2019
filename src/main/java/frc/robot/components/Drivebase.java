@@ -3,6 +3,7 @@ package frc.robot.components;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
+import frc.robot.util.PIDConstants;
 import frc.robot.util.Titan;
 import frc.robot.util.TitanNavx;
 
@@ -20,6 +21,10 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 
 public class Drivebase extends Titan.Component<Robot>{
+    public static enum PIDType{
+        STANDARD, MIMIC
+    };
+
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
 
     private final SpeedControllerGroup left, right;
@@ -31,7 +36,7 @@ public class Drivebase extends Titan.Component<Robot>{
 
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
-    private final PIDController leftDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
+    private final PIDController leftDistancePID = new PIDController(0, 0, 0, new PIDSource(){
 
         
         @Override
@@ -53,7 +58,7 @@ public class Drivebase extends Titan.Component<Robot>{
 		public void pidWrite(final double output) {}
     }, 0.02);
 
-    private final PIDController rightDistancePID = new PIDController(Constants.DRIVEBASE_DISTANCE_P, Constants.DRIVEBASE_DISTANCE_I, Constants.DRIVEBASE_DISTANCE_D, new PIDSource(){
+    private final PIDController rightDistancePID = new PIDController(0, 0, 0, new PIDSource(){
 
         
         @Override
@@ -75,7 +80,7 @@ public class Drivebase extends Titan.Component<Robot>{
 		public void pidWrite(final double output) {}
     }, 0.02);
 
-    private final PIDController anglePID = new PIDController(Constants.DRIVEBASE_ANGLE_P, Constants.DRIVEBASE_ANGLE_I, Constants.DRIVEBASE_ANGLE_D, new PIDSource(){
+    private final PIDController anglePID = new PIDController(0, 0, 0, new PIDSource(){
 
         
         @Override
@@ -278,8 +283,19 @@ public class Drivebase extends Titan.Component<Robot>{
 		disableAllPID();
     }
 
-    public void enableDistancePID(){
+    public void enableDistancePID(final PIDType type){
+        final PIDConstants pid;
+        switch(type){
+        case MIMIC:
+            pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
+            break;
+        case STANDARD:
+        default:
+            pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
+        }
+        
         if(!leftDistancePID.isEnabled()){
+            leftDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
             leftDistancePID.setInputRange(-1000, 1000);
             leftDistancePID.setOutputRange(-1.0, 1.0);
             leftDistancePID.setContinuous(false);
@@ -289,6 +305,7 @@ public class Drivebase extends Titan.Component<Robot>{
         }
 
         if(!rightDistancePID.isEnabled()){
+            rightDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
             rightDistancePID.setInputRange(-1000, 1000);
             rightDistancePID.setOutputRange(-1.0, 1.0);
             rightDistancePID.setContinuous(false);
@@ -298,8 +315,19 @@ public class Drivebase extends Titan.Component<Robot>{
         }
     }
 
-    public void enableAnglePID(){
+    public void enableAnglePID(final PIDType type){
+        final PIDConstants pid;
+        switch(type){
+        case MIMIC:
+            pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
+            break;
+        case STANDARD:
+        default:
+            pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
+        }
+
         if(!anglePID.isEnabled()){
+            anglePID.setPID(pid.getP(), pid.getI(), pid.getD());
             anglePID.setInputRange(-360, 360);
             anglePID.setOutputRange(-1.0, 1.0);
             anglePID.setContinuous(false);
