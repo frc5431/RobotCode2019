@@ -134,9 +134,9 @@ public final class Constants {
     public final static double DRIVEBASE_DISTANCE_I = 0.0001;
     public final static double DRIVEBASE_DISTANCE_D = 0.04;
 
-    public final static double DRIVEBASE_ANGLE_P = 0.004;
-	public final static double DRIVEBASE_ANGLE_I = 0.000185;
-	public final static double DRIVEBASE_ANGLE_D = 0.004;
+    public final static double DRIVEBASE_ANGLE_P = 0.01;//0.004
+	public final static double DRIVEBASE_ANGLE_I = 0.0;//0.000185
+	public final static double DRIVEBASE_ANGLE_D = 0.0;//0.04
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
     public final static double AUTO_AIM_DISTANCE_MIN = 0.24;//gentle: 0.05 rough: 0.2

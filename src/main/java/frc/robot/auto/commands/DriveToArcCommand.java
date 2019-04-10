@@ -3,11 +3,14 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
+import frc.robot.components.Drivebase;
+
+import edu.wpi.first.wpilibj.RobotController;
 
 public class DriveToArcCommand extends Titan.Command<Robot> {
-	private final double left, right, leftDistance, rightDistance;
+	private final double left, right, leftDistance, rightDistance, angle;
 
-	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance) {
+	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle) {
 		name = "DriveToArcCommand";
 
 		this.left = left;
@@ -16,30 +19,52 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
 
-		properties = "Left: " + left + "; Right: " + right;
+		this.angle = angle;
+
+		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle;
+	}
+
+	public DriveToArcCommand(final double dis, final double spd, final double ang){
+		this(spd, spd, dis, dis, ang);
+	}
+
+	public DriveToArcCommand(final double dis, final double spd){
+		this(dis, spd, 0);
 	}
 	
 	@Override
 	public void init(final Robot robot) {
-		robot.getDrivebase().setControlMode(ControlMode.AUTO);
+		final Drivebase drivebase = robot.getDrivebase();
+		drivebase.setControlMode(ControlMode.AUTO);
 
-		robot.getDrivebase().setHome();
+		drivebase.setHome();
+
+		drivebase.enableAnglePID();
+		drivebase.setAnglePIDTarget(0);
+
+		// drivebase.enableDistancePID();
+		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getDrivebase().getControlMode() == ControlMode.MANUAL){
+		final Drivebase drivebase = robot.getDrivebase();
+		if(drivebase.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		final double percent = Math.min(1.0, ((double)System.currentTimeMillis() - (double)startTime) / 500.0);
-		final boolean leftFinished = robot.getDrivebase().hasTravelledLeft(leftDistance);
-		final boolean rightFinished = robot.getDrivebase().hasTravelledRight(rightDistance);
-		
-		robot.getDrivebase().drive(leftFinished ? 0.0 : left * percent, rightFinished ? 0.0 : right * percent);
-		if(leftFinished && rightFinished){
-			robot.getDrivebase().drive(0.0, 0.0);
+		final double dis = (Math.abs(drivebase.getLeftError()) + Math.abs(drivebase.getRightError())) / 2;
+		final double angleP = dis / (Math.abs(leftDistance + rightDistance) / 2);
+
+		drivebase.setAnglePIDTarget(angle * angleP);
+
+		final double voltageCompensation = 12.0 / RobotController.getBatteryVoltage();
+
+		drivebase.drive(left * (1.0 - (angleP * 0.3)) * voltageCompensation, right * (1.0 - (angleP * 0.3)) * voltageCompensation);
+		if(drivebase.hasTravelled(leftDistance, rightDistance)){
+			drivebase.drive(0.0, 0.0);
+			drivebase.disableAllPID();
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

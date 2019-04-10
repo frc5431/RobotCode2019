@@ -308,16 +308,18 @@ public class Auton extends Titan.Component<Robot>{
         }));
 
         if(name.equalsIgnoreCase("hab_to_frocket_gen")){
-            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
-                runSequence(rob, SequenceType.HATCH, sequence);
-            }));
-            outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
+            // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+            //     runSequence(rob, SequenceType.HATCH, sequence);
+            // }));
+            outCommands.add(new DriveToArcCommand(-190, -0.7, 30));
+            outCommands.add(new DriveToArcCommand(-40, -0.5, -50));
+            //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
             //outCommands.add(new DriveToCommand(-0.5, 0.5, -2, 2));
         }else if(name.equalsIgnoreCase("ls_to_crocket_gen")){
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);
             }));
-            outCommands.add(new DriveToArcCommand(-0.7, -0.7, -140, -60));
+            //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -140, -60));
         }else if(name.equalsIgnoreCase("hab_to_ccargo_gen")){
             // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             //     //Sequence.values()[stepSequence];
