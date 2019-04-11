@@ -7,11 +7,11 @@ import frc.robot.components.Drivebase;
 import frc.robot.components.Drivebase.PIDType;
 import edu.wpi.first.wpilibj.RobotController;
 
-public class DriveToArcCommand extends Titan.Command<Robot> {
+public class DriveAndrewCommand extends Titan.Command<Robot> {
 	private final double left, right, leftDistance, rightDistance, angle;
 
-	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle) {
-		name = "DriveToArcCommand";
+	public DriveAndrewCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle) {
+		name = "DriveAndrewCommand";
 
 		this.left = left;
 		this.right = right;
@@ -24,11 +24,11 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle;
 	}
 
-	public DriveToArcCommand(final double dis, final double spd, final double ang){
+	public DriveAndrewCommand(final double dis, final double spd, final double ang){
 		this(spd, spd, dis, dis, ang);
 	}
 
-	public DriveToArcCommand(final double dis, final double spd){
+	public DriveAndrewCommand(final double dis, final double spd){
 		this(dis, spd, 0);
 	}
 	
@@ -42,8 +42,8 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		drivebase.enableAnglePID(PIDType.STANDARD);
 		drivebase.setAnglePIDTarget(0);
 
-		// drivebase.enableDistancePID();
-		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
+		drivebase.enableDistancePID(PIDType.STANDARD);
+		drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 
 	@Override
@@ -65,8 +65,10 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 		final double voltageCompensation = 12.0 / RobotController.getBatteryVoltage();
 
-		drivebase.drive(left * (1.0 - (angleP * 0.3)) * voltageCompensation, right * (1.0 - (angleP * 0.3)) * voltageCompensation);
-		if(drivebase.hasTravelled(leftDistance, rightDistance)){
+		final boolean leftDone = drivebase.hasTravelledLeft(leftDistance);
+		final boolean rightDone = drivebase.hasTravelledRight(rightDistance);
+		drivebase.drive(leftDone ? 0.0 : left * (1.0 - (angleP * 0.3)) * voltageCompensation, rightDone ? 0.0 : right * (1.0 - (angleP * 0.3)) * voltageCompensation);
+		if(leftDone && rightDone){
 			drivebase.drive(0.0, 0.0);
 			drivebase.disableAllPID();
 			drivebase.setControlMode(ControlMode.MANUAL);

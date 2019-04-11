@@ -87,8 +87,11 @@ public class Arm extends Titan.Component<Robot>{
         if(targetPosition >= 0){
             pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, ff);
         }else{
-            pivotPid.setReference(Math.signum(armPower) * (Math.abs(armPower) + Math.abs(ff)), ControlType.kDutyCycle);
+            final double power = Math.signum(armPower) * (Math.abs(armPower) + Math.abs(ff));
+            pivotPid.setReference(power, ControlType.kDutyCycle, 0, 0);
         }
+
+        //pivot.set(0.3);
     }
     
     @Override
@@ -112,8 +115,16 @@ public class Arm extends Titan.Component<Robot>{
         // }
 
         armPower = val;
+        targetPosition = -1;
         //if the value of the pivot is 0 (so stopped), automatically break
         brake(state);
+    }
+
+    public void pivotTo(final double pos){
+        armPower = 0;
+        targetPosition = pos;
+
+        brake(BrakeState.DISENGAGED);
     }
 
     public void brake(final BrakeState state){

@@ -41,7 +41,7 @@ public class Robot extends Titan.Robot<Robot> {
     Titan.DEBUG = false;
     //Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
 
-    //Titan.DEBUG = true;
+    Titan.DEBUG = true;
 
     //compressor.stop();
 

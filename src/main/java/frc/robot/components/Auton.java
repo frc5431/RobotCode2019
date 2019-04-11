@@ -18,6 +18,7 @@ import frc.robot.Robot;
 import frc.robot.util.Titan;
 
 import frc.robot.auto.commands.ElevateToCommand;
+import frc.robot.auto.commands.TurnCommand;
 import frc.robot.auto.commands.ArmMoveToCommand;
 import frc.robot.auto.commands.ArmBrakeCommand;
 import frc.robot.auto.commands.FingerCommand;
@@ -27,6 +28,7 @@ import frc.robot.auto.commands.MimicDriveCommand;
 import frc.robot.auto.commands.DriveToCommand;
 import frc.robot.auto.commands.DriveToArcCommand;
 import frc.robot.auto.commands.DriveToTargetCommand;
+import frc.robot.auto.commands.DriveAndrewCommand;
 import frc.robot.auto.commands.RollerCommand;
 import frc.robot.auto.Routine;
 import frc.robot.components.Intake.FingerState;
@@ -309,10 +311,21 @@ public class Auton extends Titan.Component<Robot>{
             // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             //     runSequence(rob, SequenceType.HATCH, sequence);
             // }));
-            outCommands.add(new DriveToArcCommand(-190, -0.7, 30));
+            outCommands.add(new DriveToArcCommand(-10, -0.9, 0));
+            outCommands.add(new DriveToArcCommand(-175, -0.7, 30));
             outCommands.add(new DriveToArcCommand(-40, -0.5, -50));
             //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
             //outCommands.add(new DriveToCommand(-0.5, 0.5, -2, 2));
+        }else if(name.equalsIgnoreCase("frocket_to_ls_gen")){
+            //outCommands.add(new DriveToArcCommand(-5, -0.9, 0));
+            outCommands.add(new DriveToCommand(-10, -0.7));
+            outCommands.add(new Titan.WaitCommand<>(300));
+            outCommands.add(new TurnCommand(0, 45));
+            outCommands.add(new Titan.WaitCommand<>(300));
+            outCommands.add(new DriveToCommand(70, 0.9));
+            outCommands.add(new Titan.WaitCommand<>(300));
+            outCommands.add(new DriveToArcCommand(0.7, 0.7, 50, 70, -45));
+            outCommands.add(new DriveToArcCommand(0.7, 0.5, 70, 50, 45));
         }else if(name.equalsIgnoreCase("ls_to_crocket_gen")){
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);

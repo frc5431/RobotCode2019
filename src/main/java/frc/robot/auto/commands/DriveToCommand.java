@@ -3,6 +3,7 @@ package frc.robot.auto.commands;
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
+import frc.robot.components.Drivebase;
 
 public class DriveToCommand extends Titan.Command<Robot> {
 	private final double left, right, leftDistance, rightDistance;
@@ -19,6 +20,10 @@ public class DriveToCommand extends Titan.Command<Robot> {
 		properties = "Left: " + left + "; Right: " + right;
 	}
 	
+	public DriveToCommand(final double distance, final double speed){
+		this(speed, speed, distance, distance);
+	}
+
 	@Override
 	public void init(final Robot robot) {
 		robot.getDrivebase().setControlMode(ControlMode.AUTO);
@@ -28,16 +33,17 @@ public class DriveToCommand extends Titan.Command<Robot> {
 
 	@Override
 	public CommandResult update(final Robot robot) {
-		if(robot.getDrivebase().getControlMode() == ControlMode.MANUAL){
+		final Drivebase drivebase = robot.getDrivebase();
+		if(drivebase.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		final double percent = Math.min(1.0, ((double)System.currentTimeMillis() - (double)startTime) / 500.0);
-		robot.getDrivebase().drive(left * percent, right * percent);
+		drivebase.drive(left, right);
 
-		if(robot.getDrivebase().hasTravelled(leftDistance, rightDistance)){
-			robot.getDrivebase().drive(0.0, 0.0);
+		if(drivebase.hasTravelled(leftDistance, rightDistance)){
+			drivebase.drive(0.0, 0.0);
+			drivebase.setControlMode(ControlMode.MANUAL);
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

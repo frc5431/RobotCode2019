@@ -185,8 +185,6 @@ public class Drivebase extends Titan.Component<Robot>{
             angleCorrection = 0;
         }
 
-        System.out.println(getAngleError());
-
         left.set(leftPower - leftCorrection - angleCorrection);
         right.set(rightPower - rightCorrection + angleCorrection);
 
@@ -196,6 +194,8 @@ public class Drivebase extends Titan.Component<Robot>{
             backLeft.setOpenLoopRampRate(1);
             frontRight.setOpenLoopRampRate(1);
             backRight.setOpenLoopRampRate(1);
+
+            System.out.println(getAngleError());
             break;
         case MANUAL:
         default:
@@ -397,7 +397,7 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 	
 	public final boolean hasTurned(final double wantedAngle) {
-		return Titan.approxEquals(wantedAngle, getAngle(), Constants.DRIVEBASE_ANGLE_TOLERANCE);
+		return wantedAngle < 0 ? getAngle() <= wantedAngle : getAngle() >= wantedAngle;
     }
 
     public double getAngle(){
