@@ -43,6 +43,7 @@ public class DriveToCommand extends Titan.Command<Robot> {
 
 		if(drivebase.hasTravelled(leftDistance, rightDistance)){
 			drivebase.drive(0.0, 0.0);
+			drivebase.disableAllPID();
 			drivebase.setControlMode(ControlMode.MANUAL);
 			return CommandResult.COMPLETE;
 		}else{

@@ -42,7 +42,7 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		drivebase.enableAnglePID(PIDType.STANDARD);
 		drivebase.setAnglePIDTarget(0);
 
-		// drivebase.enableDistancePID();
+		// drivebase.enableDistancePID(PIDType.STANDARD);
 		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 

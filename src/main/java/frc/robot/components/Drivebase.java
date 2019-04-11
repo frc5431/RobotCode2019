@@ -188,21 +188,20 @@ public class Drivebase extends Titan.Component<Robot>{
         left.set(leftPower - leftCorrection - angleCorrection);
         right.set(rightPower - rightCorrection + angleCorrection);
 
-        switch(controlMode){
-        case AUTO:
-            frontLeft.setOpenLoopRampRate(1);
-            backLeft.setOpenLoopRampRate(1);
-            frontRight.setOpenLoopRampRate(1);
-            backRight.setOpenLoopRampRate(1);
-
-            System.out.println(getAngleError());
-            break;
-        case MANUAL:
-        default:
+        if(controlMode == ControlMode.MANUAL || leftPower == 0){
             frontLeft.setOpenLoopRampRate(0);
             backLeft.setOpenLoopRampRate(0);
+        }else{
+            frontLeft.setOpenLoopRampRate(0.5);
+            backLeft.setOpenLoopRampRate(0.5);
+        }
+
+        if(controlMode == ControlMode.MANUAL || rightPower == 0){
             frontRight.setOpenLoopRampRate(0);
             backRight.setOpenLoopRampRate(0);
+        }else{
+            frontRight.setOpenLoopRampRate(0.5);
+            backRight.setOpenLoopRampRate(0.5);
         }
     }
 

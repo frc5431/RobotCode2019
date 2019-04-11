@@ -313,19 +313,19 @@ public class Auton extends Titan.Component<Robot>{
             // }));
             outCommands.add(new DriveToArcCommand(-10, -0.9, 0));
             outCommands.add(new DriveToArcCommand(-175, -0.7, 30));
-            outCommands.add(new DriveToArcCommand(-40, -0.5, -50));
+            outCommands.add(new DriveToArcCommand(-40, -0.5, -45));
             //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
             //outCommands.add(new DriveToCommand(-0.5, 0.5, -2, 2));
         }else if(name.equalsIgnoreCase("frocket_to_ls_gen")){
             //outCommands.add(new DriveToArcCommand(-5, -0.9, 0));
             outCommands.add(new DriveToCommand(-10, -0.7));
             outCommands.add(new Titan.WaitCommand<>(300));
-            outCommands.add(new TurnCommand(0, 45));
+            outCommands.add(new TurnCommand(0, 30));
             outCommands.add(new Titan.WaitCommand<>(300));
-            outCommands.add(new DriveToCommand(70, 0.9));
-            outCommands.add(new Titan.WaitCommand<>(300));
-            outCommands.add(new DriveToArcCommand(0.7, 0.7, 50, 70, -45));
-            outCommands.add(new DriveToArcCommand(0.7, 0.5, 70, 50, 45));
+            outCommands.add(new DriveToCommand(30, 0.9));
+            //outCommands.add(new Titan.WaitCommand<>(300));
+            outCommands.add(new DriveToArcCommand(0.7, 0.7, 115, 135, -40));
+            outCommands.add(new DriveToArcCommand(0.7, 0.5, 30, 10, 20));
         }else if(name.equalsIgnoreCase("ls_to_crocket_gen")){
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);
