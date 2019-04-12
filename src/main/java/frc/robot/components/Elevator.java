@@ -153,21 +153,25 @@ public class Elevator extends Titan.Component<Robot>{
                 lastBrake = System.currentTimeMillis();
             }
         }else{
-            lastBrake = -1;
-            if(Titan.approxEquals(getEncoderVelocity(), 0, 100)){
+            if(lastBrake >= -1){
+                lastBrake = -getEncoderPosition();
+            }
+            
+            if(controlMode == frc.robot.util.ControlMode.MANUAL || Titan.approxEquals(getEncoderVelocity(), 0, 70)){
                 bottom.set(0);
             }else{
                 bottom.set(Constants.ELEVATOR_STALL_SPEED);
+                //bottom.set(ControlMode.Position, -lastBrake);
             }
         }
 
-        bottom.set(0);
+        //bottom.set(0);
 
         // if(brakeState == BrakeState.ENGAGED && getEncoderVelocity() < -100){
         //     bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
         // }
-        brakePad.set(false);
-        //brakePad.set(brakeState == BrakeState.DISENGAGED);
+        //brakePad.set(false);
+        brakePad.set(brakeState == BrakeState.DISENGAGED);
     }
 
     @Override

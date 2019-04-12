@@ -38,13 +38,9 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		if(targetPosition <= 0 && elevator.getEncoderPosition() <= 1000 && !elevator.isCarriageDown()){
 			// if trying to stow, and the elevator is almost there, just run it at a constant speed down as motion magic could undershoot
 			elevator.elevate(-Constants.AUTO_ELEVATOR_SPEED * Constants.AUTO_ELEVATOR_DOWN_MULTIPLIER);
-		}else if(Math.abs(targetPosition - startPosition) < 10000){
-			// motion magic jerks in short ranges, so manually run it when the initial error is low
-			//robot.getElevator().elevate(getElevatorSpeed(robot));
-			elevator.elevateTo(targetPosition);
-		}else{
+		}else {
 			// use motion magic
-			elevator.elevateTo(targetPosition);
+			elevator.elevateTo(Math.max(750, targetPosition));
 		}
 	}
 
@@ -59,6 +55,7 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 		if (isComplete(elevator)) {
 			// stop the elevator
 			elevator.elevate(0.0);
+			elevator.setControlMode(ControlMode.MANUAL);
 			return CommandResult.COMPLETE;
 		}
 

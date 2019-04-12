@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMaxLowLevel.ConfigParameter;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.util.PIDConstants;
@@ -41,9 +42,9 @@ public class Arm extends Titan.Component<Robot>{
 
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        pivot.restoreFactoryDefaults();
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
         pivot.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-        pivot.burnFlash();
 
         pivotEncoder = pivot.getEncoder();
         //pivotEncoder.setPosition(0);
@@ -58,12 +59,12 @@ public class Arm extends Titan.Component<Robot>{
         pivotPid.setP(pid.getP(), 0);
         pivotPid.setI(pid.getI(), 0);
         pivotPid.setD(pid.getD(), 0);
-        pivotPid.setFF(0);
-        //pivotPid.setFF(1.0 / peakSensorVelocity, 0);
+        //pivotPid.setFF(0);
+        pivotPid.setFF(1.0 / peakSensorVelocity, 0);
         pivotPid.setSmartMotionMaxVelocity(Constants.ARM_SM_CRUISE_VELOCITY * peakSensorVelocity, 0);
         pivotPid.setSmartMotionMaxAccel(Constants.ARM_SM_ACCELERATION * peakSensorVelocity, 0);
-        pivotPid.setOutputRange(0, 0, 0);
-        pivotPid.setSmartMotionAllowedClosedLoopError(Constants.ARM_ANGLE_TOLERANCE, 0);
+        pivotPid.setOutputRange(-1, 1, 0);
+        pivotPid.setSmartMotionAllowedClosedLoopError(1, 0);
         pivot.burnFlash();
 
         setBrakeMode(BrakeMode.BREAK);
@@ -108,9 +109,9 @@ public class Arm extends Titan.Component<Robot>{
 
         brakePad.set(brakeState == BrakeState.DISENGAGED);
 
-        final double ff = 0.16 * Math.cos(Math.toRadians(getArmAngle() - 90));
+        final double ff = 0.05 * Math.cos(Math.toRadians(getArmAngle() - 90));
         if(targetPosition >= 0){
-            pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, 0);
+            pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, ff * RobotController.getBatteryVoltage());
         }else{
             final double power = Math.signum(armPower) * (Math.abs(armPower) + Math.abs(ff));
             pivotPid.setReference(power, ControlType.kDutyCycle, 0, 0);

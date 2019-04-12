@@ -9,39 +9,59 @@ import frc.robot.components.Arm.BrakeMode;
 import frc.robot.components.Arm.BrakeState;
 
 public class ArmMoveToCommand extends Titan.Command<Robot>{
-	private final double position;
+	public static enum CompletionCondition{
+		SETPOINT, TRAVELLED, TRAVELLED_NO_BRAKE;
+	}
 
-	private final boolean willBrake;
+	private final double position;
+	private double startPosition;
+
+	private final CompletionCondition condition;
 
 	public ArmMoveToCommand(final double position){
-		this(position, true);
+		this(position, CompletionCondition.SETPOINT);
 	}
 
-	public ArmMoveToCommand(final double position, final boolean brake) {
+	public ArmMoveToCommand(final double position, final CompletionCondition cond) {
         this.position = position;
-		this.willBrake = brake;
+		this.condition = cond;
 
 		name = "ArmMoveCommand";
-		properties = "Position: " + position + "; Will brake: " + brake;
+		properties = "Position: " + position + "; Completion condition: " + condition.name();
 	}
 
-	private double getArmSpeed(final double armAngle){
-		// currentPosError = ((startPos + (directionSignum * profile.getDistAtTime(time))) % 360) - robot.getArm().getArmAngle();
-		// //System.out.println((startPos + (directionSignum * profile.getDistAtTime(time))) % 360 + ", " + (directionSignum * profile.getDistAtTime(time)));
-		// return (directionSignum * profile.getVelocityAtTime(time) / Constants.ARM_MP_PEAK_SENSOR_VELOCITY) - distancePid.get();
+	// private double getArmSpeed(final double armAngle){
+	// 	// currentPosError = ((startPos + (directionSignum * profile.getDistAtTime(time))) % 360) - robot.getArm().getArmAngle();
+	// 	// //System.out.println((startPos + (directionSignum * profile.getDistAtTime(time))) % 360 + ", " + (directionSignum * profile.getDistAtTime(time)));
+	// 	// return (directionSignum * profile.getVelocityAtTime(time) / Constants.ARM_MP_PEAK_SENSOR_VELOCITY) - distancePid.get();
 
-		final double error = Math.abs(position - armAngle);
-		final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
+	// 	final double error = Math.abs(position - armAngle);
+	// 	final double speedOffset = Constants.AUTO_ARM_ACCELERATION * (Math.min(Constants.AUTO_ARM_ACCELERATION_MAX_ERROR, error) / Constants.AUTO_ARM_ACCELERATION_MAX_ERROR);
 
-		if(armAngle > position){
-			return -(Constants.AUTO_ARM_SPEED + speedOffset) * Constants.AUTO_ARM_DOWN_MULITPLIER;
-		}else{
-			return Constants.AUTO_ARM_SPEED + speedOffset;
+	// 	if(armAngle > position){
+	// 		return -(Constants.AUTO_ARM_SPEED + speedOffset) * Constants.AUTO_ARM_DOWN_MULITPLIER;
+	// 	}else{
+	// 		return Constants.AUTO_ARM_SPEED + speedOffset;
+	// 	}
+	// }
+
+	private boolean willBrake(){
+		return condition != CompletionCondition.TRAVELLED_NO_BRAKE;
+	}
+
+	private boolean isComplete(final Arm arm){
+		switch(condition){
+		case TRAVELLED:
+		case TRAVELLED_NO_BRAKE:
+			if(startPosition > position){
+				return arm.getArmAngle() <= position;
+			}else{
+				return arm.getArmAngle() >= position;
+			}
+		case SETPOINT:
+		default:
+			return Titan.approxEquals(arm.getArmAngle(), position, Constants.ARM_ANGLE_TOLERANCE);
 		}
-	}
-
-	private boolean isComplete(final Robot robot){
-		return Titan.approxEquals(robot.getArm().getArmAngle(), position, Constants.ARM_ANGLE_TOLERANCE);
 	}
 
 	private void runArm(final Arm arm){
@@ -58,9 +78,9 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		if (isComplete(robot)) {
-			arm.pivot(0.0, willBrake ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
-			arm.setBrakeMode(willBrake ? BrakeMode.BREAK : BrakeMode.COAST);
+		if (isComplete(arm)) {
+			arm.pivot(0.0, willBrake() ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
+			arm.setBrakeMode(willBrake() ? BrakeMode.BREAK : BrakeMode.COAST);
 			return CommandResult.COMPLETE;
 		}else{
 			runArm(arm);
@@ -75,7 +95,9 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 
 		arm.setControlMode(ControlMode.AUTO);
 
-		if(!isComplete(robot)){
+		startPosition = arm.getArmAngle();
+
+		if(!isComplete(arm)){
 			runArm(arm);
 		}
 	}

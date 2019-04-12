@@ -57,7 +57,7 @@ public final class Constants {
     // NOTE: The back motor follows the front so keep that in mind when inverting
 
     public final static int DRIVEBASE_BACK_LEFT_ID = 5;
-    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = false;
+    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = true;
     
     public final static int DRIVEBASE_BACK_RIGHT_ID = 6;
     public final static boolean DRIVEBASE_BACK_RIGHT_INVERTED = false;
@@ -73,7 +73,7 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = false;
+    public final static boolean INTAKE_ROLLER_INVERTED = true;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
     public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
@@ -152,10 +152,10 @@ public final class Constants {
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
     //smart motion
-    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.0001, 0.0, 0.000);
-    public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 4000;
-    public final static double ARM_SM_CRUISE_VELOCITY = 0.0;
-    public final static double ARM_SM_ACCELERATION = 0.0;
+    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.00001, 0.0, 0.001);
+    public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 5000;
+    public final static double ARM_SM_CRUISE_VELOCITY = 1.0;
+    public final static double ARM_SM_ACCELERATION = 1.0;
 
     // SPEEDS
 

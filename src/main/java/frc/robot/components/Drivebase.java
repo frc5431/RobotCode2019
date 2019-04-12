@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivebase extends Titan.Component<Robot>{
     public static enum ControlType{
@@ -111,23 +112,23 @@ public class Drivebase extends Titan.Component<Robot>{
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontLeft.setInverted(Constants.DRIVEBASE_FRONT_LEFT_INVERTED);
         frontLeft.setIdleMode(IdleMode.kBrake);
-        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
-        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
+        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
         frontLeft.burnFlash();
         
         frontRight = new CANSparkMax(Constants.DRIVEBASE_FRONT_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontRight.setInverted(Constants.DRIVEBASE_FRONT_RIGHT_INVERTED);
         frontRight.setIdleMode(IdleMode.kBrake);
-        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
-        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
+        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
         frontRight.burnFlash();
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backLeft.setInverted(Constants.DRIVEBASE_BACK_LEFT_INVERTED);
-        backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
+        backLeft.follow(ExternalFollower.kFollowerDisabled, 0);
         backLeft.setIdleMode(IdleMode.kBrake);
-        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
-        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
+        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
         backLeft.burnFlash();
 
         //he attac
@@ -136,10 +137,10 @@ public class Drivebase extends Titan.Component<Robot>{
         //he bac
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
-        backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
+        backRight.follow(ExternalFollower.kFollowerDisabled, 0);
         backRight.setIdleMode(IdleMode.kBrake);
-        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
-        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
+        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
         backRight.burnFlash();
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
@@ -174,16 +175,6 @@ public class Drivebase extends Titan.Component<Robot>{
         // leftCorrection = 0;
         // rightCorrection = 0;
 
-        if(backRight.getFault(FaultID.kHasReset)){
-            backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
-            backRight.clearFaults();
-        }
-
-        if(backLeft.getFault(FaultID.kHasReset)){
-            backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
-            backLeft.clearFaults();
-        }
-
         final double leftCorrection, rightCorrection, angleCorrection;
         if(leftDistancePID.isEnabled()){
             leftCorrection = leftDistancePID.get();
@@ -202,23 +193,30 @@ public class Drivebase extends Titan.Component<Robot>{
             angleCorrection = 0;
         }
 
-        frontLeft.set(leftPower - leftCorrection - angleCorrection);
-        frontRight.set(rightPower - rightCorrection + angleCorrection);
+        final double outLeftPower = leftPower - leftCorrection - angleCorrection;
+        final double outRightPower = rightPower - rightCorrection + angleCorrection;
+        backLeft.set(outLeftPower);
+        frontLeft.set(outLeftPower);
+        backRight.set(outRightPower);
+        frontRight.set(outRightPower);
+
+        SmartDashboard.putNumber("RightPower", outRightPower);
+        SmartDashboard.putNumber("LeftPower", outLeftPower);
 
         if(controlMode == ControlMode.MANUAL || leftPower == 0){
             frontLeft.setOpenLoopRampRate(0);
             backLeft.setOpenLoopRampRate(0);
         }else if(controlType == ControlType.COMMANDS){
-            frontLeft.setOpenLoopRampRate(0.3);
-            backLeft.setOpenLoopRampRate(0.3);
+            frontLeft.setOpenLoopRampRate(0.7);
+            backLeft.setOpenLoopRampRate(0.7);
         }
 
         if(controlMode == ControlMode.MANUAL || rightPower == 0){
             frontRight.setOpenLoopRampRate(0);
             backRight.setOpenLoopRampRate(0);
         }else if(controlType == ControlType.COMMANDS){
-            frontRight.setOpenLoopRampRate(0.3);
-            backRight.setOpenLoopRampRate(0.3);
+            frontRight.setOpenLoopRampRate(0.7);
+            backRight.setOpenLoopRampRate(0.7);
         }
     }
 
