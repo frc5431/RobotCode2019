@@ -10,7 +10,9 @@ import frc.robot.util.TitanNavx;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.ExternalFollower;
+import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
@@ -21,13 +23,11 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 
 public class Drivebase extends Titan.Component<Robot>{
-    public static enum PIDType{
-        STANDARD, MIMIC
+    public static enum ControlType{
+        COMMANDS, MIMIC, VISION
     };
 
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
-
-    private final SpeedControllerGroup left, right;
 
     private final Encoder leftEncoder, rightEncoder;
 
@@ -103,6 +103,7 @@ public class Drivebase extends Titan.Component<Robot>{
     }, 0.02);
 
     private ControlMode controlMode = ControlMode.MANUAL;
+    private ControlType controlType = ControlType.COMMANDS;
 
     private final TitanNavx navx;
     
@@ -110,17 +111,23 @@ public class Drivebase extends Titan.Component<Robot>{
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontLeft.setInverted(Constants.DRIVEBASE_FRONT_LEFT_INVERTED);
         frontLeft.setIdleMode(IdleMode.kBrake);
+        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         frontLeft.burnFlash();
         
         frontRight = new CANSparkMax(Constants.DRIVEBASE_FRONT_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         frontRight.setInverted(Constants.DRIVEBASE_FRONT_RIGHT_INVERTED);
         frontRight.setIdleMode(IdleMode.kBrake);
+        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         frontRight.burnFlash();
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backLeft.setInverted(Constants.DRIVEBASE_BACK_LEFT_INVERTED);
-        backLeft.follow(ExternalFollower.kFollowerDisabled, 0);
+        backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
         backLeft.setIdleMode(IdleMode.kBrake);
+        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         backLeft.burnFlash();
 
         //he attac
@@ -129,12 +136,11 @@ public class Drivebase extends Titan.Component<Robot>{
         //he bac
         backRight = new CANSparkMax(Constants.DRIVEBASE_BACK_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         backRight.setInverted(Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
-        backRight.follow(ExternalFollower.kFollowerDisabled, 0);
+        backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
         backRight.setIdleMode(IdleMode.kBrake);
+        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500);
+        backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         backRight.burnFlash();
-
-        left = new SpeedControllerGroup(backLeft, frontLeft);
-        right = new SpeedControllerGroup(backRight, frontRight);
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
         leftEncoder.setMaxPeriod(Constants.DRIVEBASE_ENCODER_MAX_PERIOD);
@@ -167,6 +173,17 @@ public class Drivebase extends Titan.Component<Robot>{
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
+
+        if(backRight.getFault(FaultID.kHasReset)){
+            backRight.follow(frontRight, Constants.DRIVEBASE_BACK_RIGHT_INVERTED);
+            backRight.clearFaults();
+        }
+
+        if(backLeft.getFault(FaultID.kHasReset)){
+            backLeft.follow(frontLeft, Constants.DRIVEBASE_BACK_LEFT_INVERTED);
+            backLeft.clearFaults();
+        }
+
         final double leftCorrection, rightCorrection, angleCorrection;
         if(leftDistancePID.isEnabled()){
             leftCorrection = leftDistancePID.get();
@@ -185,23 +202,23 @@ public class Drivebase extends Titan.Component<Robot>{
             angleCorrection = 0;
         }
 
-        left.set(leftPower - leftCorrection - angleCorrection);
-        right.set(rightPower - rightCorrection + angleCorrection);
+        frontLeft.set(leftPower - leftCorrection - angleCorrection);
+        frontRight.set(rightPower - rightCorrection + angleCorrection);
 
         if(controlMode == ControlMode.MANUAL || leftPower == 0){
             frontLeft.setOpenLoopRampRate(0);
             backLeft.setOpenLoopRampRate(0);
-        }else{
-            frontLeft.setOpenLoopRampRate(0.5);
-            backLeft.setOpenLoopRampRate(0.5);
+        }else if(controlType == ControlType.COMMANDS){
+            frontLeft.setOpenLoopRampRate(0.3);
+            backLeft.setOpenLoopRampRate(0.3);
         }
 
         if(controlMode == ControlMode.MANUAL || rightPower == 0){
             frontRight.setOpenLoopRampRate(0);
             backRight.setOpenLoopRampRate(0);
-        }else{
-            frontRight.setOpenLoopRampRate(0.5);
-            backRight.setOpenLoopRampRate(0.5);
+        }else if(controlType == ControlType.COMMANDS){
+            frontRight.setOpenLoopRampRate(0.3);
+            backRight.setOpenLoopRampRate(0.3);
         }
     }
 
@@ -282,13 +299,17 @@ public class Drivebase extends Titan.Component<Robot>{
 		disableAllPID();
     }
 
-    public void enableDistancePID(final PIDType type){
+    public void setControlType(final ControlType type){
+        controlType = type;
+    }
+
+    public void enableDistancePID(){
         final PIDConstants pid;
-        switch(type){
+        switch(controlType){
         case MIMIC:
             pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
             break;
-        case STANDARD:
+        case COMMANDS:
         default:
             pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
         }
@@ -314,13 +335,13 @@ public class Drivebase extends Titan.Component<Robot>{
         }
     }
 
-    public void enableAnglePID(final PIDType type){
+    public void enableAnglePID(){
         final PIDConstants pid;
-        switch(type){
+        switch(controlType){
         case MIMIC:
             pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
             break;
-        case STANDARD:
+        case COMMANDS:
         default:
             pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
         }

@@ -44,9 +44,10 @@ public class Dashboard extends Titan.Component<Robot>{
     public void tick(final Robot robot){
         SmartDashboard.putData("RoutineChooser", routineChooser);
 
-        SmartDashboard.putNumber("ArmAngle", robot.getArm().getArmAngle());
+        SmartDashboard.putNumber("ArmAngle", robot.getArm().getAbsoluteAngle());
         SmartDashboard.putNumber("ArmEncoderPosition", robot.getArm().getEncoderPosition());
         SmartDashboard.putNumber("ArmEncoderVelocity", robot.getArm().getEncoderVelocity());
+        SmartDashboard.putNumber("ArmPower", robot.getArm().getOutputPower());
         SmartDashboard.putNumber("ElevatorPosition", robot.getElevator().getEncoderPosition());
         SmartDashboard.putNumber("ElevatorVelocity", robot.getElevator().getEncoderVelocity());
         SmartDashboard.putBoolean("CarriageDown", robot.getElevator().isCarriageDown());

@@ -4,7 +4,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.PIDType;
+import frc.robot.components.Drivebase.ControlType;
 
 public class TurnCommand extends Titan.Command<Robot> {
 	private final double speed, angle;
@@ -26,7 +26,9 @@ public class TurnCommand extends Titan.Command<Robot> {
 
 		drivebase.setHome();
 
-		drivebase.enableAnglePID(PIDType.STANDARD);
+		drivebase.setControlType(ControlType.COMMANDS);
+
+		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(angle);
 
 		// drivebase.enableDistancePID();

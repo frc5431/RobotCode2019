@@ -63,6 +63,7 @@ public class Elevator extends Titan.Component<Robot>{
         bottom.config_kD(0, pid.getD(), 0);//40
         
         bottom.config_kF(0, 1023.0 / Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY, 0);
+        
         bottom.configAllowableClosedloopError(0, 0/*Constants.ELEVATOR_POSITION_TOLERANCE*/, 0);
 		bottom.config_IntegralZone(0, 300, 0);
         bottom.configMotionAcceleration((int)(Constants.ELEVATOR_MM_ACCELERATION * Constants.ELEVATOR_MM_PEAK_SENSOR_VELOCITY));
@@ -103,8 +104,10 @@ public class Elevator extends Titan.Component<Robot>{
         //}
 
         if(isCarriageUp() && isElevatorDown()){
-            System.out.println("RESET: ELEVATOR TOP LIMIT");
-            bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
+            //21648
+            System.out.println("RESET: " + bottom.getSelectedSensorPosition()
+            );
+            //bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
             //bagged robot: 27000
         }else if(isCarriageDown() && isElevatorDown()){
             bottom.getSensorCollection().setQuadraturePosition(0, 0);
@@ -151,13 +154,20 @@ public class Elevator extends Titan.Component<Robot>{
             }
         }else{
             lastBrake = -1;
+            if(Titan.approxEquals(getEncoderVelocity(), 0, 100)){
+                bottom.set(0);
+            }else{
+                bottom.set(Constants.ELEVATOR_STALL_SPEED);
+            }
         }
+
+        bottom.set(0);
 
         // if(brakeState == BrakeState.ENGAGED && getEncoderVelocity() < -100){
         //     bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
         // }
-
-        brakePad.set(brakeState == BrakeState.DISENGAGED);
+        brakePad.set(false);
+        //brakePad.set(brakeState == BrakeState.DISENGAGED);
     }
 
     @Override

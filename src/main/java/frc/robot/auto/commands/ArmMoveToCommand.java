@@ -45,7 +45,8 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 	}
 
 	private void runArm(final Arm arm){
-		arm.pivot(getArmSpeed(arm.getArmAngle()));
+		arm.pivotTo(position);
+		//arm.pivot(getArmSpeed(arm.getArmAngle()));
 	}
 
 	@Override

@@ -414,6 +414,8 @@ public class Auton extends Titan.Component<Robot>{
     }
 
     private void runSequence(final Robot robot, final SequenceType type, final Sequence seq){
+        sequenceCommands.done(robot);
+        sequenceCommands.clear();
         runningSequence = seq;
         final Function<Robot, List<Titan.Command<Robot>>> selected = (type == SequenceType.HATCH ? hatchSequences : ballSequences).getOrDefault(seq, (rob)->List.of());
         if(type == SequenceType.CARGO){

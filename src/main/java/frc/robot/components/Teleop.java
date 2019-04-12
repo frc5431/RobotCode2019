@@ -57,12 +57,6 @@ public class Teleop extends Titan.Component<Robot>{
 
           forks.setState(climber.getForkState() == ForkState.DEPLOYED);
           climber.fork(forks.isToggled(driver.getRawButton(Titan.Xbox.Button.BACK)) ? ForkState.DEPLOYED : ForkState.RETRACTED);
-
-          if(driver.getRawButton(Titan.Xbox.Button.START)){
-            climber.winch(Constants.CLIMBER_WINCH_SPEED);
-          }else{
-            climber.winch(0.0);
-          }
         }
 
         final Elevator elevator = robot.getElevator();

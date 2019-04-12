@@ -6,6 +6,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.components.Vision;
 import frc.robot.components.Drivebase;
+import frc.robot.components.Drivebase.ControlType;
 import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
 
@@ -33,6 +34,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
+		drivebase.setControlType(ControlType.VISION);
 	
 		robot.getVision().setTargetType(ttype);
 

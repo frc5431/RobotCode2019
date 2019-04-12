@@ -6,6 +6,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.ConfigParameter;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants;
@@ -40,32 +42,51 @@ public class Arm extends Titan.Component<Robot>{
     public Arm(){
         pivot = new CANSparkMax(Constants.ARM_PIVOT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         pivot.setInverted(Constants.ARM_PIVOT_INVERTED);
+        pivot.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
+        pivot.burnFlash();
 
         pivotEncoder = pivot.getEncoder();
-        pivotEncoder.setPosition(0);
-        pivotEncoder.setPositionConversionFactor(360.0 / 237.5);
-        pivotEncoder.setVelocityConversionFactor(360.0 / 237.5);
+        //pivotEncoder.setPosition(0);
+        pivotEncoder.setPositionConversionFactor(360.0 / 152);
+        pivotEncoder.setVelocityConversionFactor(1.0);
+        //pivotEncoder.setVelocityConversionFactor(360.0 / 237.5);
 
         pivotPid = pivot.getPIDController();
 
-        final PIDConstants pid = Constants.ARM_SM_PID;
-        pivotPid.setP(pid.getP());
-        pivotPid.setI(pid.getI());
-        pivotPid.setD(pid.getD());
-
         final double peakSensorVelocity = Constants.ARM_SM_PEAK_SENSOR_VELOCITY;
+        final PIDConstants pid = Constants.ARM_SM_PID;
+        pivotPid.setP(pid.getP(), 0);
+        pivotPid.setI(pid.getI(), 0);
+        pivotPid.setD(pid.getD(), 0);
+        pivotPid.setFF(0);
+        //pivotPid.setFF(1.0 / peakSensorVelocity, 0);
         pivotPid.setSmartMotionMaxVelocity(Constants.ARM_SM_CRUISE_VELOCITY * peakSensorVelocity, 0);
         pivotPid.setSmartMotionMaxAccel(Constants.ARM_SM_ACCELERATION * peakSensorVelocity, 0);
+        pivotPid.setOutputRange(0, 0, 0);
+        pivotPid.setSmartMotionAllowedClosedLoopError(Constants.ARM_ANGLE_TOLERANCE, 0);
+        pivot.burnFlash();
 
         setBrakeMode(BrakeMode.BREAK);
     
         brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
+
+        new Thread(()->{
+            while(true){
+                try{
+                    Thread.sleep(1);
+                }catch(final InterruptedException e){
+                    e.printStackTrace();
+                }
+                pivotEncoder.setPosition(getAbsoluteAngle());
+            }
+        }).start();
     }
 
     @Override
     public void init(final Robot robot){
+        //pivotEncoder.setPosition(getArmAngle());
     }
 
     @Override
@@ -74,23 +95,26 @@ public class Arm extends Titan.Component<Robot>{
             setBrakeMode(BrakeMode.BREAK);
         }
 
-        pivotEncoder.setPosition(getArmAngle());
+        //pivotEncoder.setPosition(getArmAngle());
         // if(robot.getTeleop().getOperator().getRawButton(Titan.LogitechExtreme3D.Button.ELEVEN)){
         //     pivot.getEncoder().setPosition(0);
         // }
 
         //System.out.println(pivot.getIdleMode().name());
 
+        //if(Titan.approxEquals(getAbsoluteAngle(), Constants.ARM_STOW_ANGLE, Constants.ARM_ANGLE_TOLERANCE)){
+        //pivotEncoder.setPosition(getAbsoluteAngle());
+        //}
+
         brakePad.set(brakeState == BrakeState.DISENGAGED);
 
         final double ff = 0.16 * Math.cos(Math.toRadians(getArmAngle() - 90));
         if(targetPosition >= 0){
-            pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, ff);
+            pivotPid.setReference(targetPosition, ControlType.kSmartMotion, 0, 0);
         }else{
             final double power = Math.signum(armPower) * (Math.abs(armPower) + Math.abs(ff));
             pivotPid.setReference(power, ControlType.kDutyCycle, 0, 0);
         }
-
         //pivot.set(0.3);
     }
     
@@ -139,7 +163,7 @@ public class Arm extends Titan.Component<Robot>{
         controlMode = mode;
     }
 
-    public double getArmAngle(){
+    public double getAbsoluteAngle(){
         //return pivot.getEncoder().getPosition() / 237.5;
         //System.out.println(pivot.getEncoder().getPosition());
         final double position = (((5.0 - (armEncoder.getAverageVoltage() / 5.0)) * 360.0) - Constants.ARM_ENCODER_CALIBRATION_OFFSET) % 360;
@@ -150,12 +174,20 @@ public class Arm extends Titan.Component<Robot>{
         return position;
     }
 
+    public double getArmAngle(){
+        return getEncoderPosition();
+    }
+
     public double getEncoderPosition(){
         return pivotEncoder.getPosition();
     }
 
     public double getEncoderVelocity(){
         return pivotEncoder.getVelocity();
+    }
+
+    public double getOutputPower(){
+        return pivot.getAppliedOutput();
     }
 
     public void setBrakeMode(final BrakeMode mode){

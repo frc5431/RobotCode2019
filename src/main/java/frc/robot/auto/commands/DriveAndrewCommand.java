@@ -4,7 +4,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.PIDType;
+import frc.robot.components.Drivebase.ControlType;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class DriveAndrewCommand extends Titan.Command<Robot> {
@@ -36,13 +36,14 @@ public class DriveAndrewCommand extends Titan.Command<Robot> {
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
+		drivebase.setControlType(ControlType.COMMANDS);
 
 		drivebase.setHome();
 
-		drivebase.enableAnglePID(PIDType.STANDARD);
+		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(0);
 
-		drivebase.enableDistancePID(PIDType.STANDARD);
+		drivebase.enableDistancePID();
 		drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 

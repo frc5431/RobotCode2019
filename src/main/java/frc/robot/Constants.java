@@ -57,7 +57,7 @@ public final class Constants {
     // NOTE: The back motor follows the front so keep that in mind when inverting
 
     public final static int DRIVEBASE_BACK_LEFT_ID = 5;
-    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = true;
+    public final static boolean DRIVEBASE_BACK_LEFT_INVERTED = false;
     
     public final static int DRIVEBASE_BACK_RIGHT_ID = 6;
     public final static boolean DRIVEBASE_BACK_RIGHT_INVERTED = false;
@@ -88,7 +88,7 @@ public final class Constants {
 
     public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 100 : 234;
     // to calculate this, move the elevator to the max operational height and record the number
-    public final static double ELEVATOR_ENCODER_CALIBRATION = ROBOT_TYPE == Robot.COMPETITION ? 46000 : 47000;
+    public final static double ELEVATOR_ENCODER_CALIBRATION = 43000;
 
     // digital inputs
 
@@ -146,15 +146,16 @@ public final class Constants {
 
     //motion magic
     public final static PIDConstants ELEVATOR_MM_PID = new PIDConstants(ROBOT_TYPE == Robot.COMPETITION ? 1.2 : 1.5, 0.0, 0.0);
+    public final static PIDConstants ELEVATOR_VELOCTIY_PID = new PIDConstants(1, 0.0, 0.0);
     public final static double ELEVATOR_MM_PEAK_SENSOR_VELOCITY = ROBOT_TYPE == Robot.COMPETITION ? 5100 : 5200;
     public final static double ELEVATOR_MM_CRUISE_VELOCITY = 1.0;
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
     //smart motion
-    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.007, 0.0, 0.0);
-    public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 2.5;
-    public final static double ARM_SM_CRUISE_VELOCITY = 0.6;
-    public final static double ARM_SM_ACCELERATION = 0.03;
+    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.0001, 0.0, 0.000);
+    public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 4000;
+    public final static double ARM_SM_CRUISE_VELOCITY = 0.0;
+    public final static double ARM_SM_ACCELERATION = 0.0;
 
     // SPEEDS
 
@@ -162,7 +163,6 @@ public final class Constants {
     public final static double ARM_PIVOT_UP_SPEED = 0.2;//0.2
     public final static double ARM_PIVOT_DOWN_SPEED = 0.15;//0.15
     public final static double INTAKE_ROLLER_SPEED = 1.0;
-    public final static double CLIMBER_WINCH_SPEED = 0.1;
 
     // TELEOPERATED MULTIPLIERS
     public final static double ELEVATOR_DOWN_MULTIPLIER = 0.6;
@@ -186,7 +186,8 @@ public final class Constants {
     public final static double AUTO_ARM_DOWN_MULITPLIER = 0.7;
 
     // to activate the clutch it runs these
-    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
+    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.1;
+    public final static double ELEVATOR_STALL_SPEED = 0.07;
 
     // TIMINGS
     public final static long ELEVATOR_BRAKE_TIME = 200;
