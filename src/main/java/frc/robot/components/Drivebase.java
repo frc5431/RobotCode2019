@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivebase extends Titan.Component<Robot>{
     public static enum ControlType{
-        COMMANDS, MIMIC, VISION
+        COMMANDS, MIMIC, VISION, POINT_TURN
     };
 
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
@@ -165,7 +165,7 @@ public class Drivebase extends Titan.Component<Robot>{
     
     @Override
     public void init(final Robot robot){
-        setHome();
+        resetAll();
     }
 
     @Override
@@ -202,6 +202,9 @@ public class Drivebase extends Titan.Component<Robot>{
 
         SmartDashboard.putNumber("RightPower", outRightPower);
         SmartDashboard.putNumber("LeftPower", outLeftPower);
+
+        System.out.println(navx.isConnected() + ", " + navx.isCalibrating() + ", " + navx.isMagneticDisturbance());
+        //System.out.println(getLeftDistance() + ", " + getRightDistance());
 
         if(controlMode == ControlMode.MANUAL || leftPower == 0){
             frontLeft.setOpenLoopRampRate(0);
@@ -292,7 +295,7 @@ public class Drivebase extends Titan.Component<Robot>{
         disableDistancePID();
     }
 
-    public void setHome() {
+    public void resetAll() {
 		reset();
 		disableAllPID();
     }
@@ -307,6 +310,8 @@ public class Drivebase extends Titan.Component<Robot>{
         case MIMIC:
             pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
             break;
+        case POINT_TURN:
+        case VISION:
         case COMMANDS:
         default:
             pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
@@ -336,10 +341,14 @@ public class Drivebase extends Titan.Component<Robot>{
     public void enableAnglePID(){
         final PIDConstants pid;
         switch(controlType){
+        case POINT_TURN:
+            pid = Constants.DRIVEBASE_ANGLE_POINT_TURN_PID;
+            break;
         case MIMIC:
             pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
             break;
         case COMMANDS:
+        case VISION:
         default:
             pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
         }

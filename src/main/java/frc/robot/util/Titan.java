@@ -905,4 +905,8 @@ public final class Titan {
 
 		return Math.abs(a - b) < epsilon;
 	}
+
+	public static double lerp(final double a, final double b, final double f){
+		return a + f * (b - a);
+	}
 }

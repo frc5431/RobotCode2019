@@ -31,7 +31,8 @@ public class DriveToCommand extends Titan.Command<Robot> {
 		drivebase.setControlMode(ControlMode.AUTO);
 		drivebase.setControlType(ControlType.COMMANDS);
 
-		drivebase.setHome();
+		drivebase.resetEncoders();
+		drivebase.disableAllPID();
 	}
 
 	@Override

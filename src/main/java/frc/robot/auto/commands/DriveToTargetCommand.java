@@ -35,6 +35,9 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		final Drivebase drivebase = robot.getDrivebase();
 		drivebase.setControlMode(ControlMode.AUTO);
 		drivebase.setControlType(ControlType.VISION);
+
+		drivebase.resetEncoders();
+		drivebase.disableAllPID();
 	
 		robot.getVision().setTargetType(ttype);
 
@@ -101,9 +104,10 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
 		if((target.exists() && atTarget) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){
-			robot.getDrivebase().drive(0, 0);
-
-			robot.getVision().setLEDState(Vision.LEDState.OFF);
+			drivebase.drive(0, 0);
+			drivebase.disableAllPID();
+			drivebase.setControlMode(ControlMode.MANUAL);
+			vision.setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}
 

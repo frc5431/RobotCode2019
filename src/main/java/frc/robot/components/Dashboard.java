@@ -26,13 +26,14 @@ public class Dashboard extends Titan.Component<Robot>{
         for(final Routine r : Routine.values()){
             routineChooser.addOption(r.toString(), r);
         }
-        routineChooser.setDefaultOption(Routine.ROCKET_TIER_2_RIGHT.toString(), Routine.ROCKET_TIER_2_RIGHT);
+        routineChooser.setDefaultOption(Routine.HAB_TO_FROCKET.toString(), Routine.HAB_TO_FROCKET);
         SmartDashboard.putData("RoutineChooser", routineChooser);
     }
 
     
     @Override
-    public void init(final Robot robot){   
+    public void init(final Robot robot){
+        SmartDashboard.putData("RoutineChooser", routineChooser);
     }
 
     @Override

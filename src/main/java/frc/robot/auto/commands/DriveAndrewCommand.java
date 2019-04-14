@@ -38,7 +38,8 @@ public class DriveAndrewCommand extends Titan.Command<Robot> {
 		drivebase.setControlMode(ControlMode.AUTO);
 		drivebase.setControlType(ControlType.COMMANDS);
 
-		drivebase.setHome();
+		drivebase.resetEncoders();
+		drivebase.disableAllPID();
 
 		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(0);

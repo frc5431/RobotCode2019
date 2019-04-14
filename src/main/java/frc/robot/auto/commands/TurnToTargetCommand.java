@@ -4,22 +4,25 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.auto.vision.TargetInfo;
+import frc.robot.auto.vision.TargetType;
 import frc.robot.components.Drivebase;
+import frc.robot.components.Vision;
 import frc.robot.components.Drivebase.ControlType;
 
-public class TurnCommand extends Titan.Command<Robot> {
-	private final double speed, angle;
+public class TurnToTargetCommand extends Titan.Command<Robot> {
+	private final double speed;
+	private final TargetType type;
 
 	private long hitTarget = -1;
 
-	public TurnCommand(final double speed, final double angle) {
-		name = "TurnCommand";
+	public TurnToTargetCommand(final double speed, final TargetType ttype) {
+		name = "TurnToTargetCommand";
 
+		this.type = ttype;
 		this.speed = speed;
 
-		this.angle = angle;
-
-		properties = "Speed: " + speed + "; Angle: " + angle;
+		properties = "Turn to the vision target: " + ttype.name() +"; Speed: " + speed;
 	}
 
 	@Override
@@ -32,7 +35,9 @@ public class TurnCommand extends Titan.Command<Robot> {
 		drivebase.disableAllPID();
 
 		drivebase.enableAnglePID();
-		drivebase.setAnglePIDTarget(angle);
+		drivebase.setAnglePIDTarget(0);
+
+		robot.getVision().setTargetType(type);
 
 		// drivebase.enableDistancePID();
 		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
@@ -41,14 +46,35 @@ public class TurnCommand extends Titan.Command<Robot> {
 	@Override
 	public CommandResult update(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
+		final Vision vision = robot.getVision();
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
+			vision.setLEDState(Vision.LEDState.OFF);
 			robot.getAuton().abort(robot);
 			return CommandResult.CLEAR_QUEUE;
 		}
 
+		vision.setLEDState(Vision.LEDState.ON);
+
 		final double currentAngle = drivebase.getAngle();
 
-		drivebase.drive(speed * Math.signum(angle - currentAngle), -speed * Math.signum(angle - currentAngle));
+		final TargetInfo target = robot.getVision().getTargetInfo();
+		final double angle = currentAngle + target.getXAngle();
+		drivebase.setAnglePIDTarget(angle);
+
+
+		final double targetSignum;
+		switch(type){
+		case FRONT_RIGHT:
+			targetSignum = -1;
+			break;
+		case FRONT_LEFT:
+		default:
+			targetSignum = 1;
+		}
+
+		System.out.println("ANGKE: "+ angle);
+
+		drivebase.drive(speed * targetSignum * Math.signum(angle - currentAngle), -speed * targetSignum * Math.signum(angle - currentAngle));
 		
 		if(Titan.approxEquals(currentAngle, angle, Constants.DRIVEBASE_ANGLE_TOLERANCE)){
 			if(hitTarget <= 0){
@@ -62,6 +88,7 @@ public class TurnCommand extends Titan.Command<Robot> {
 			drivebase.drive(0.0, 0.0);
 			drivebase.disableAllPID();
 			drivebase.setControlMode(ControlMode.MANUAL);
+			//vision.setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

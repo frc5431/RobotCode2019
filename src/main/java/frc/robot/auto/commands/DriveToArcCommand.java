@@ -2,15 +2,18 @@ package frc.robot.auto.commands;
 
 import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Drivebase.ControlType;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class DriveToArcCommand extends Titan.Command<Robot> {
-	private final double left, right, leftDistance, rightDistance, angle;
+	private final double left, right, leftDistance, rightDistance, angle, startRamp;
 
-	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle) {
+	private double startAngle;
+
+	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle, final double startRamp) {
 		name = "DriveToArcCommand";
 
 		this.left = left;
@@ -21,11 +24,21 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 		this.angle = angle;
 
-		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle;
+		this.startRamp = startRamp;
+
+		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle + "; Start ramp: " + startRamp;
+	}
+
+	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle){
+		this(left, right, leftDistance, rightDistance, angle, Constants.DRIVEBASE_ARC_DEFAULT_START_RAMP);
+	}
+
+	public DriveToArcCommand(final double dis, final double spd, final double ang, final double startRamp){
+		this(spd, spd, dis, dis, ang, startRamp);
 	}
 
 	public DriveToArcCommand(final double dis, final double spd, final double ang){
-		this(spd, spd, dis, dis, ang);
+		this(dis, spd, ang, Constants.DRIVEBASE_ARC_DEFAULT_START_RAMP);
 	}
 
 	public DriveToArcCommand(final double dis, final double spd){
@@ -38,12 +51,15 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		drivebase.setControlMode(ControlMode.AUTO);
 		drivebase.setControlType(ControlType.COMMANDS);
 
-		drivebase.setHome();
+		startAngle = drivebase.getAngle();
+
+		drivebase.resetEncoders();
+		drivebase.disableAllPID();
 
 		drivebase.enableAnglePID();
-		drivebase.setAnglePIDTarget(0);
+		drivebase.setAnglePIDTarget(startAngle);
 
-		// drivebase.enableDistancePID(PIDType.STANDARD);
+		// drivebase.enableDistancePID();
 		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 
@@ -55,18 +71,24 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		final double dis = (Math.abs(drivebase.getLeftError()) + Math.abs(drivebase.getRightError())) / 2;
-		final double angleP = dis / ((Math.abs(leftDistance) + Math.abs(rightDistance)) / 2);
+		final double progress = getProgress(drivebase);
 
-		if((Math.abs(leftDistance) + Math.abs(rightDistance)) / 2 <= 30){
+		if(getAverageDistance(drivebase) <= 30){
 			drivebase.setAnglePIDTarget(angle);
 		}else{
-			drivebase.setAnglePIDTarget(angle * angleP);
+			//drivebase.setAnglePIDTarget(angle);
+			drivebase.setAnglePIDTarget(Titan.lerp(startAngle, angle, progress));
 		}
 
 		final double voltageCompensation = 12.0 / RobotController.getBatteryVoltage();
 
-		drivebase.drive(left * (1.0 - (angleP * 0.3)) * voltageCompensation, right * (1.0 - (angleP * 0.3)) * voltageCompensation);
+		final double ramp;
+		if(progress <= startRamp){
+			ramp = 1.0;
+		}else{
+			ramp = Titan.lerp(1.0, 0.2, (progress - startRamp) / (1.0 - startRamp));
+		}
+		drivebase.drive(left * ramp * voltageCompensation, right * ramp * voltageCompensation);
 		if(drivebase.hasTravelled(leftDistance, rightDistance)){
 			drivebase.drive(0.0, 0.0);
 			drivebase.disableAllPID();
@@ -83,6 +105,14 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 	public double getRightDistance(){
 		return rightDistance;
+	}
+
+	public double getAverageDistance(final Drivebase drivebase){
+		return (Math.abs(drivebase.getLeftError()) + Math.abs(drivebase.getRightError())) / 2;
+	}
+
+	public double getProgress(final Drivebase drivebase){
+		return getAverageDistance(drivebase) / ((Math.abs(leftDistance) + Math.abs(rightDistance)) / 2);
 	}
 
 	@Override

@@ -131,11 +131,14 @@ public final class Constants {
 
     public final static double ARM_MAX_ANGLE = 280;
 
+    public final static double DRIVEBASE_ARC_DEFAULT_START_RAMP = 0.65;
+
     // PID
     public final static PIDConstants DRIVEBASE_DISTANCE_STANDARD_PID = new PIDConstants(0.02, 0.0001, 0.04);
     public final static PIDConstants DRIVEBASE_DISTANCE_MIMIC_PID = new PIDConstants(0.02, 0.0001, 0.04);
 
-    public final static PIDConstants DRIVEBASE_ANGLE_STANDARD_PID = new PIDConstants(0.01, 0.0, 0.0);
+    public final static PIDConstants DRIVEBASE_ANGLE_STANDARD_PID = new PIDConstants(0.0071, 0.0, 0.0);
+    public final static PIDConstants DRIVEBASE_ANGLE_POINT_TURN_PID = new PIDConstants(0.00265, 0.0, 0.0);
     public final static PIDConstants DRIVEBASE_ANGLE_MIMIC_PID = new PIDConstants(0.004, 0.000185, 0.04);
 
     public final static double AUTO_AIM_DISTANCE_P = 0.01;//gentle: 0.023 rought: 0.01
@@ -155,7 +158,7 @@ public final class Constants {
     public final static PIDConstants ARM_SM_PID = new PIDConstants(0.00001, 0.0, 0.001);
     public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 5000;
     public final static double ARM_SM_CRUISE_VELOCITY = 1.0;
-    public final static double ARM_SM_ACCELERATION = 1.0;
+    public final static double ARM_SM_ACCELERATION = 0.7;
 
     // SPEEDS
 
@@ -208,7 +211,7 @@ public final class Constants {
     public final static double ARM_ANGLE_TOLERANCE = 0.5;
     public final static int ELEVATOR_POSITION_TOLERANCE = 300;
     public final static double DRIVEBASE_DISTANCE_TOLERNACE = 1;
-    public final static double DRIVEBASE_ANGLE_TOLERANCE = 1.0; 
+    public final static double DRIVEBASE_ANGLE_TOLERANCE = 0.5; 
 
     //AMPS
     public final static int ROLLER_BALL_AMPS = 73;

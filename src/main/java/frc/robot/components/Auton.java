@@ -19,6 +19,7 @@ import frc.robot.util.Titan;
 
 import frc.robot.auto.commands.ElevateToCommand;
 import frc.robot.auto.commands.TurnCommand;
+import frc.robot.auto.commands.TurnToTargetCommand;
 import frc.robot.auto.commands.ArmMoveToCommand.CompletionCondition;
 import frc.robot.auto.commands.ArmMoveToCommand;
 import frc.robot.auto.commands.ArmBrakeCommand;
@@ -141,7 +142,7 @@ public class Auton extends Titan.Component<Robot>{
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 115));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.6279, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 100));
         //flusH: 31000
         hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9676, 105));
         //angled: 40000, 115
@@ -210,12 +211,14 @@ public class Auton extends Titan.Component<Robot>{
     public void init(final Robot robot){
         switch(robot.getMode()){
         case AUTO:
-            robot.getDrivebase().setHome();
+            robot.getDrivebase().resetAll();
+            drivebaseCommands.clear();
+            drivebaseCommands.add(new Titan.WaitCommand<>(100));
             drivebaseCommands.addAll(preloadedAutoCommands);
             preloadedAutoCommands.clear();
             break;
         case TEST:
-            robot.getDrivebase().setHome();
+            robot.getDrivebase().resetAll();
             observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
             break;
         case TELEOP:
@@ -303,34 +306,76 @@ public class Auton extends Titan.Component<Robot>{
     public List<Titan.Command<Robot>> loadMimicFile(final String name, final Sequence sequence, final boolean swapped){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
-            rob.getDrivebase().setHome();
+            rob.getDrivebase().resetEncoders();
+            rob.getDrivebase().disableAllPID();
 
             rob.getDrivebase().setControlMode(ControlMode.AUTO);
         }));
+
+        final double directionSignum = swapped ? -1 : 1;
 
         if(name.equalsIgnoreCase("hab_to_frocket_gen")){
             // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             //     runSequence(rob, SequenceType.HATCH, sequence);
             // }));
             //outCommands.add(new DriveToArcCommand(-10, -0.9, 0));
-            outCommands.add(new DriveToArcCommand(-190, -0.7, 35));
-            outCommands.add(new DriveToArcCommand(-40, -0.5, -30));
+
+            //LIAV'S ORIGINAL VALUES
+            // outCommands.add(new DriveToArcCommand(-190, -0.7, 35)); //ORIGINAL BEFORE LIAV LEFT
+            // outCommands.add(new DriveToArcCommand(-40, -0.5, -30));//how far move back, speed to ramp to, angle to end at */
+               
+            //WORKS CONSISTENTLY AT 12.75 sitting voltage Chins
+            final Titan.ParallelCommandGroup<Robot> group = new Titan.ParallelCommandGroup<>();
+            final DriveToArcCommand arc = new DriveToArcCommand(-241, -0.8, 35 * directionSignum);
+            group.addQueue(List.of(arc, new TurnCommand(0.03, -(90-61.25) * directionSignum)));
+            group.addQueue(List.of(new Titan.ConditionalCommand<>((rob)->arc.getProgress(rob.getDrivebase()) >= 0.3),new Titan.ConsumerCommand<>((rob)->{
+                runSequence(rob, SequenceType.HATCH, sequence);
+            })));
+            outCommands.add(group);
+            //outCommands.add(new Titan.WaitCommand<>(100));
+
+            //STRAIGHT LINES AND POINT TURNS ARE ELITE THIS SHIT SUPER WORKS
+            /*outCommands.add(new DriveToCommand(-120, -0.5));
+            outCommands.add(new TurnCommand(0, (90-61.25)));
+
+            outCommands.add(new DriveToCommand(-90, -0.5));
+            outCommands.add(new TurnCommand(0, -(90-61.25)*2));*/
+
+            // outCommands.add(new DriveToArcCommand(-105, -0.5));
+            // outCommands.add(new TurnCommand(0.025, (25)));
+
+            // outCommands.add(new DriveToArcCommand(-130.5, -0.5));
+            // outCommands.add(new TurnCommand(0.025, -((90-61.25))));
+
+
             //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -220, -205));
             //outCommands.add(new DriveToCommand(-0.5, 0.5, -2, 2));
         }else if(name.equalsIgnoreCase("frocket_to_ls_gen")){
             //outCommands.add(new DriveToArcCommand(-5, -0.9, 0));
-            outCommands.add(new DriveToCommand(-10, -0.7));
+
+            //ORIGINAL VALUES
+           /* outCommands.add(new DriveToCommand(-10, -0.7));
             outCommands.add(new Titan.WaitCommand<>(300));
             outCommands.add(new TurnCommand(0, 30));
             outCommands.add(new Titan.WaitCommand<>(300));
-            outCommands.add(new DriveToCommand(30, 0.9));
-            //outCommands.add(new Titan.WaitCommand<>(300));
-            outCommands.add(new DriveToArcCommand(0.7, 0.7, 115, 135, -40));
-            outCommands.add(new DriveToArcCommand(0.7, 0.5, 30, 10, 20));
+            outCommands.add(new DriveToCommand(30, 0.9));*/
+            outCommands.add(new DriveToCommand(-30, -0.5));
+            outCommands.add(new TurnCommand(0.03, 0));
+            outCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                runSequence(rob, SequenceType.HATCH, sequence);
+            }));
+            outCommands.add(new DriveToArcCommand(90, 0.9, 0, 0.5));
+            outCommands.add(new DriveToArcCommand(55, 0.7, -37 * directionSignum));
+            outCommands.add(new DriveToArcCommand(60, 0.3, 0));
+            //outCommands.add(new TurnCommand(0.03, 0));
+            // outCommands.add(new DriveToArcCommand(50, 0.5, 0));
         }else if(name.equalsIgnoreCase("ls_to_crocket_gen")){
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);
             }));
+            outCommands.add(new DriveToArcCommand(-110, -0.7, -25 * directionSignum));
+            outCommands.add(new TurnCommand(0.03, (180 - 61.25) * directionSignum));
+            outCommands.add(new TurnToTargetCommand(0.03, swapped ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
             //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -140, -60));
         }else if(name.equalsIgnoreCase("hab_to_ccargo_gen")){
             // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
@@ -406,7 +451,8 @@ public class Auton extends Titan.Component<Robot>{
         }
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             System.out.println("Finished mimic file");
-            rob.getDrivebase().setHome();
+            rob.getDrivebase().resetEncoders();
+            rob.getDrivebase().disableAllPID();
             rob.getDrivebase().setControlMode(ControlMode.MANUAL);
 		    rob.getDrivebase().drive(0.0, 0.0);
         }));
