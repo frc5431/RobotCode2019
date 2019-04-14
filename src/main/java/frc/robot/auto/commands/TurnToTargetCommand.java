@@ -8,7 +8,7 @@ import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Vision;
-import frc.robot.components.Drivebase.ControlType;
+import frc.robot.components.Drivebase.AutoType;
 
 public class TurnToTargetCommand extends Titan.Command<Robot> {
 	private final double speed;
@@ -28,11 +28,7 @@ public class TurnToTargetCommand extends Titan.Command<Robot> {
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.setControlMode(ControlMode.AUTO);
-		drivebase.setControlType(ControlType.POINT_TURN);
-
-		drivebase.resetEncoders();
-		drivebase.disableAllPID();
+		drivebase.prepareForAutoControl(AutoType.POINT_TURN);
 
 		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(0);
@@ -72,8 +68,6 @@ public class TurnToTargetCommand extends Titan.Command<Robot> {
 			targetSignum = 1;
 		}
 
-		System.out.println("ANGKE: "+ angle);
-
 		drivebase.drive(speed * targetSignum * Math.signum(angle - currentAngle), -speed * targetSignum * Math.signum(angle - currentAngle));
 		
 		if(Titan.approxEquals(currentAngle, angle, Constants.DRIVEBASE_ANGLE_TOLERANCE)){
@@ -85,9 +79,7 @@ public class TurnToTargetCommand extends Titan.Command<Robot> {
 		}
 
 		if(/*drivebase.hasTurned(angle)*/hitTarget > 0 && System.currentTimeMillis() >= hitTarget + 100){
-			drivebase.drive(0.0, 0.0);
-			drivebase.disableAllPID();
-			drivebase.setControlMode(ControlMode.MANUAL);
+			drivebase.disableAutoControl();
 			//vision.setLEDState(Vision.LEDState.OFF);
 			return CommandResult.COMPLETE;
 		}else{

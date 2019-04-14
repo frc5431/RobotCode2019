@@ -10,7 +10,6 @@ import frc.robot.util.TitanNavx;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMax.ExternalFollower;
-import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
@@ -19,12 +18,11 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivebase extends Titan.Component<Robot>{
-    public static enum ControlType{
+    public static enum AutoType{
         COMMANDS, MIMIC, VISION, POINT_TURN
     };
 
@@ -104,7 +102,7 @@ public class Drivebase extends Titan.Component<Robot>{
     }, 0.02);
 
     private ControlMode controlMode = ControlMode.MANUAL;
-    private ControlType controlType = ControlType.COMMANDS;
+    private AutoType autoType = AutoType.COMMANDS;
 
     private final TitanNavx navx;
     
@@ -206,20 +204,20 @@ public class Drivebase extends Titan.Component<Robot>{
         System.out.println(navx.isConnected() + ", " + navx.isCalibrating() + ", " + navx.isMagneticDisturbance());
         //System.out.println(getLeftDistance() + ", " + getRightDistance());
 
-        if(controlMode == ControlMode.MANUAL || leftPower == 0){
-            frontLeft.setOpenLoopRampRate(0);
-            backLeft.setOpenLoopRampRate(0);
-        }else if(controlType == ControlType.COMMANDS){
+        if(autoType == AutoType.COMMANDS && controlMode == ControlMode.AUTO && leftPower != 0){
             frontLeft.setOpenLoopRampRate(0.7);
             backLeft.setOpenLoopRampRate(0.7);
+        }else{
+            frontLeft.setOpenLoopRampRate(0);
+            backLeft.setOpenLoopRampRate(0);
         }
 
-        if(controlMode == ControlMode.MANUAL || rightPower == 0){
-            frontRight.setOpenLoopRampRate(0);
-            backRight.setOpenLoopRampRate(0);
-        }else if(controlType == ControlType.COMMANDS){
+        if(autoType == AutoType.COMMANDS && controlMode == ControlMode.AUTO && rightPower != 0){
             frontRight.setOpenLoopRampRate(0.7);
             backRight.setOpenLoopRampRate(0.7);
+        }else{
+            frontRight.setOpenLoopRampRate(0);
+            backRight.setOpenLoopRampRate(0);
         }
     }
 
@@ -300,18 +298,30 @@ public class Drivebase extends Titan.Component<Robot>{
 		disableAllPID();
     }
 
-    public void setControlType(final ControlType type){
-        controlType = type;
+    public void prepareForAutoControl(final AutoType type){
+        setControlMode(ControlMode.AUTO);
+        autoType = type;
+
+        resetEncoders();
+        disableAllPID();
+    }
+
+    public void disableAutoControl(){
+        disableAllPID();
+        drive(0, 0);
+        setControlMode(ControlMode.MANUAL);
     }
 
     public void enableDistancePID(){
         final PIDConstants pid;
-        switch(controlType){
+        switch(autoType){
+        case VISION:
+            pid = new PIDConstants(0, 0, 0);
+            break;
         case MIMIC:
             pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
             break;
         case POINT_TURN:
-        case VISION:
         case COMMANDS:
         default:
             pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
@@ -340,7 +350,10 @@ public class Drivebase extends Titan.Component<Robot>{
 
     public void enableAnglePID(){
         final PIDConstants pid;
-        switch(controlType){
+        switch(autoType){
+        case VISION:
+            pid = new PIDConstants(0, 0, 0);
+            break;
         case POINT_TURN:
             pid = Constants.DRIVEBASE_ANGLE_POINT_TURN_PID;
             break;
@@ -348,7 +361,6 @@ public class Drivebase extends Titan.Component<Robot>{
             pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
             break;
         case COMMANDS:
-        case VISION:
         default:
             pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
         }

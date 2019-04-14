@@ -5,19 +5,21 @@ import frc.robot.util.Titan;
 
 import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
-import frc.robot.auto.vision.Limelight;
 
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Vision extends Titan.Component<Robot>{
     public static enum LEDState{
         ON, OFF
     };
 
+    private final NetworkTable table;
     private LEDState ledState = LEDState.OFF;
     private TargetType ttype = TargetType.FRONT_RIGHT;
 
     public Vision(){
+        table = NetworkTableInstance.getDefault().getTable("limelight-front");
     }
 
     @Override
@@ -34,11 +36,9 @@ public class Vision extends Titan.Component<Robot>{
     public void tick(final Robot robot){
         final Titan.Xbox controller = robot.getTeleop().getDriver();
         if(controller.getRawButton(Titan.Xbox.Button.X)){
-            for(final Limelight l : Limelight.values()){
-                l.getTable().getEntry("ledMode").setNumber(2);
-            }
+            getSelectedTable().getEntry("ledMode").setNumber(2);
         }else{
-            Limelight.FRONT.getTable().getEntry("ledMode").setNumber((ttype.getLimelight() == Limelight.FRONT && ledState == LEDState.ON) || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
+            getSelectedTable().getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
         }
 
         getSelectedTable().getEntry("pipeline").setNumber(ttype.getPipeline());
@@ -51,7 +51,7 @@ public class Vision extends Titan.Component<Robot>{
 
     
     private NetworkTable getSelectedTable(){
-        return ttype.getLimelight().getTable();
+        return table;
     }
 
     public TargetInfo getTargetInfo(){

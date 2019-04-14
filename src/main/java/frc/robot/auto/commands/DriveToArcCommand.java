@@ -5,7 +5,7 @@ import frc.robot.util.ControlMode;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.ControlType;
+import frc.robot.components.Drivebase.AutoType;
 import edu.wpi.first.wpilibj.RobotController;
 
 public class DriveToArcCommand extends Titan.Command<Robot> {
@@ -48,13 +48,9 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.setControlMode(ControlMode.AUTO);
-		drivebase.setControlType(ControlType.COMMANDS);
+		drivebase.prepareForAutoControl(AutoType.COMMANDS);
 
 		startAngle = drivebase.getAngle();
-
-		drivebase.resetEncoders();
-		drivebase.disableAllPID();
 
 		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(startAngle);
@@ -90,9 +86,8 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		}
 		drivebase.drive(left * ramp * voltageCompensation, right * ramp * voltageCompensation);
 		if(drivebase.hasTravelled(leftDistance, rightDistance)){
-			drivebase.drive(0.0, 0.0);
-			drivebase.disableAllPID();
-			drivebase.setControlMode(ControlMode.MANUAL);
+			drivebase.disableAutoControl();
+
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

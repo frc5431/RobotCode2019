@@ -8,7 +8,6 @@ import frc.robot.util.ControlMode;
 
 public class ElevateToCommand extends Titan.Command<Robot>{
 	private final int targetPosition;
-	private int startPosition = -1;
 
 	public ElevateToCommand(final int position) {
         this.targetPosition = position;
@@ -68,8 +67,6 @@ public class ElevateToCommand extends Titan.Command<Robot>{
 	public void init(final Robot robot) {
 		final Elevator elevator = robot.getElevator();
 		elevator.setControlMode(ControlMode.AUTO);
-
-		startPosition = elevator.getEncoderPosition();
 
 		if(!isComplete(elevator)){
 			runElevator(elevator);

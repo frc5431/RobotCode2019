@@ -4,7 +4,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.ControlType;
+import frc.robot.components.Drivebase.AutoType;
 
 public class DriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
@@ -24,8 +24,7 @@ public class DriveCommand extends Titan.Command<Robot> {
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.setControlMode(ControlMode.AUTO);
-		drivebase.setControlType(ControlType.COMMANDS);
+		drivebase.prepareForAutoControl(AutoType.COMMANDS);
 	}
 
 	@Override
@@ -40,7 +39,7 @@ public class DriveCommand extends Titan.Command<Robot> {
 		drivebase.drive(left, right);
 
 		if(System.currentTimeMillis() > startTime + time){
-			drivebase.drive(0.0, 0.0);
+			drivebase.disableAutoControl();
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

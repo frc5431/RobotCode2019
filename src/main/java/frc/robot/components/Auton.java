@@ -30,7 +30,6 @@ import frc.robot.auto.commands.MimicDriveCommand;
 import frc.robot.auto.commands.DriveToCommand;
 import frc.robot.auto.commands.DriveToArcCommand;
 import frc.robot.auto.commands.DriveToTargetCommand;
-import frc.robot.auto.commands.DriveAndrewCommand;
 import frc.robot.auto.commands.RollerCommand;
 import frc.robot.auto.Routine;
 import frc.robot.components.Intake.FingerState;

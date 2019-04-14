@@ -5,7 +5,7 @@ import frc.robot.util.ControlMode;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.ControlType;
+import frc.robot.components.Drivebase.AutoType;
 
 public class TurnCommand extends Titan.Command<Robot> {
 	private final double speed, angle;
@@ -25,11 +25,7 @@ public class TurnCommand extends Titan.Command<Robot> {
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.setControlMode(ControlMode.AUTO);
-		drivebase.setControlType(ControlType.POINT_TURN);
-
-		drivebase.resetEncoders();
-		drivebase.disableAllPID();
+		drivebase.prepareForAutoControl(AutoType.POINT_TURN);
 
 		drivebase.enableAnglePID();
 		drivebase.setAnglePIDTarget(angle);
@@ -59,9 +55,8 @@ public class TurnCommand extends Titan.Command<Robot> {
 		}
 
 		if(/*drivebase.hasTurned(angle)*/hitTarget > 0 && System.currentTimeMillis() >= hitTarget + 100){
-			drivebase.drive(0.0, 0.0);
-			drivebase.disableAllPID();
-			drivebase.setControlMode(ControlMode.MANUAL);
+			drivebase.disableAutoControl();
+
 			return CommandResult.COMPLETE;
 		}else{
 			return CommandResult.IN_PROGRESS;

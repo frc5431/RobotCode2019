@@ -5,7 +5,7 @@ import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
-import frc.robot.components.Drivebase.ControlType;
+import frc.robot.components.Drivebase.AutoType;
 
 public class MimicDriveCommand extends Titan.Command<Robot> {
 	private final double left, right;
@@ -32,8 +32,7 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.setControlMode(ControlMode.AUTO);
-		drivebase.setControlType(ControlType.MIMIC);
+		drivebase.prepareForAutoControl(AutoType.MIMIC);
 
 		drivebase.enableDistancePID();
 		drivebase.setDistancePIDTarget(leftDistance, rightDistance);
