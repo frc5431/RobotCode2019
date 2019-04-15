@@ -30,6 +30,7 @@ import frc.robot.auto.commands.DriveToArcCommand;
 import frc.robot.auto.commands.DriveToTargetCommand;
 import frc.robot.auto.commands.RollerCommand;
 import frc.robot.auto.Routine;
+import frc.robot.components.Drivebase.AutoType;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.auto.vision.TargetType;
@@ -280,8 +281,11 @@ public class Auton extends Titan.Component<Robot>{
             // outCommands.add(new DriveToArcCommand(-40, -0.5, -30));//how far move back, speed to ramp to, angle to end at */
                
             //WORKS CONSISTENTLY AT 12.75 sitting voltage Chins
+            outCommands.add(new DriveToCommand(-25, -0.5, AutoType.DRIVE_TO));
             final Titan.ParallelCommandGroup<Robot> group = new Titan.ParallelCommandGroup<>();
-            final DriveToArcCommand arc = new DriveToArcCommand(-241, -0.8, 35 * directionSignum);
+            //final DriveToArcCommand arc = new DriveToArcCommand(-241, -0.8, 35 * directionSignum);
+            //Logitech Extreme 3D
+            final DriveToArcCommand arc = new DriveToArcCommand(-250, -0.8, 35 * directionSignum);
             group.addQueue(List.of(arc, new TurnCommand(-(90-61.25) * directionSignum)));
             group.addQueue(List.of(new Titan.ConditionalCommand<>((rob)->arc.getProgress(rob.getDrivebase()) >= 0.3),new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);

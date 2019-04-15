@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivebase extends Titan.Component<Robot>{
     public static enum AutoType{
-        COMMANDS, MIMIC, VISION, POINT_TURN
+        COMMANDS, MIMIC, VISION, POINT_TURN, DRIVE_TO
     };
 
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;

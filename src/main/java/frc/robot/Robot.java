@@ -36,7 +36,7 @@ public class Robot extends Titan.Robot<Robot> {
 
   private Dashboard dashboard;
 
-  private List<Titan.Component<Robot>> components = List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
+  private List<Titan.Component<Robot>> components = List.of();
 
   @Override
   public void robotInit() {
@@ -61,6 +61,8 @@ public class Robot extends Titan.Robot<Robot> {
     vision = new Vision();
   
     dashboard = new Dashboard();
+
+    components = List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
   }
 
   @Override

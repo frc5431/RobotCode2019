@@ -8,8 +8,9 @@ import frc.robot.components.Drivebase.AutoType;
 
 public class DriveToCommand extends Titan.Command<Robot> {
 	private final double left, right, leftDistance, rightDistance;
+	private final AutoType type;
 
-	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right) {
+	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right, final AutoType type) {
 		name = "DriveToCommand";
 
 		this.left = left;
@@ -18,17 +19,27 @@ public class DriveToCommand extends Titan.Command<Robot> {
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
 
+		this.type = type;
+
 		properties = String.format("Left: %f (%f%%); Right: %f (%f%%);", leftDistance, left, rightDistance, right);
 	}
+
+	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right){
+		this(leftDistance, rightDistance, left, right, AutoType.COMMANDS);
+	}
 	
+	public DriveToCommand(final double distance, final double speed, final AutoType type){
+		this(distance, distance, speed, speed, type);
+	}
+
 	public DriveToCommand(final double distance, final double speed){
-		this(distance, distance, speed, speed);
+		this(distance, speed, AutoType.COMMANDS);
 	}
 
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.prepareForAutoControl(AutoType.COMMANDS);
+		drivebase.prepareForAutoControl(AutoType.DRIVE_TO);
 	}
 
 	@Override
