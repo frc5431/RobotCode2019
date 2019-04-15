@@ -5,12 +5,10 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;
 import java.lang.Integer;
 
 import java.util.function.Function;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.auto.MimicPropertyValue;
@@ -49,10 +47,6 @@ public class Auton extends Titan.Component<Robot>{
 
     private Sequence runningSequence = null;
 
-    private Map<String, List<Titan.Mimic.Step<MimicPropertyValue>>> mimicFiles = new HashMap<>();
-
-    private Titan.Mimic.Observer<Robot, MimicPropertyValue> observer;
-
     private boolean mimicLoaded = false;
 
     public Auton(){
@@ -61,30 +55,8 @@ public class Auton extends Titan.Component<Robot>{
         preloadedAutoCommands = new Titan.CommandQueue<>();
 
         buttonBoard = new Titan.LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
-
-        observer = new Titan.Mimic.Observer<>();
-
-        new Thread(()->{
-            System.out.println("Beginning Mimic file sweep of " + Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
-            mimicLoaded = false;
-            final File folder = new File(Titan.Mimic.DEFAULT_MIMIC_DIRECTORY);
-            if(!folder.exists()){
-                System.err.println("Mimic directory not found!");
-            }
-            for(final File f : folder.listFiles()){
-                if(f.isFile()){
-                    final String name = f.getName().substring(0, f.getName().length() - ".mimic".length());
-                    System.out.println("Found Mimic file with name " + name);
-                    final List<Titan.Mimic.Step<MimicPropertyValue>> steps = Titan.Mimic.load(name, MimicPropertyValue.class);
-                    mimicFiles.put(name, steps);
-                    for(double i = 1; i <= 10; ++i){
-                        mimicFiles.put(name + "_optimized_" + (int)i, Titan.Mimic.optimize(steps, MimicPropertyValue.LEFT_DISTANCE, MimicPropertyValue.RIGHT_DISTANCE, MimicPropertyValue.LEFT_POWER, MimicPropertyValue.RIGHT_POWER, 0.5 * i));
-                    }
-                }
-            }
-
-            mimicLoaded = true;
-        }).start();
+        
+        mimicLoaded = true;
 
         final Function<Robot, List<Titan.Command<Robot>>> stow = (robot)->goToPosition(robot, List.of(new Titan.ConsumerCommand<>((rob)->rob.getIntake().roll(0.0))), 0, Constants.ARM_STOW_ANGLE);
 
@@ -218,7 +190,6 @@ public class Auton extends Titan.Component<Robot>{
             break;
         case TEST:
             robot.getDrivebase().resetAll();
-            observer.prepare(SmartDashboard.getString("MimicRecordingName", "TEST"));
             break;
         case TELEOP:
         case DISABLED:
@@ -233,22 +204,16 @@ public class Auton extends Titan.Component<Robot>{
 
     @Override
     public void periodic(final Robot robot){
-        final SequenceType sequenceType = getCurrentSequenceType();
-
-        Sequence requestedSequence = null;
-        for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
-            if(buttonBoard.getRawButton(e.getKey())){
-                requestedSequence = e.getValue();
-                break;
-            }
-        }
-
         if(sequenceCommands.isEmpty()){
             runningSequence = null;
         }
 
-        if(requestedSequence != null && requestedSequence != runningSequence){
-            runSequence(robot, sequenceType, requestedSequence);
+        for(final Map.Entry<Integer, Sequence> e : sequences.entrySet()){
+            final Sequence requestedSequence = e.getValue();
+            if(buttonBoard.getRawButton(e.getKey()) && requestedSequence != runningSequence){
+                runSequence(robot, getCurrentSequenceType(), requestedSequence);
+                break;
+            }
         }
 
         final boolean leftBumperTriggered = robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L);
@@ -268,20 +233,11 @@ public class Auton extends Titan.Component<Robot>{
 
         sequenceCommands.update(robot);
         drivebaseCommands.update(robot);
-
-        if(robot.getMode() == Robot.Mode.TEST){
-            observer.addStep(robot, MimicPropertyValue.class);
-        }
     }
 
     @Override
     public void disabled(final Robot robot){
         abort(robot);
-
-        if(observer.save()){
-            final String name = SmartDashboard.getString("MimicRecordingName", "TEST");
-            mimicFiles.put(name, Titan.Mimic.load(name, MimicPropertyValue.class));
-        }
     }
 
     public void abort(final Robot robot){
@@ -298,11 +254,11 @@ public class Auton extends Titan.Component<Robot>{
     }
 
 
-    public List<Titan.Command<Robot>> loadMimicFile(final String name, final Sequence sequence){
-        return loadMimicFile(name, sequence, false);
+    public List<Titan.Command<Robot>> loadPath(final String name, final Sequence sequence){
+        return loadPath(name, sequence, false);
     }
 
-    public List<Titan.Command<Robot>> loadMimicFile(final String name, final Sequence sequence, final boolean swapped){
+    public List<Titan.Command<Robot>> loadPath(final String name, final Sequence sequence, final boolean swapped){
         final List<Titan.Command<Robot>> outCommands = new ArrayList<>();
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
             rob.getDrivebase().resetEncoders();
@@ -326,7 +282,7 @@ public class Auton extends Titan.Component<Robot>{
             //WORKS CONSISTENTLY AT 12.75 sitting voltage Chins
             final Titan.ParallelCommandGroup<Robot> group = new Titan.ParallelCommandGroup<>();
             final DriveToArcCommand arc = new DriveToArcCommand(-241, -0.8, 35 * directionSignum);
-            group.addQueue(List.of(arc, new TurnCommand(0.03, -(90-61.25) * directionSignum)));
+            group.addQueue(List.of(arc, new TurnCommand(-(90-61.25) * directionSignum)));
             group.addQueue(List.of(new Titan.ConditionalCommand<>((rob)->arc.getProgress(rob.getDrivebase()) >= 0.3),new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);
             })));
@@ -359,7 +315,7 @@ public class Auton extends Titan.Component<Robot>{
             outCommands.add(new Titan.WaitCommand<>(300));
             outCommands.add(new DriveToCommand(30, 0.9));*/
             outCommands.add(new DriveToCommand(-30, -0.5));
-            outCommands.add(new TurnCommand(0.03, 0));
+            outCommands.add(new TurnCommand(0));
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, sequence);
             }));
@@ -373,8 +329,7 @@ public class Auton extends Titan.Component<Robot>{
                 runSequence(rob, SequenceType.HATCH, sequence);
             }));
             outCommands.add(new DriveToArcCommand(-110, -0.7, -25 * directionSignum));
-            outCommands.add(new TurnCommand(0.03, (180 - 61.25) * directionSignum));
-            outCommands.add(new TurnToTargetCommand(0.03, swapped ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
+            outCommands.add(new TurnCommand((180 - 61.25) * directionSignum));
             //outCommands.add(new DriveToArcCommand(-0.7, -0.7, -140, -60));
         }else if(name.equalsIgnoreCase("hab_to_ccargo_gen")){
             // outCommands.add(new Titan.ConsumerCommand<>((rob)->{
@@ -385,7 +340,7 @@ public class Auton extends Titan.Component<Robot>{
                 //Sequence.values()[stepSequence];
                 runSequence(rob, SequenceType.HATCH, Sequence.ROCKET_FORWARD_1);
             }));
-            outCommands.add(new DriveToCommand(0.7, 0.7, 70, 70));
+            outCommands.add(new DriveToCommand(70, 0.7));
             outCommands.add(new Titan.ConsumerCommand<>((rob)->{
                 //Sequence.values()[stepSequence];
                 runSequence(rob, SequenceType.HATCH, Sequence.ROCKET_FORWARD_1);
@@ -395,7 +350,7 @@ public class Auton extends Titan.Component<Robot>{
 
             //Collect the mimic file
             //mimicChooser.getSelected()
-            final List<Titan.Mimic.Step<MimicPropertyValue>> steps = mimicFiles.getOrDefault(name, List.of());
+            final List<Titan.Mimic.Step<MimicPropertyValue>> steps = Titan.Mimic.load(name, MimicPropertyValue.class);
             for(final Titan.Mimic.Step<MimicPropertyValue> step : steps){
                 final List<Titan.Command<Robot>> out = new ArrayList<>();
                 if(step.getBoolean(MimicPropertyValue.HOME)){
@@ -449,11 +404,9 @@ public class Auton extends Titan.Component<Robot>{
             }
         }
         outCommands.add(new Titan.ConsumerCommand<>((rob)->{
-            System.out.println("Finished mimic file");
+            System.out.println("Finished path");
             rob.getDrivebase().resetEncoders();
-            rob.getDrivebase().disableAllPID();
-            rob.getDrivebase().setControlMode(ControlMode.MANUAL);
-		    rob.getDrivebase().drive(0.0, 0.0);
+            rob.getDrivebase().disableAutoControl();
         }));
 
         return outCommands;
@@ -637,16 +590,11 @@ public class Auton extends Titan.Component<Robot>{
         }
     }
 
-
-    public boolean isRecording(){
-        return observer.isRecording();
-    }
-
     public boolean isRunningSequence(){
         return !sequenceCommands.isEmpty();
     }
 
-    public boolean isRunningMimic(){
+    public boolean isRunningDrivebase(){
         return !drivebaseCommands.isEmpty();
     }
 
@@ -701,7 +649,7 @@ public class Auton extends Titan.Component<Robot>{
             preloadedAutoCommands.clear();
             if(r.getStartHatchFile() != null){
                 final Sequence firstSequence = r.getFirstSequence();
-                preloadedAutoCommands.addAll(loadMimicFile(r.getStartHatchFile(), firstSequence, r.isSwapped()));
+                preloadedAutoCommands.addAll(loadPath(r.getStartHatchFile(), firstSequence, r.isSwapped()));
                 if(firstSequence != null){
                     preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
                     preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT));
@@ -709,13 +657,13 @@ public class Auton extends Titan.Component<Robot>{
                 }
             }
             if(r.getLoadingStationFile() != null){
-                preloadedAutoCommands.addAll(loadMimicFile(r.getLoadingStationFile(), Sequence.LOADING_STATION, r.isSwapped()));
+                preloadedAutoCommands.addAll(loadPath(r.getLoadingStationFile(), Sequence.LOADING_STATION, r.isSwapped()));
                 preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
                 preloadedAutoCommands.addAll(getAutoAim(null, Sequence.INTAKE, TargetType.FRONT_RIGHT));
             }
             if(r.getSecondHatchFile() != null){
                 final Sequence secondSequence = r.getSecondSequence();
-                preloadedAutoCommands.addAll(loadMimicFile(r.getSecondHatchFile(), secondSequence, r.isSwapped()));
+                preloadedAutoCommands.addAll(loadPath(r.getSecondHatchFile(), secondSequence, r.isSwapped()));
                 if(secondSequence != null){
                     preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));
                     preloadedAutoCommands.addAll(getAutoAim(null, Sequence.OUTTAKE, r.isSwapped() ? TargetType.FRONT_LEFT : TargetType.FRONT_RIGHT));
@@ -732,5 +680,9 @@ public class Auton extends Titan.Component<Robot>{
 
     public Titan.Joystick getButtonBoard(){
         return buttonBoard;
+    }
+
+    public void setLEDStatus(final boolean on){
+        buttonBoard.setOutput(3, on);
     }
 }

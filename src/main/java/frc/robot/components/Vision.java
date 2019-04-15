@@ -34,14 +34,16 @@ public class Vision extends Titan.Component<Robot>{
 
     @Override
     public void tick(final Robot robot){
+        final NetworkTable selectedTable = getSelectedTable();
+
         final Titan.Xbox controller = robot.getTeleop().getDriver();
         if(controller.getRawButton(Titan.Xbox.Button.X)){
-            getSelectedTable().getEntry("ledMode").setNumber(2);
+            selectedTable.getEntry("ledMode").setNumber(2);
         }else{
-            getSelectedTable().getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
+            selectedTable.getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
         }
 
-        getSelectedTable().getEntry("pipeline").setNumber(ttype.getPipeline());
+        selectedTable.getEntry("pipeline").setNumber(ttype.getPipeline());
     }
 
     @Override

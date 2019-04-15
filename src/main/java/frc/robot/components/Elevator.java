@@ -103,18 +103,17 @@ public class Elevator extends Titan.Component<Robot>{
             //bottom.getSensorCollection().setQuadraturePosition(lastEncoderPosition, 0);
         //}
 
-        if(isCarriageUp() && isElevatorDown()){
+        /*if(isCarriageUp() && isElevatorDown()){
             //21648
-            System.out.println("RESET: " + bottom.getSelectedSensorPosition()
-            );
             //bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
             //bagged robot: 27000
-        }else if(isCarriageDown() && isElevatorDown()){
-            bottom.getSensorCollection().setQuadraturePosition(0, 0);
+        }else */
+        if(isCarriageDown() && isElevatorDown()){
+            bottom.setSelectedSensorPosition(0);
         }
 
         if(targetPosition >= 0){
-            elevPower = bottom.get();
+            elevPower = 0;
         }
 
         //System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
@@ -207,11 +206,11 @@ public class Elevator extends Titan.Component<Robot>{
     }
 
     public int getEncoderPosition(){
-        return bottom.getSensorCollection().getQuadraturePosition();
+        return bottom.getSelectedSensorPosition();
     }
 
     public int getEncoderVelocity(){
-        return bottom.getSensorCollection().getQuadratureVelocity();
+        return bottom.getSelectedSensorVelocity();
     }
 
     public boolean isElevatorDown(){

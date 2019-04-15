@@ -22,7 +22,11 @@ public class TurnToTargetCommand extends Titan.Command<Robot> {
 		this.type = ttype;
 		this.speed = speed;
 
-		properties = "Turn to the vision target: " + ttype.name() +"; Speed: " + speed;
+		properties = String.format("Speed: %f; Target: %s", speed, ttype);
+	}
+
+	public TurnToTargetCommand(final TargetType ttype){
+		this(Constants.AUTO_TURN_MIN_SPEED, ttype);
 	}
 
 	@Override

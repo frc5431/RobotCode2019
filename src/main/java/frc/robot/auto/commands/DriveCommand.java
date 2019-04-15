@@ -18,7 +18,7 @@ public class DriveCommand extends Titan.Command<Robot> {
 
 		this.time = time;
 
-		properties = "Left: " + left + "; Right: " + right + "; Time: " + time;
+		properties = String.format("Left: %f; Right: %f; Time: %d", left, right, time);
 	}
 	
 	@Override

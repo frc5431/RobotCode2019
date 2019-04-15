@@ -13,7 +13,7 @@ public class ElevateToCommand extends Titan.Command<Robot>{
         this.targetPosition = position;
 
 		name = "ElevateToCommand";
-		properties = "Position: " + position;
+		properties = String.format("Position: %d", position);
 	}
 
 	// private double getElevatorSpeed(final Robot robot){

@@ -11,7 +11,7 @@ public class FingerCommand extends Titan.Command<Robot> {
             this.fingered = fingered;
 
             name = "FingerCommand";
-            properties = "Whether it will finger or not";
+            properties = String.format("State: %s", fingered);
         }
     
         @Override

@@ -19,7 +19,11 @@ public class TurnCommand extends Titan.Command<Robot> {
 
 		this.angle = angle;
 
-		properties = "Speed: " + speed + "; Angle: " + angle;
+		properties = String.format("Speed: %f; Angle: %f", speed, angle);
+	}
+
+	public TurnCommand(final double angle){
+		this(Constants.AUTO_TURN_MIN_SPEED, angle);
 	}
 
 	@Override

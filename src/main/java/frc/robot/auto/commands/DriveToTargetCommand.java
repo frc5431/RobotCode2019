@@ -27,7 +27,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		this.ttype = type;
 
 		name = "Drive to vision target";
-		properties = "Type: " + type.name();
+		properties = String.format("Type: %s", type.name());
 	}
 
     @Override

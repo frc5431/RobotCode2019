@@ -27,7 +27,7 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		this.condition = cond;
 
 		name = "ArmMoveCommand";
-		properties = "Position: " + position + "; Completion condition: " + condition.name();
+		properties = String.format("Position: %f; CompletionCondition: %s", position, condition.name());
 	}
 
 	// private double getArmSpeed(final double armAngle){

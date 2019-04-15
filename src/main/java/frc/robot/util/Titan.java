@@ -474,6 +474,11 @@ public final class Titan {
 	
 	public static class ClearQueueCommand<T extends Robot<T>> extends Command<T>{
 
+		public ClearQueueCommand(){
+			name = "ClearQueueCommand";
+			properties = "Clears the command queue";
+		}
+
 		@Override
 		public void init(final T robot) {
 		}
@@ -498,6 +503,9 @@ public final class Titan {
 			this.controller = controller;
 			this.speed = speed;
 			this.durationMS = durationMS;
+
+			name = "SpeedCommand";
+			properties = String.format("Speed: %f; Duration: %d", speed, durationMS);
 		}
 
 		@Override
@@ -526,6 +534,9 @@ public final class Titan {
 		
 		public ConsumerCommand(final Consumer<T> consumer) {
 			this.consumer = consumer;
+
+			name = "ConsumerCommand";
+			properties = "Runs a Consumer";
 		}
 
 		@Override
@@ -549,6 +560,9 @@ public final class Titan {
 
 		public ConditionalCommand(final Function<T, Boolean> func) {
 			this.func = func;
+
+			name = "ConditionalCommand";
+			properties = "Completes when a supplied Function returns true";
 		}
 
 		@Override

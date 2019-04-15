@@ -13,7 +13,7 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 	private double startAngle;
 
-	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle, final double startRamp) {
+	public DriveToArcCommand(final double leftDistance, final double rightDistance, final double left, final double right, final double angle, final double startRamp) {
 		name = "DriveToArcCommand";
 
 		this.left = left;
@@ -26,15 +26,15 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 		this.startRamp = startRamp;
 
-		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle + "; Start ramp: " + startRamp;
+		properties = String.format("Left: %f (%f%%); Right: %f (%f%%); Angle: %f; Start ramp: %f", leftDistance, left, rightDistance, right, angle, startRamp);
 	}
 
-	public DriveToArcCommand(final double left, final double right, final double leftDistance, final double rightDistance, final double angle){
-		this(left, right, leftDistance, rightDistance, angle, Constants.DRIVEBASE_ARC_DEFAULT_START_RAMP);
+	public DriveToArcCommand(final double leftDistance, final double rightDistance, final double left, final double right, final double angle){
+		this(leftDistance, rightDistance, left, right,  angle, Constants.DRIVEBASE_ARC_DEFAULT_START_RAMP);
 	}
 
 	public DriveToArcCommand(final double dis, final double spd, final double ang, final double startRamp){
-		this(spd, spd, dis, dis, ang, startRamp);
+		this(dis, dis, spd, spd, ang, startRamp);
 	}
 
 	public DriveToArcCommand(final double dis, final double spd, final double ang){

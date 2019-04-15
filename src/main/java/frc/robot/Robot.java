@@ -36,6 +36,8 @@ public class Robot extends Titan.Robot<Robot> {
 
   private Dashboard dashboard;
 
+  private List<Titan.Component<Robot>> components = List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
+
   @Override
   public void robotInit() {
     Titan.DEBUG = false;
@@ -63,20 +65,20 @@ public class Robot extends Titan.Robot<Robot> {
 
   @Override
   public void robotPeriodic() {
-    getComponents().forEach((com)->com.tick(this));
+    components.forEach((com)->com.tick(this));
   }
   
   @Override
   public void teleopInit() {
     mode = Mode.TELEOP;
-    getComponents().forEach((com)->com.init(this));
+    components.forEach((com)->com.init(this));
   }
 
   @Override
   public void teleopPeriodic() {
     //compressor.stop();
 
-    getComponents().forEach((com)->com.periodic(this));
+    components.forEach((com)->com.periodic(this));
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -84,7 +86,7 @@ public class Robot extends Titan.Robot<Robot> {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
-    getComponents().forEach((com)->com.init(this));
+    components.forEach((com)->com.init(this));
   }
 
   @Override
@@ -95,7 +97,7 @@ public class Robot extends Titan.Robot<Robot> {
   @Override
   public void testInit(){
     mode = Mode.TEST;
-    getComponents().forEach((com)->com.init(this));
+    components.forEach((com)->com.init(this));
   }
 
   @Override
@@ -106,7 +108,7 @@ public class Robot extends Titan.Robot<Robot> {
   @Override
   public void disabledInit(){
     mode = Mode.DISABLED;
-    getComponents().forEach((com)->com.disabled(this));
+    components.forEach((com)->com.disabled(this));
   }
 
   public Mode getMode(){
@@ -151,6 +153,6 @@ public class Robot extends Titan.Robot<Robot> {
 
   @Override
   public List<Titan.Component<Robot>> getComponents(){
-    return List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
+    return components;
   }
 }

@@ -13,9 +13,9 @@ public class RollerCommand extends Titan.Command<Robot> {
 		name = "RollerCommand";
 
         this.power = power;
-        this.time = time;
-
-		properties = "Power: " + power + " for " + time + " MS";
+		this.time = time;
+		
+		properties = String.format("Power: %f; Time: %d", power, time);
 	}
 	
 	@Override

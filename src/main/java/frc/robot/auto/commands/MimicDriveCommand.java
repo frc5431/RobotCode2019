@@ -26,7 +26,7 @@ public class MimicDriveCommand extends Titan.Command<Robot> {
 
 		this.battery = battery;
 
-		properties = "Left: " + leftDistance + " (" + left + "%); Right: " + rightDistance + " (" + right + "%); Angle: " + angle;
+		properties = String.format("Left: %f (%f%%); Right: %f (%f%%); Angle: %f; Battery: %f", leftDistance, left, rightDistance, right, angle, battery);
 	}
 	
 	@Override

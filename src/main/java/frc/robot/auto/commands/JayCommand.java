@@ -11,7 +11,7 @@ public class JayCommand extends Titan.Command<Robot> {
             this.jayed = jayed;
 
             name = "JayCommand";
-            properties = "Whether it will jay or not";
+            properties = String.format("State: %s", jayed);
         }
     
         @Override

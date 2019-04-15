@@ -14,7 +14,7 @@ public class ArmBrakeCommand extends Titan.Command<Robot>{
 		this.willBrake = brake;
 
 		name = "ArmMoveCommand";
-		properties = "Brake: " + willBrake;
+		properties = String.format("Brake: %b", willBrake);
 	}
 
 	@Override

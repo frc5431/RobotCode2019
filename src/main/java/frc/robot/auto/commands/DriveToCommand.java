@@ -9,7 +9,7 @@ import frc.robot.components.Drivebase.AutoType;
 public class DriveToCommand extends Titan.Command<Robot> {
 	private final double left, right, leftDistance, rightDistance;
 
-	public DriveToCommand(final double left, final double right, final double leftDistance, final double rightDistance) {
+	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right) {
 		name = "DriveToCommand";
 
 		this.left = left;
@@ -18,11 +18,11 @@ public class DriveToCommand extends Titan.Command<Robot> {
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
 
-		properties = "Left: " + left + "; Right: " + right;
+		properties = String.format("Left: %f (%f%%); Right: %f (%f%%);", leftDistance, left, rightDistance, right);
 	}
 	
 	public DriveToCommand(final double distance, final double speed){
-		this(speed, speed, distance, distance);
+		this(distance, distance, speed, speed);
 	}
 
 	@Override

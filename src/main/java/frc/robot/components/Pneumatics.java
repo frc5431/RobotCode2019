@@ -17,19 +17,20 @@ public class Pneumatics extends Titan.Component<Robot>{
 
     @Override
     public void init(final Robot robot){
-    }
-
-    @Override
-    public void periodic(final Robot robot){
         switch(robot.getMode()){
         case AUTO:
         case TEST:
+            compressor.setClosedLoopControl(false);
             compressor.stop();
             break;
         case TELEOP:
         default:
             compressor.setClosedLoopControl(true);
         }
+    }
+
+    @Override
+    public void periodic(final Robot robot){
     }
 
     @Override

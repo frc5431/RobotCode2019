@@ -5,11 +5,8 @@ public enum Routine{
     HAB_TO_FROCKET(null, "hab_to_frocket_gen", null, null),
     FROCKET_TO_LS(null, "frocket_to_ls_gen", null, null),
     LS_TO_CROCKET(null, "ls_to_crocket_gen", null, null),
-    CARGOSHIP_LEFT_TO_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", "ccargo_to_ls", "ls_to_ccargo_optimized_2"),
-    CCARGO_TO_LS(Sequence.LOADING_STATION, "ccargo_to_ls", null, null),
-    LS_TO_CCARGO(Sequence.ROCKET_FORWARD_1, "ls_to_ccargo", null, null),
-    TEST(null, "TEST", null, null),
-    TEST_OPTIMIZED(null, "TEST_optimized_1", null, null),
+    CARGOSHIP_FRONT_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", null, null),
+    CARGOSHIP_FRONT_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", null, null, true),
     DO_NOTHING(null, null, null, null);
 
     private final String startHatch, loadingStation, secondHatch;

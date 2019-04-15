@@ -184,6 +184,8 @@ public final class Constants {
     public final static double AUTO_ARM_ACCELERATION = 0.9;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 120;
 
+    public final static double AUTO_TURN_MIN_SPEED = 0.03;
+
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.7;
     public final static double AUTO_ARM_DOWN_MULITPLIER = 0.7;
