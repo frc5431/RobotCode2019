@@ -1,6 +1,5 @@
 package frc.robot.components;
 
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -19,7 +18,7 @@ public class Dashboard extends Titan.Component<Robot>{
         for(final Routine r : Routine.values()){
             routineChooser.addOption(r.toString(), r);
         }
-        routineChooser.setDefaultOption(Routine.ROCKET_TIER_2_RIGHT.toString(), Routine.ROCKET_TIER_2_RIGHT);
+        routineChooser.setDefaultOption(Routine.HAB2_TO_FROCKET_2_RIGHT.toString(), Routine.HAB2_TO_FROCKET_2_RIGHT);
         SmartDashboard.putData("RoutineChooser", routineChooser);
 
         LiveWindow.disableAllTelemetry();

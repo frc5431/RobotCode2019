@@ -1,31 +1,29 @@
 package frc.robot.auto;
 
 public enum Routine{
-    ROCKET_TIER_2_RIGHT(Sequence.ROCKET_FORWARD_2, "hab_to_frocket_gen", "frocket_to_ls_gen", null, null),
-    HAB_TO_FROCKET(null, "hab_to_frocket_gen", null, null),
-    FROCKET_TO_LS(null, "frocket_to_ls_gen", null, null),
-    LS_TO_CROCKET(null, "ls_to_crocket_gen", null, null),
-    CARGOSHIP_FRONT_LEFT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", null, null),
-    CARGOSHIP_FRONT_RIGHT(Sequence.ROCKET_FORWARD_1, "hab_to_ccargo_gen", null, null, true),
+    HAB2_TO_FROCKET_2_RIGHT(Sequence.ROCKET_FORWARD_2, Path.HAB2_TO_FROCKET_GEN, Path.FROCKET_TO_LS_GEN, null, null),
+    CARGOSHIP_FRONT_LEFT(Sequence.ROCKET_FORWARD_1, Path.HAB_TO_CCARGO_GEN, null, null),
+    CARGOSHIP_FRONT_RIGHT(Sequence.ROCKET_FORWARD_1, Path.HAB_TO_CCARGO_GEN, null, null, true),
+    CARGOSHIP_SIDE_RIGHT(Sequence.ROCKET_FORWARD_1, Path.HAB2_TO_SCARGO_GEN, Path.SCARGO_TO_LS_GEN, Path.LS_TO_SCARGO_GEN),
     DO_NOTHING(null, null, null, null);
 
-    private final String startHatch, loadingStation, secondHatch;
+    private final Path startHatch, loadingStation, secondHatch;
     private final Sequence firstSequence, secondSequence;
     private final boolean swapped;
 
-    Routine(final Sequence sequence, final String startHatch, final String loadingStation, final String secondHatch){
+    private Routine(final Sequence sequence, final Path startHatch, final Path loadingStation, final Path secondHatch){
         this(sequence, startHatch, loadingStation, secondHatch, false);
     }
 
-    Routine(final Sequence sequence, final String startHatch, final String loadingStation, final String secondHatch, final boolean swapped){
+    private Routine(final Sequence sequence, final Path startHatch, final Path loadingStation, final Path secondHatch, final boolean swapped){
         this(sequence, startHatch, loadingStation, secondHatch, sequence, swapped);
     }
 
-    Routine(final Sequence firstSequence, final String startHatch, final String loadingStation, final String secondHatch, final Sequence secondSequence){
+    private Routine(final Sequence firstSequence, final Path startHatch, final Path loadingStation, final Path secondHatch, final Sequence secondSequence){
         this(firstSequence, startHatch, loadingStation, secondHatch, secondSequence, false);
     }
 
-    Routine(final Sequence firstSequence, final String startHatch, final String loadingStation, final String secondHatch, final Sequence secondSequence, final boolean swapped){
+    private Routine(final Sequence firstSequence, final Path startHatch, final Path loadingStation, final Path secondHatch, final Sequence secondSequence, final boolean swapped){
         this.firstSequence = firstSequence;
         this.secondSequence = secondSequence;
         this.startHatch = startHatch;
@@ -42,15 +40,15 @@ public enum Routine{
         return secondSequence;
     }
 
-    public String getStartHatchFile(){
+    public Path getStartHatchPath(){
         return startHatch;
     }
 
-    public String getLoadingStationFile(){
+    public Path getLoadingStationPath(){
         return loadingStation;
     }
 
-    public String getSecondHatchFile(){
+    public Path getSecondHatchPath(){
         return secondHatch;
     }
 
