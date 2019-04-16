@@ -56,8 +56,8 @@ public enum Path{
             rob.getAuton().runSequence(rob, SequenceType.HATCH, sequence);
         }),
         new DriveToArcCommand(90, 0.9, 0, 0.5),
-        new DriveToArcCommand(90, 0.7, -37 * swapped),
-        new DriveToArcCommand(90, 0.3, 0),
+        new TurnCommand(-30 * swapped),
+        new DriveToArcCommand(90, 0.7, -30 * swapped),
         new TurnCommand(0)
     )),
     LS_TO_CROCKET_GEN((sequence, swapped)->List.of(
@@ -68,32 +68,47 @@ public enum Path{
         new TurnCommand((180 - 61.25) * swapped)
     )),
     HAB2_TO_SCARGO_GEN((sequence, swapped)->List.of(
-        new DriveToArcCommand(-150, -0.7, 0),
+        new DriveToArcCommand(-130, -0.7, 0),
         new TurnCommand(20 * swapped),
-        new DriveToArcCommand(-57, -0.5, 20 * swapped),
         new Titan.ConsumerCommand<>((rob)->{
             rob.getAuton().runSequence(rob, SequenceType.HATCH, sequence);
         }),
-        new TurnCommand(90 * swapped)
+        new DriveToArcCommand(-80, -0.5, 20 * swapped),
+        new Titan.ConsumerCommand<>((rob)->{
+            rob.getVision().setLEDState(LEDState.ON);
+        }),
+        new TurnCommand(90 * swapped),
+        new Titan.ConsumerCommand<>((rob)->{
+            rob.getAuton().runSequence(rob, SequenceType.HATCH, sequence);
+        }),
+        new WaitForTargetCommand()
     )),
     SCARGO_TO_LS_GEN((sequence, swapped)->List.of(
         new DriveToArcCommand(-10, -0.7, 90 * swapped),
-        new TurnCommand(0 * swapped),
+        new TurnCommand(-30 * swapped),
         new Titan.ConsumerCommand<>((rob)->{
             rob.getAuton().runSequence(rob, SequenceType.HATCH, sequence);
         }),
-        new DriveToArcCommand(20, 0.5, 0),
-        new TurnCommand(-45 * swapped),
-        new DriveToArcCommand(30, 0.5, -45 * swapped),
+        new DriveToArcCommand(85, 0.9, -30),
+        new Titan.ConsumerCommand<>((rob)->{
+            rob.getVision().setLEDState(LEDState.ON);
+        }),
         new TurnCommand(0)
     )),
     LS_TO_SCARGO_GEN((sequence, swapped)->List.of(
-        new DriveToArcCommand(-100, -0.7, 0),
-        new TurnCommand(45 * swapped),
-        new DriveToArcCommand(50, 0.7, 45 * swapped),
-        new TurnCommand(180 * swapped),
-        new DriveToArcCommand(70, 0.5, 180 * swapped),
-        new TurnCommand(90 * swapped)
+        new DriveToArcCommand(-100, -0.8, 0),
+        new TurnCommand(-10 * swapped),
+        new DriveToArcCommand(-100, -0.9, -10 * swapped),
+        //new TurnCommand(0 * swapped),
+        new Titan.ConsumerCommand<>((rob)->{
+            rob.getAuton().runSequence(rob, SequenceType.HATCH, sequence);
+        }),
+        //new DriveToArcCommand(-100, -0.5, 0 * swapped),
+        new Titan.ConsumerCommand<>((rob)->{
+            rob.getVision().setLEDState(LEDState.ON);
+        }),
+        new TurnCommand(90 * swapped),
+        new WaitForTargetCommand()
     )),
     HAB_TO_CCARGO_GEN((sequence, swapped)->List.of(
         new Titan.ConsumerCommand<>((rob)->{

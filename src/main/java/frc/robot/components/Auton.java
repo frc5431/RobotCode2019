@@ -99,14 +99,14 @@ public class Auton extends Titan.Component<Robot>{
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
             //     return deploymentSequence;
             // }
-            return goToPosition(robot, deploymentSequence, 0, 110);
+            return goToPosition(robot, deploymentSequence, 0, 116);
             //return goToPosition(robot, deploymentSequence, 0.1085, 100);
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
         final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(new FingerCommand(FingerState.DEPLOYED));
 
-        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 117));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 116));
         //flush: 8000
         hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 100));
         //flusH: 31000

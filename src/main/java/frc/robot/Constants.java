@@ -184,7 +184,7 @@ public final class Constants {
     public final static double AUTO_ARM_ACCELERATION = 0.9;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 120;
 
-    public final static double AUTO_TURN_MIN_SPEED = 0.03;
+    public final static double AUTO_TURN_MIN_SPEED = 0.031;
 
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.7;
@@ -213,7 +213,7 @@ public final class Constants {
     public final static double ARM_ANGLE_TOLERANCE = 0.5;
     public final static int ELEVATOR_POSITION_TOLERANCE = 300;
     public final static double DRIVEBASE_DISTANCE_TOLERNACE = 1;
-    public final static double DRIVEBASE_ANGLE_TOLERANCE = 0.5; 
+    public final static double DRIVEBASE_ANGLE_TOLERANCE = 0.6; 
 
     //AMPS
     public final static int ROLLER_BALL_AMPS = 73;

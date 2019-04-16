@@ -461,6 +461,6 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 
     public double getAngle(){
-        return navx.getAngle();
+        return gyro.getAngle();
     }
 }
