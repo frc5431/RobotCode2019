@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 public class Drivebase extends Titan.Component<Robot>{
     public static enum AutoType{
@@ -105,6 +106,7 @@ public class Drivebase extends Titan.Component<Robot>{
     private AutoType autoType = AutoType.COMMANDS;
 
     private final TitanNavx navx;
+    private final ADXRS450_Gyro gyro;
     
     public Drivebase(){
         frontLeft = new CANSparkMax(Constants.DRIVEBASE_FRONT_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -158,6 +160,8 @@ public class Drivebase extends Titan.Component<Robot>{
         disableAllPID();
 
         navx = new TitanNavx();
+
+        gyro = new ADXRS450_Gyro();
     }
 
     
@@ -186,6 +190,7 @@ public class Drivebase extends Titan.Component<Robot>{
         }
         if(anglePID.isEnabled()){
             angleCorrection = anglePID.get();
+            //System.out.println("SET: " + angleTarget + " ERR: " + anglePID.getError() + " ANG: " + getAngle());
             //angleCorrection = 0;
         }else{
             angleCorrection = 0;
@@ -198,10 +203,6 @@ public class Drivebase extends Titan.Component<Robot>{
         backRight.set(outRightPower);
         frontRight.set(outRightPower);
 
-        SmartDashboard.putNumber("RightPower", outRightPower);
-        SmartDashboard.putNumber("LeftPower", outLeftPower);
-
-        System.out.println(navx.isConnected() + ", " + navx.isCalibrating() + ", " + navx.isMagneticDisturbance());
         //System.out.println(getLeftDistance() + ", " + getRightDistance());
 
         if(autoType == AutoType.COMMANDS && controlMode == ControlMode.AUTO && leftPower != 0){
@@ -218,6 +219,24 @@ public class Drivebase extends Titan.Component<Robot>{
         }else{
             frontRight.setOpenLoopRampRate(0);
             backRight.setOpenLoopRampRate(0);
+        }
+    }
+
+    @Override
+    public void tick(final Robot robot){
+        SmartDashboard.putNumber("ADX", gyro.getAngle());
+
+        if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.Y)){
+            // navx.enableBoardlevelYawReset(true);
+            // navx.reset();
+            // navx.resetYaw();
+            // navx.zeroYaw();
+            // navx.enableBoardlevelYawReset(false);
+            // navx.reset();
+            // navx.resetYaw();
+            navx.zeroYaw();
+
+            gyro.calibrate();
         }
     }
 
@@ -264,6 +283,8 @@ public class Drivebase extends Titan.Component<Robot>{
         navx.reset();
         navx.resetDisplacement();
         navx.resetYaw();
+
+        gyro.reset();
     }
 
     public TitanNavx getNavx(){

@@ -40,6 +40,7 @@ public class Teleop extends Titan.Component<Robot>{
 
 		@Override
 		public void periodic(final Robot robot){
+      final Climber climber = robot.getClimber();
 			if(driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)")){
 				final Drivebase drivebase = robot.getDrivebase();
 				// xbox controllers have inverted controls
@@ -52,11 +53,7 @@ public class Teleop extends Titan.Component<Robot>{
 					drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
 				}
 
-				final Climber climber = robot.getClimber();
-				climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
-
-				forks.setState(climber.getForkState() == ForkState.DEPLOYED);
-				climber.fork(forks.isToggled(driver.getRawButton(Titan.Xbox.Button.BACK)) ? ForkState.DEPLOYED : ForkState.RETRACTED);
+        climber.climb(driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
 			}
 
 			if(operator.getName().equalsIgnoreCase("Logitech Extreme 3D")){
@@ -92,7 +89,10 @@ public class Teleop extends Titan.Component<Robot>{
 					arm.pivot(-Constants.ARM_PIVOT_DOWN_SPEED);
 				}else if(arm.getControlMode() == ControlMode.MANUAL){
 					arm.pivot(0.0);
-				}
+        }
+        
+        forks.setState(climber.getForkState() == ForkState.DEPLOYED);
+				climber.fork(forks.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.TEN)) ? ForkState.DEPLOYED : ForkState.RETRACTED);
 			}
 		}
 

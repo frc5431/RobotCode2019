@@ -69,11 +69,12 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 
 		final double progress = getProgress(drivebase);
 
-		if(getAverageDistance(drivebase) <= 30){
+		if(getAverageTarget() <= 30){
 			drivebase.setAnglePIDTarget(angle);
 		}else{
 			//drivebase.setAnglePIDTarget(angle);
-			drivebase.setAnglePIDTarget(Titan.lerp(startAngle, angle, progress));
+			drivebase.setAnglePIDTarget(angle);
+			//drivebase.setAnglePIDTarget(Titan.lerp(startAngle, angle, progress));
 		}
 
 		final double voltageCompensation = 12.0 / RobotController.getBatteryVoltage();
@@ -84,6 +85,7 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		}else{
 			ramp = Titan.lerp(1.0, 0.2, (progress - startRamp) / (1.0 - startRamp));
 		}
+
 		drivebase.drive(left * ramp * voltageCompensation, right * ramp * voltageCompensation);
 		if(drivebase.hasTravelled(leftDistance, rightDistance)){
 			drivebase.disableAutoControl();
@@ -103,11 +105,15 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 	}
 
 	public double getAverageDistance(final Drivebase drivebase){
-		return (Math.abs(drivebase.getLeftError()) + Math.abs(drivebase.getRightError())) / 2;
+		return (Math.abs(drivebase.getLeftDistance()) + Math.abs(drivebase.getRightDistance())) / 2;
+	}
+
+	public double getAverageTarget(){
+		return ((Math.abs(leftDistance) + Math.abs(rightDistance)) / 2);
 	}
 
 	public double getProgress(final Drivebase drivebase){
-		return getAverageDistance(drivebase) / ((Math.abs(leftDistance) + Math.abs(rightDistance)) / 2);
+		return Math.max(0.0, Math.min(1.0, getAverageDistance(drivebase) / getAverageTarget()));
 	}
 
 	@Override

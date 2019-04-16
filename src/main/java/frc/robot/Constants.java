@@ -137,7 +137,7 @@ public final class Constants {
     public final static PIDConstants DRIVEBASE_DISTANCE_STANDARD_PID = new PIDConstants(0.02, 0.0001, 0.04);
     public final static PIDConstants DRIVEBASE_DISTANCE_MIMIC_PID = new PIDConstants(0.02, 0.0001, 0.04);
 
-    public final static PIDConstants DRIVEBASE_ANGLE_STANDARD_PID = new PIDConstants(0.0071, 0.0, 0.0);
+    public final static PIDConstants DRIVEBASE_ANGLE_STANDARD_PID = new PIDConstants(0.006, 0.0, 0.0);
     public final static PIDConstants DRIVEBASE_ANGLE_POINT_TURN_PID = new PIDConstants(0.00265, 0.0, 0.0);
     public final static PIDConstants DRIVEBASE_ANGLE_MIMIC_PID = new PIDConstants(0.004, 0.000185, 0.04);
 
