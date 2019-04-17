@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 public class Drivebase extends Titan.Component<Robot>{
     public static enum AutoType{
-        COMMANDS, MIMIC, VISION, POINT_TURN, DRIVE_TO
+        COMMANDS, MIMIC, VISION, POINT_TURN
     };
 
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
@@ -114,6 +114,7 @@ public class Drivebase extends Titan.Component<Robot>{
         frontLeft.setIdleMode(IdleMode.kBrake);
         frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         frontLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
+        frontLeft.setOpenLoopRampRate(0);
         frontLeft.burnFlash();
         
         frontRight = new CANSparkMax(Constants.DRIVEBASE_FRONT_RIGHT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -121,6 +122,7 @@ public class Drivebase extends Titan.Component<Robot>{
         frontRight.setIdleMode(IdleMode.kBrake);
         frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         frontRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
+        frontRight.setOpenLoopRampRate(0);
         frontRight.burnFlash();
         
         backLeft = new CANSparkMax(Constants.DRIVEBASE_BACK_LEFT_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -129,6 +131,7 @@ public class Drivebase extends Titan.Component<Robot>{
         backLeft.setIdleMode(IdleMode.kBrake);
         backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         backLeft.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
+        backLeft.setOpenLoopRampRate(0);
         backLeft.burnFlash();
 
         //he attac
@@ -141,6 +144,7 @@ public class Drivebase extends Titan.Component<Robot>{
         backRight.setIdleMode(IdleMode.kBrake);
         backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
         backRight.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 50);
+        backRight.setOpenLoopRampRate(0);
         backRight.burnFlash();
 
         leftEncoder = new Encoder(Constants.DRIVEBASE_LEFT_ENCODER_PORT_A, Constants.DRIVEBASE_LEFT_ENCODER_PORT_B, false, EncodingType.k4X);
@@ -196,30 +200,19 @@ public class Drivebase extends Titan.Component<Robot>{
             angleCorrection = 0;
         }
 
-        final double outLeftPower = leftPower - leftCorrection - angleCorrection;
-        final double outRightPower = rightPower - rightCorrection + angleCorrection;
+        final double outLeftPower = Titan.clamp(leftPower - leftCorrection - angleCorrection, -1.0, 1.0);
+        final double outRightPower = Titan.clamp(rightPower - rightCorrection + angleCorrection, -1.0, 1.0);
         backLeft.set(outLeftPower);
         frontLeft.set(outLeftPower);
         backRight.set(outRightPower);
         frontRight.set(outRightPower);
 
+        System.out.println(angleCorrection);
+
+        SmartDashboard.putNumber("LeftPower", outLeftPower);
+        SmartDashboard.putNumber("RightPower", outRightPower);
+
         //System.out.println(getLeftDistance() + ", " + getRightDistance());
-
-        if(autoType == AutoType.COMMANDS && controlMode == ControlMode.AUTO && leftPower != 0){
-            frontLeft.setOpenLoopRampRate(0.7);
-            backLeft.setOpenLoopRampRate(0.7);
-        }else{
-            frontLeft.setOpenLoopRampRate(0);
-            backLeft.setOpenLoopRampRate(0);
-        }
-
-        if(autoType == AutoType.COMMANDS && controlMode == ControlMode.AUTO && rightPower != 0){
-            frontRight.setOpenLoopRampRate(0.7);
-            backRight.setOpenLoopRampRate(0.7);
-        }else{
-            frontRight.setOpenLoopRampRate(0);
-            backRight.setOpenLoopRampRate(0);
-        }
     }
 
     @Override

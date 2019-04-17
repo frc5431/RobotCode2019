@@ -80,7 +80,9 @@ public class DriveToArcCommand extends Titan.Command<Robot> {
 		final double voltageCompensation = 12.0 / RobotController.getBatteryVoltage();
 
 		final double ramp;
-		if(progress <= startRamp){
+		if(progress < 0.2){
+			ramp = Titan.lerp(0.2, 1.0, progress / 0.2);
+		}else if(progress <= startRamp){
 			ramp = 1.0;
 		}else{
 			ramp = Titan.lerp(1.0, 0.2, (progress - startRamp) / (1.0 - startRamp));

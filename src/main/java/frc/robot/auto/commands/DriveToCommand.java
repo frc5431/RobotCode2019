@@ -8,9 +8,9 @@ import frc.robot.components.Drivebase.AutoType;
 
 public class DriveToCommand extends Titan.Command<Robot> {
 	private final double left, right, leftDistance, rightDistance;
-	private final AutoType type;
+	private double currentLeftRamp = 0.0, currentRightRamp = 0.0;
 
-	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right, final AutoType type) {
+	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right) {
 		name = "DriveToCommand";
 
 		this.left = left;
@@ -19,27 +19,17 @@ public class DriveToCommand extends Titan.Command<Robot> {
 		this.leftDistance = leftDistance;
 		this.rightDistance = rightDistance;
 
-		this.type = type;
-
 		properties = String.format("Left: %f (%f%%); Right: %f (%f%%);", leftDistance, left, rightDistance, right);
 	}
 
-	public DriveToCommand(final double leftDistance, final double rightDistance, final double left, final double right){
-		this(leftDistance, rightDistance, left, right, AutoType.COMMANDS);
-	}
-	
-	public DriveToCommand(final double distance, final double speed, final AutoType type){
-		this(distance, distance, speed, speed, type);
-	}
-
 	public DriveToCommand(final double distance, final double speed){
-		this(distance, speed, AutoType.COMMANDS);
+		this(distance, distance, speed, speed);
 	}
 
 	@Override
 	public void init(final Robot robot) {
 		final Drivebase drivebase = robot.getDrivebase();
-		drivebase.prepareForAutoControl(AutoType.DRIVE_TO);
+		drivebase.prepareForAutoControl(AutoType.COMMANDS);
 	}
 
 	@Override
@@ -50,7 +40,23 @@ public class DriveToCommand extends Titan.Command<Robot> {
 			return CommandResult.CLEAR_QUEUE;
 		}
 
-		drivebase.drive(left, right);
+		if(Titan.approxEquals(currentLeftRamp, left, 0.02)){
+			currentLeftRamp = left;
+		}else if(currentLeftRamp < left){
+			currentLeftRamp += 0.02;
+		}else if(currentLeftRamp > left){
+			currentLeftRamp -= 0.02;
+		}
+
+		if(Titan.approxEquals(currentRightRamp, right, 0.02)){
+			currentRightRamp = right;
+		}else if(currentRightRamp < right){
+			currentRightRamp += 0.02;
+		}else if(currentRightRamp > right){
+			currentRightRamp -= 0.02;
+		}
+
+		drivebase.drive(currentLeftRamp, currentRightRamp);
 
 		if(drivebase.hasTravelled(leftDistance, rightDistance)){
 			drivebase.disableAutoControl();

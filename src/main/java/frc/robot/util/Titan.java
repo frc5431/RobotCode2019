@@ -923,4 +923,8 @@ public final class Titan {
 	public static double lerp(final double a, final double b, final double f){
 		return a + f * (b - a);
 	}
+
+	public static double clamp(final double val, final double min, final double max){
+		return Math.max(min, Math.min(max, val));
+	}
 }
