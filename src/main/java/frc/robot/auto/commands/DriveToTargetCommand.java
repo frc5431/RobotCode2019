@@ -90,7 +90,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		}
 		final double distanceError = target.getYAngle();
 
-		final boolean atTarget = target.getArea() > 11.5;
+		final boolean atTarget = target.getArea() > 12;
 
 		// you are allowed to be too close, as the intake will just ram the hatch into the rocket
 		if((target.exists() && atTarget) || (!isRunningElevator && System.currentTimeMillis() > lastDistanceChange + 500)){

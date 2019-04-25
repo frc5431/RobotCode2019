@@ -9,7 +9,7 @@ import frc.robot.util.Titan;
 public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
         LEFT_DISTANCE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftDistance()),
 		RIGHT_DISTANCE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightDistance()),
-		ANGLE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getNavx().getAngle()),
+		ANGLE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getAngle()),
 		LEFT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftPower()),
 		RIGHT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightPower()),
 		HOME(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.START)),

@@ -2,7 +2,7 @@ package frc.robot.components;
 
 import frc.robot.Robot;
 import frc.robot.util.Titan;
-
+import frc.robot.auto.SequenceType;
 import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
 
@@ -40,7 +40,7 @@ public class Vision extends Titan.Component<Robot>{
         if(controller.getRawButton(Titan.Xbox.Button.X)){
             selectedTable.getEntry("ledMode").setNumber(2);
         }else{
-            selectedTable.getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) ? 3 : 1);
+            selectedTable.getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) || robot.getAuton().getCurrentSequenceType() == SequenceType.HATCH ? 3 : 1);
         }
 
         selectedTable.getEntry("pipeline").setNumber(ttype.getPipeline());

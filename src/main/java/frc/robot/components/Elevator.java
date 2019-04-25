@@ -108,7 +108,7 @@ public class Elevator extends Titan.Component<Robot>{
             //bottom.getSensorCollection().setQuadraturePosition((int)(0.5319 * Constants.ELEVATOR_ENCODER_CALIBRATION), 0);
             //bagged robot: 27000
         }else */
-        if(isCarriageDown() && isElevatorDown()){
+        if(isCarriageDown()){
             bottom.setSelectedSensorPosition(0);
         }
 

@@ -106,11 +106,11 @@ public class Auton extends Titan.Component<Robot>{
         //keep the hatch inside when moving the arm for the hatch rocket sequences
         final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(new FingerCommand(FingerState.DEPLOYED));
 
-        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 116));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 117));
         //flush: 8000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.5813, 100));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.6177, 100));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9676, 105));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9676, 110));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
@@ -120,11 +120,11 @@ public class Auton extends Titan.Component<Robot>{
 
         // hatchSequences.put(Sequence.ROCKET_REVERSE_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.8510, 240));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3030, 90));
+        ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3311, 90));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7340, 96));
+        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7410, 96));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 1.0010, 115));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 1.0010, 118));
 
         // ballSequences.put(Sequence.ROCKET_REVERSE_1, (robot)->goToPosition(robot, 0.5116, 270));
 
@@ -475,7 +475,7 @@ public class Auton extends Titan.Component<Robot>{
         return preloadedAutoCommands;
     }
 
-    public void preloadRoutine(final Routine r){
+    public void preloadRoutine(final Routine r, final long delay){
         if(r == null || !mimicLoaded){
             return;
         }
@@ -483,9 +483,15 @@ public class Auton extends Titan.Component<Robot>{
             mimicLoaded = false;
             Titan.l("Preloading auto routine: " + r.toString());
             preloadedAutoCommands.clear();
+            if(delay > 0){
+                preloadedAutoCommands.add(new Titan.WaitCommand<>(delay));
+            }
             final Path startHatchPath = r.getStartHatchPath();
             if(startHatchPath != null){
                 final Sequence firstSequence = r.getFirstSequence();
+                preloadedAutoCommands.add(new Titan.ConsumerCommand<>((rob)->{
+                    rob.getVision().setTargetType(r.isSwapped() ? TargetType.FRONT_RIGHT : TargetType.FRONT_LEFT);
+                }));
                 preloadedAutoCommands.addAll(startHatchPath.generate(firstSequence, r.isSwapped()));
                 if(firstSequence != null){
                     preloadedAutoCommands.add(new Titan.ConditionalCommand<>((rob)->!isRunningSequence()));

@@ -5,7 +5,6 @@ import frc.robot.Robot;
 import frc.robot.util.ControlMode;
 import frc.robot.util.PIDConstants;
 import frc.robot.util.Titan;
-import frc.robot.util.TitanNavx;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -105,7 +104,7 @@ public class Drivebase extends Titan.Component<Robot>{
     private ControlMode controlMode = ControlMode.MANUAL;
     private AutoType autoType = AutoType.COMMANDS;
 
-    private final TitanNavx navx;
+    //private final TitanNavx navx;
     private final ADXRS450_Gyro gyro;
     
     public Drivebase(){
@@ -163,7 +162,7 @@ public class Drivebase extends Titan.Component<Robot>{
 
         disableAllPID();
 
-        navx = new TitanNavx();
+        //navx = new TitanNavx();
 
         gyro = new ADXRS450_Gyro();
     }
@@ -207,11 +206,6 @@ public class Drivebase extends Titan.Component<Robot>{
         backRight.set(outRightPower);
         frontRight.set(outRightPower);
 
-        System.out.println(angleCorrection);
-
-        SmartDashboard.putNumber("LeftPower", outLeftPower);
-        SmartDashboard.putNumber("RightPower", outRightPower);
-
         //System.out.println(getLeftDistance() + ", " + getRightDistance());
     }
 
@@ -227,7 +221,7 @@ public class Drivebase extends Titan.Component<Robot>{
             // navx.enableBoardlevelYawReset(false);
             // navx.reset();
             // navx.resetYaw();
-            navx.zeroYaw();
+            //navx.zeroYaw();
 
             gyro.calibrate();
         }
@@ -273,16 +267,18 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 
     public void resetNavx(){
-        navx.reset();
-        navx.resetDisplacement();
-        navx.resetYaw();
+        // navx.reset();
+        // navx.resetDisplacement();
+        // navx.resetYaw();
 
-        gyro.reset();
+        new Thread(()->{
+            gyro.reset();
+        }).start();
     }
 
-    public TitanNavx getNavx(){
-        return navx;
-    }
+    // public TitanNavx getNavx(){
+    //     return navx;
+    // }
 
     public void reset(){
         resetEncoders();

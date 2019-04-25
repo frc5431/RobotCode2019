@@ -12,6 +12,7 @@ import frc.robot.auto.vision.TargetInfo;
 
 public class Dashboard extends Titan.Component<Robot>{
     private final SendableChooser<Routine> routineChooser = new SendableChooser<>();
+    private final SendableChooser<Long> delayChooser = new SendableChooser<>();
     private Routine currentRoutine = null;
 
     public Dashboard(){
@@ -21,6 +22,17 @@ public class Dashboard extends Titan.Component<Robot>{
         routineChooser.setDefaultOption(Routine.HAB2_TO_FROCKET_2_RIGHT.toString(), Routine.HAB2_TO_FROCKET_2_RIGHT);
         SmartDashboard.putData("RoutineChooser", routineChooser);
 
+        delayChooser.setDefaultOption("0 Seconds", 0L);
+        delayChooser.addOption("1 Second", 1000L);
+        delayChooser.addOption("2 Seconds", 2000L);
+        delayChooser.addOption("3 Seconds", 3000L);
+        delayChooser.addOption("4 Seconds", 4000L);
+        delayChooser.addOption("5 Seconds", 5000L);
+        delayChooser.addOption("6 Seconds", 6000L);
+        delayChooser.addOption("7 Seconds", 7000L);
+        delayChooser.addOption("8 Seconds", 8000L);
+        SmartDashboard.putData("DelayChooser", delayChooser);
+
         LiveWindow.disableAllTelemetry();
     }
 
@@ -28,6 +40,7 @@ public class Dashboard extends Titan.Component<Robot>{
     @Override
     public void init(final Robot robot){
         SmartDashboard.putData("RoutineChooser", routineChooser);
+        SmartDashboard.putData("DelayChooser", delayChooser);
     }
 
     @Override
@@ -72,7 +85,7 @@ public class Dashboard extends Titan.Component<Robot>{
         final Routine selectedRoutine = routineChooser.getSelected();
         if(currentRoutine != selectedRoutine || (mode == Mode.DISABLED && !auton.hasPreloadedRoutine())){
             currentRoutine = selectedRoutine;
-            auton.preloadRoutine(currentRoutine);
+            auton.preloadRoutine(currentRoutine, getChosenDelay());
         }
     }
 
@@ -82,5 +95,9 @@ public class Dashboard extends Titan.Component<Robot>{
 
     public Routine getChosenRoutine(){
         return routineChooser.getSelected();
+    }
+
+    public long getChosenDelay(){
+        return delayChooser.getSelected();
     }
 }

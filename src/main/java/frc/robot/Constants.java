@@ -7,7 +7,7 @@ public final class Constants {
         PRACTICE, COMPETITION;
     }
 
-    public static final Robot ROBOT_TYPE = Robot.PRACTICE;
+    public static final Robot ROBOT_TYPE = Robot.COMPETITION;
 
     //teleoperated control definitions
     public final static int DRIVER_JOYSTICK_ID = 0;
@@ -35,17 +35,9 @@ public final class Constants {
     public final static int INTAKE_FINGER_REVERSE_ID = ROBOT_TYPE == Robot.COMPETITION ? 4 : 7;
 
     public final static int CLIMBER_FORK_PCM_ID = 30;
-    public final static int CLIMBER_FORK_ID = 2;
+    public final static int CLIMBER_FORK_ID = 1;
 
     //motor controller definitions
-
-    // Victor SPX's
-    // These are PWM ID's, not CAN ID's
-    public final static int CLIMBER_WINCH_LEFT_ID = 0;
-    public final static boolean CLIMBER_WINCH_LEFT_INVERTED = false;
-
-    public final static int CLIMBER_WINCH_RIGHT_ID = 1;
-    public final static boolean CLIMBER_WINCH_RIGHT_INVERTED = false;
 
     //Spark MAX's
     public final static int DRIVEBASE_FRONT_LEFT_ID = 4;
@@ -73,7 +65,7 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = true;
+    public final static boolean INTAKE_ROLLER_INVERTED = false;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
     public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
@@ -88,7 +80,7 @@ public final class Constants {
 
     public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 100 : 234;
     // to calculate this, move the elevator to the max operational height and record the number
-    public final static double ELEVATOR_ENCODER_CALIBRATION = 43000;
+    public final static double ELEVATOR_ENCODER_CALIBRATION = 45000;
 
     // digital inputs
 
@@ -184,14 +176,14 @@ public final class Constants {
     public final static double AUTO_ARM_ACCELERATION = 0.9;//old: 0.1
     public final static double AUTO_ARM_ACCELERATION_MAX_ERROR = 120;
 
-    public final static double AUTO_TURN_MIN_SPEED = 0.0367; //0.033;
+    public final static double AUTO_TURN_MIN_SPEED = 0.03675; //0.033;
 
     //AUTONOMOUS MULTIPLIERS
     public final static double AUTO_ELEVATOR_DOWN_MULTIPLIER = 0.7;
     public final static double AUTO_ARM_DOWN_MULITPLIER = 0.7;
 
     // to activate the clutch it runs these
-    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.1;
+    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
     public final static double ELEVATOR_STALL_SPEED = 0.07;
 
     // TIMINGS
