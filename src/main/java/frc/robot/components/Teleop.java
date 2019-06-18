@@ -40,12 +40,17 @@ public class Teleop extends Titan.Component<Robot>{
 
 		@Override
 		public void periodic(final Robot robot){
-      final Climber climber = robot.getClimber();
-			if(driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)")){
+	  final Climber climber = robot.getClimber();
+	  System.out.printf(driver.getName());
+			if(driver.getName().equalsIgnoreCase("Controller (XBOX 360 For Windows)")){
 				final Drivebase drivebase = robot.getDrivebase();
 				// xbox controllers have inverted controls
+				//Tank Drive
 				final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
 				final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+				//Arcade drive
+				//final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				//final double right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
 				if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
 					drivebase.disableAllPID();
 
