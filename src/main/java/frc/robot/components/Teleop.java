@@ -46,11 +46,11 @@ public class Teleop extends Titan.Component<Robot>{
 				final Drivebase drivebase = robot.getDrivebase();
 				// xbox controllers have inverted controls
 				//Tank Drive
-				final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-				final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+				//final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+				//final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
 				//Arcade drive
-				//final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
-				//final double right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				final double right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
 				if(drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0){
 					drivebase.disableAllPID();
 
