@@ -13,6 +13,7 @@ import frc.robot.auto.vision.TargetInfo;
 public class Dashboard extends Titan.Component<Robot>{
     private final SendableChooser<Routine> routineChooser = new SendableChooser<>();
     private final SendableChooser<Long> delayChooser = new SendableChooser<>();
+    private final SendableChooser<Boolean> tankChooser = new SendableChooser<>();
     private Routine currentRoutine = null;
 
     public Dashboard(){
@@ -33,6 +34,11 @@ public class Dashboard extends Titan.Component<Robot>{
         delayChooser.addOption("8 Seconds", 8000L);
         SmartDashboard.putData("DelayChooser", delayChooser);
 
+        tankChooser.setDefaultOption("Tank Drive", true);
+        tankChooser.addOption("Arcade", false);
+
+        SmartDashboard.putData("tank",tankChooser);
+
         LiveWindow.disableAllTelemetry();
     }
 
@@ -41,6 +47,7 @@ public class Dashboard extends Titan.Component<Robot>{
     public void init(final Robot robot){
         SmartDashboard.putData("RoutineChooser", routineChooser);
         SmartDashboard.putData("DelayChooser", delayChooser);
+        SmartDashboard.putData("tank",tankChooser);
     }
 
     @Override
@@ -99,5 +106,9 @@ public class Dashboard extends Titan.Component<Robot>{
 
     public long getChosenDelay(){
         return delayChooser.getSelected();
+    }
+
+    public Boolean getTankChooser() {
+        return tankChooser.getSelected();
     }
 }
