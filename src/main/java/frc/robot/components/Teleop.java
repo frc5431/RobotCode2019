@@ -45,26 +45,25 @@ public class Teleop extends Titan.Component<Robot> {
 		System.out.printf(driver.getName());
 		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)")) {
 			final Drivebase drivebase = robot.getDrivebase();
+
+			double left;
+			double right;
+
+			if (robot.getDashboard().getTankChooser()) {
+				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+				right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+			} else {
+				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+
+			}
+
 			// xbox controllers have inverted controls
-			if (drivebase.getControlMode() == ControlMode.MANUAL) {
+			if (drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0) {
 				drivebase.disableAllPID();
 
 				drivebase.setControlMode(ControlMode.MANUAL);
-				if (robot.getDashboard().getTankChooser()) {
-					// Tank Drive
-					final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-					final double right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
-
-					drivebase.drive(left, right);
-				} else {
-					// Arcade drive
-					final double left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)
-							+ driver.getRawAxis(Titan.Xbox.Axis.LEFT_X) * .5;
-					final double right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)
-							- driver.getRawAxis(Titan.Xbox.Axis.LEFT_X) * .5;
-
 					drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
-				}
 			}
 
 			climber.climb(
