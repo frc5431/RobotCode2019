@@ -11,7 +11,6 @@ import frc.robot.auto.SequenceType;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
