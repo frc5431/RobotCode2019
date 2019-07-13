@@ -1,3 +1,7 @@
+/* This file is used to define the components of the robot like the climber,elevator,arm,etc. It's also used to set up the enums that will switch between the 
+different modes (Disables,Auto,etc). This program is mainly there so other parts of the program can refrence different components from this file */ 
+ 
+
 package frc.robot;
 
 import java.util.List;
@@ -21,6 +25,7 @@ public class Robot extends Titan.Robot<Robot> {
 
   private Mode mode = Mode.DISABLED;
 
+  //Define components from the components classes and names them
   private Climber climber;
   private Drivebase drivebase;
   private Elevator elevator;
@@ -29,13 +34,16 @@ public class Robot extends Titan.Robot<Robot> {
 
   private Pneumatics pneumatics;
 
+  //Define Robot control modes
   private Teleop teleop;
   private Auton auton;
 
+  //Extra stuff like vision + dashboard
   private Vision vision;
 
   private Dashboard dashboard;
 
+  //Defines a list of robot components
   private List<Titan.Component<Robot>> components = List.of();
 
   @Override
@@ -47,6 +55,8 @@ public class Robot extends Titan.Robot<Robot> {
 
     //compressor.stop();
 
+
+    //Actually creates the object instance of components defined earlier
     climber = new Climber();
     drivebase = new Drivebase();
     elevator = new Elevator();
@@ -62,12 +72,14 @@ public class Robot extends Titan.Robot<Robot> {
   
     dashboard = new Dashboard();
 
+    //Actually puts the objects of the components in the list
     components = List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
   }
 
+  //Based on the mode from the driver station it will switch all the robot components to that mode with the enums (Disable,Auto,etc)
   @Override
   public void robotPeriodic() {
-    components.forEach((com)->com.tick(this));
+    components.forEach((com)->com.tick(this)); //
   }
   
   @Override
@@ -83,7 +95,7 @@ public class Robot extends Titan.Robot<Robot> {
     components.forEach((com)->com.periodic(this));
   }
 
-  // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
+  //Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
 
   @Override
   public void autonomousInit() {
@@ -113,6 +125,8 @@ public class Robot extends Titan.Robot<Robot> {
     components.forEach((com)->com.disabled(this));
   }
 
+
+  //Getter methods
   public Mode getMode(){
     return mode;
   }
