@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 /* This file is used to define the components of the robot like the climber,elevator,arm,etc. It's also used to set up the enums that will switch between the 
 different modes (Disables,Auto,etc). This program is mainly there so other parts of the program can refrence different components from this file */ 
  
-=======
-//here is a new comment yaaaaw
->>>>>>> 2e27dcfc2d3ab942d7c9ceb0eadd58526ee944e5
 
 package frc.robot;
 
