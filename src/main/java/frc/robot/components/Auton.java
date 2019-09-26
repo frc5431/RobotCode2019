@@ -99,7 +99,7 @@ public class Auton extends Titan.Component<Robot>{
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
             //     return deploymentSequence;
             // }
-            return goToPosition(robot, deploymentSequence, 0, 116);
+            return goToPosition(robot, deploymentSequence, 0.0261, 113);
             //return goToPosition(robot, deploymentSequence, 0.1085, 100);
         });
 
@@ -124,7 +124,7 @@ public class Auton extends Titan.Component<Robot>{
 
         ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7410, 96));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 1.0010, 118));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 0.8766, 118));
 
         // ballSequences.put(Sequence.ROCKET_REVERSE_1, (robot)->goToPosition(robot, 0.5116, 270));
 
