@@ -122,13 +122,13 @@ public class Auton extends Titan.Component<Robot>{
 
         ballSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, 0.3311, 90));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7410, 96));
+        ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7217, 91.07));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 0.8766, 118));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 0.8907, 125.62));
 
         // ballSequences.put(Sequence.ROCKET_REVERSE_1, (robot)->goToPosition(robot, 0.5116, 270));
 
-        ballSequences.put(Sequence.CARGO_SHIP, (robot)->goToPosition(robot, 0.5348, 95));
+        ballSequences.put(Sequence.CARGO_SHIP, (robot)->goToPosition(robot, 0.4266, 95));
 
          // BUTTON MAPPINGS
         // LOGITECH
