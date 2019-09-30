@@ -65,7 +65,7 @@ public final class Constants {
 
     // Talon SRX's
     public final static int INTAKE_ROLLER_ID = 1;
-    public final static boolean INTAKE_ROLLER_INVERTED = false;
+    public final static boolean INTAKE_ROLLER_INVERTED = true;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
     public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
