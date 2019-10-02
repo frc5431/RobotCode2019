@@ -183,7 +183,7 @@ public final class Constants {
     public final static double AUTO_ARM_DOWN_MULITPLIER = 0.7;
 
     // to activate the clutch it runs these
-    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.2;
+    public final static double ELEVATOR_BRAKE_UP_SPEED = 0.4;
     public final static double ELEVATOR_STALL_SPEED = 0.07;
 
     // TIMINGS
