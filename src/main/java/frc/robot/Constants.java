@@ -76,7 +76,7 @@ public final class Constants {
     // sensors
 
     // analog inputs
-    public final static int ARM_ENCODER_PORT = 3;
+    public final static int ARM_ENCODER_PORT = 1;
 
     public final static double ARM_ENCODER_CALIBRATION_OFFSET = ROBOT_TYPE == Robot.COMPETITION ? 100 : 234;
     // to calculate this, move the elevator to the max operational height and record the number

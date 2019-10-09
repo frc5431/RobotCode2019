@@ -42,7 +42,7 @@ public class Teleop extends Titan.Component<Robot> {
 	public void periodic(final Robot robot) {
 		final Climber climber = robot.getClimber();
 		System.out.printf(driver.getName());
-		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)")) {
+		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)") || driver.getName().toUpperCase().contains("XBOX")) {
 			final Drivebase drivebase = robot.getDrivebase();
 
 			double left;
