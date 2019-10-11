@@ -99,7 +99,7 @@ public class Auton extends Titan.Component<Robot>{
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
             //     return deploymentSequence;
             // }
-            return goToPosition(robot, deploymentSequence, 0.1085, 100);
+            return goToPosition(robot, deploymentSequence, 0.1085, 105);
             //return goToPosition(robot, deploymentSequence, 0.0883, 106);
 
         });
@@ -107,11 +107,11 @@ public class Auton extends Titan.Component<Robot>{
         //keep the hatch inside when moving the arm for the hatch rocket sequences
         final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(new FingerCommand(FingerState.DEPLOYED));
 
-        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 117));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 120));
         //flush: 8000
         hatchSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.6177, 100));
         //flusH: 31000
-        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.9207, 110));
+        hatchSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0.977, 110));
         //angled: 40000, 115
         //flush: 46000, 95
         hatchSequences.put(Sequence.CARGO_SHIP, hatchSequences.get(Sequence.ROCKET_FORWARD_1));
@@ -125,11 +125,11 @@ public class Auton extends Titan.Component<Robot>{
 
         ballSequences.put(Sequence.ROCKET_FORWARD_2, (robot)->goToPosition(robot, 0.7557, 91.07));
 
-        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 0.8907, 125.62));
+        ballSequences.put(Sequence.ROCKET_FORWARD_3, (robot)->goToPosition(robot, 0.931, 125.62));
 
         // ballSequences.put(Sequence.ROCKET_REVERSE_1, (robot)->goToPosition(robot, 0.5116, 270));
 
-        ballSequences.put(Sequence.CARGO_SHIP, (robot)->goToPosition(robot, 0.4266, 95));
+        ballSequences.put(Sequence.CARGO_SHIP, (robot)->goToPosition(robot, 0.54, 95));
 
          // BUTTON MAPPINGS
         // LOGITECH
