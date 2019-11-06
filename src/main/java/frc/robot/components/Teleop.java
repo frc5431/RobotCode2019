@@ -23,10 +23,18 @@ public class Teleop extends Titan.Component<Robot> {
 	private Titan.Toggle fingers, jay, forks;
 
 	private double powerMatrix[][] = {
-		{0.0, 1,1},
-		{-1, 0, 1},
-		{-1,-1,0}
-	};
+        {  0.60,  0.70,  0.80,  0.90,   1.00,   1.00,  1.00,  1.00,  1.00 },
+        {  0.50,  0.56,  0.63,  0.69,   0.75,   0.81,  0.88,  0.94,  1.00 },
+        {  0.00,  0.13,  0.25,  0.38,   0.50,   0.63,  0.75,  0.88,  1.00 },
+		{ -0.50, -0.31, -0.13,  0.06,   0.25,   0.44,  0.63,  0.81,  1.00 },
+		
+		{ -1.00, -0.75, -0.50, -0.25,   0.00,   0.25,  0.50,  0.75,  1.00 },
+		
+        { -1.00, -0.81, -0.63, -0.44,  -0.25,  -0.06,  0.13,  0.31,  0.50 },
+        { -1.00, -0.88, -0.75, -0.63,  -0.50,  -0.38, -0.25, -0.13,  0.00 },
+        { -1.00, -0.94, -0.88, -0.81,  -0.75,  -0.69, -0.63, -0.56, -0.50 },
+        { -1.00, -1.00, -1.00, -1.00,  -1.00,  -0.90, -0.80, -0.70, -0.60 } };
+
 
 	private double leftLast = 0, rightLast = 0;
 	public Teleop() {
@@ -60,8 +68,39 @@ public class Teleop extends Titan.Component<Robot> {
 				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
 				right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
 			} else {
-				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
-				right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+
+				double joy_x = 0.75*driver.getRawAxis(Titan.Xbox.Axis.LEFT_X);
+				double joy_y = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
+				double leftEncoder = drivebase.leftEncoder.getRate(); 
+				double rightEncoder = drivebase.rightEncoder.getRate();
+				
+				if(drivebase.rightEncoder.getRaw() < 0){
+					
+					rightEncoder*=-1; 
+				}
+				if(!drivebase.leftEncoder.getDirection() )
+				{
+					leftEncoder*=-1;
+				}
+
+				drivebase.rightEncoder.
+
+				double averageEncoder = (leftEncoder + rightEncoder)/2; 
+
+				System.out.println(averageEncoder); 
+				System.out.println(drive)
+				 
+
+
+				int px = (int) Math.round(joy_x * 4);
+				int py = (int) Math.round(joy_y * 4);
+
+				left = powerMatrix[4-py][4+px];
+				right = powerMatrix[4-py][4-px];
+				
+
+				//left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				//right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
 
 				double zeroleft = left;
 				double zeroright = right;
@@ -80,7 +119,7 @@ public class Teleop extends Titan.Component<Robot> {
 				}
 
 
-				double aaa = 0.03;
+				double aaa = 0.05;
 				if (leftLast+aaa < left) {
 					left = leftLast + aaa;
 				}
@@ -97,8 +136,8 @@ public class Teleop extends Titan.Component<Robot> {
 
 
 
-				System.out.println(leftLast);
-				System.out.println(rightLast);
+				//System.out.println(leftLast);
+				//System.out.println(rightLast);
 
 				leftLast = left;
 				rightLast = right;
@@ -107,11 +146,12 @@ public class Teleop extends Titan.Component<Robot> {
 				if(zeroright == 0) right = 0;
 
 
-				System.out.println(DriverStation.getInstance().getBatteryVoltage());
-				if(DriverStation.getInstance().getBatteryVoltage() < 9) {
-					left = left / 2;
-					right = right / 2;
-				}
+				// System.out.println(DriverStation.getInstance().getBatteryVoltage());
+				// if(DriverStation.getInstance().getBatteryVoltage() < 9) {
+				// 	left = left / 2;
+				// 	right = right / 2;
+				// }
+
 
 			}
 

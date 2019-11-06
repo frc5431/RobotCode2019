@@ -28,7 +28,7 @@ public class Drivebase extends Titan.Component<Robot>{
 
     private final CANSparkMax frontLeft, frontRight, backLeft, backRight;
 
-    private final Encoder leftEncoder, rightEncoder;
+    public final Encoder leftEncoder, rightEncoder;
 
     private double leftPower, rightPower;
     private double leftTarget, rightTarget, angleTarget;
