@@ -11,6 +11,7 @@ import frc.robot.auto.SequenceType;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.util.Titan;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.Robot;
@@ -21,6 +22,13 @@ public class Teleop extends Titan.Component<Robot> {
 
 	private Titan.Toggle fingers, jay, forks;
 
+	private double powerMatrix[][] = {
+		{0.0, 1,1},
+		{-1, 0, 1},
+		{-1,-1,0}
+	};
+
+	private double leftLast = 0, rightLast = 0;
 	public Teleop() {
 		driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
 		driver.setDeadzone(Constants.DRIVER_JOYSTICK_DEADZONE);
@@ -55,6 +63,56 @@ public class Teleop extends Titan.Component<Robot> {
 				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
 				right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
 
+				double zeroleft = left;
+				double zeroright = right;
+
+				boolean leftNeg = false;
+				boolean rightNeg = false;
+				if (left < 0) {
+					leftNeg = true;
+					left = Math.abs(left);
+					leftLast = Math.abs(leftLast);
+				}
+				if (right < 0) {
+					rightNeg = true;
+					right = Math.abs(right);
+					rightLast = Math.abs(rightLast);
+				}
+
+
+				double aaa = 0.03;
+				if (leftLast+aaa < left) {
+					left = leftLast + aaa;
+				}
+				if (rightLast+aaa < right) {
+					right = rightLast + aaa;
+				}
+
+				if (leftNeg) {
+					left = -left;
+				}
+				if (rightNeg) {
+					right = -right;
+				}
+
+
+
+				System.out.println(leftLast);
+				System.out.println(rightLast);
+
+				leftLast = left;
+				rightLast = right;
+
+				if(zeroleft == 0) left = 0;
+				if(zeroright == 0) right = 0;
+
+
+				System.out.println(DriverStation.getInstance().getBatteryVoltage());
+				if(DriverStation.getInstance().getBatteryVoltage() < 9) {
+					left = left / 2;
+					right = right / 2;
+				}
+
 			}
 
 			// xbox controllers have inverted controls
@@ -62,8 +120,9 @@ public class Teleop extends Titan.Component<Robot> {
 				drivebase.disableAllPID();
 
 				drivebase.setControlMode(ControlMode.MANUAL);
-					drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
-			}
+				drivebase.drive(Math.pow(left, 2) * Math.signum(left), Math.pow(right, 2) * Math.signum(right));
+				//drivebase.drive(left,right);
+				}
 
 			climber.climb(
 					driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
