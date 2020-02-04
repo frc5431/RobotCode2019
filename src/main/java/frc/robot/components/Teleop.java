@@ -83,15 +83,6 @@ public class Teleop extends Titan.Component<Robot> {
 					leftEncoder*=-1;
 				}
 
-				drivebase.rightEncoder.
-
-				double averageEncoder = (leftEncoder + rightEncoder)/2; 
-
-				System.out.println(averageEncoder); 
-				System.out.println(drive)
-				 
-
-
 				int px = (int) Math.round(joy_x * 4);
 				int py = (int) Math.round(joy_y * 4);
 
