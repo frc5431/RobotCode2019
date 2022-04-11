@@ -1,20 +1,14 @@
 package frc.robot.components;
 
-import frc.robot.components.Climber;
-import frc.robot.components.Drivebase;
-import frc.robot.components.Elevator;
-import frc.robot.components.Arm;
-import frc.robot.components.Intake;
-import frc.robot.components.Climber.ForkState;
+import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.auto.Sequence;
 import frc.robot.auto.SequenceType;
+import frc.robot.components.Climber.ForkState;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
-import frc.robot.util.Titan;
-import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Constants;
 import frc.robot.util.ControlMode;
-import frc.robot.Robot;
+import frc.robot.util.Titan;
 
 public class Teleop extends Titan.Component<Robot> {
 	private Titan.Xbox driver;
@@ -137,8 +131,8 @@ public class Teleop extends Titan.Component<Robot> {
 				if(zeroright == 0) right = 0;
 
 
-				// System.out.println(DriverStation.getInstance().getBatteryVoltage());
-				// if(DriverStation.getInstance().getBatteryVoltage() < 9) {
+				// System.out.println(DriverStation.getBatteryVoltage());
+				// if(DriverStation.getBatteryVoltage() < 9) {
 				// 	left = left / 2;
 				// 	right = right / 2;
 				// }

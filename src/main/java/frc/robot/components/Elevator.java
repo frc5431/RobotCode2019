@@ -206,11 +206,11 @@ public class Elevator extends Titan.Component<Robot>{
     }
 
     public int getEncoderPosition(){
-        return bottom.getSelectedSensorPosition();
+        return (int) bottom.getSelectedSensorPosition();
     }
 
     public int getEncoderVelocity(){
-        return bottom.getSelectedSensorVelocity();
+        return (int) bottom.getSelectedSensorVelocity();
     }
 
     public boolean isElevatorDown(){

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalSource;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.TimedRobot;
 
@@ -321,11 +322,11 @@ public final class Titan {
 		private boolean currentState = false;
 
 		public Solenoid(final int channel){
-			super(channel);
+			super(PneumaticsModuleType.CTREPCM, channel);
 		}
 
 		public Solenoid(final int moduleNumber, final int channel) {
-			super(moduleNumber, channel);
+			super(moduleNumber, PneumaticsModuleType.CTREPCM, channel);
 		}
 
 		@Override
@@ -341,11 +342,11 @@ public final class Titan {
 		private Value currentState = Value.kOff;
 
 		public DoubleSolenoid(final int forwardChannel, final int reverseChannel){
-			super(forwardChannel, reverseChannel);
+			super(PneumaticsModuleType.CTREPCM, forwardChannel, reverseChannel);
 		}
 
 		public DoubleSolenoid(final int moduleNumber, final int forwardChannel, final int reverseChannel){
-			super(moduleNumber, forwardChannel, reverseChannel);
+			super(moduleNumber, PneumaticsModuleType.CTREPCM, forwardChannel, reverseChannel);
 		}
 
 		@Override

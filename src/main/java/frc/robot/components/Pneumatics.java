@@ -1,7 +1,7 @@
 package frc.robot.components;
 
 import edu.wpi.first.wpilibj.Compressor;
-
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.Titan;
@@ -10,9 +10,9 @@ public class Pneumatics extends Titan.Component<Robot>{
     private final Compressor compressor;
 
     public Pneumatics(){
-        compressor = new Compressor(Constants.COMPRESSOR_PCM_ID);
-        compressor.start();
-        compressor.setClosedLoopControl(true);
+        compressor = new Compressor(Constants.COMPRESSOR_PCM_ID, PneumaticsModuleType.CTREPCM);
+        compressor.enableDigital();
+        // compressor.setClosedLoopControl(true);
     }
 
     @Override
@@ -20,12 +20,12 @@ public class Pneumatics extends Titan.Component<Robot>{
         switch(robot.getMode()){
         case AUTO:
         case TEST:
-            compressor.setClosedLoopControl(false);
-            compressor.stop();
+            // compressor.setClosedLoopControl(false);
+            compressor.disable();
             break;
         case TELEOP:
         default:
-            compressor.setClosedLoopControl(true);
+            // compressor.setClosedLoopControl(true);
         }
     }
 
