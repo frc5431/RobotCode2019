@@ -13,10 +13,10 @@ public final class Constants {
     public final static int DRIVER_JOYSTICK_ID = 0;
     public final static double DRIVER_JOYSTICK_DEADZONE = 0.13;
 
-    public final static int OPERATOR_JOYSTICK_ID = 1;
+    public final static int OPERATOR_JOYSTICK_ID = 2;
     public final static double OPERATOR_JOYSTICK_DEADZONE = 0.1;
 
-    public final static int BUTTONBOARD_JOYSTICK_ID = 2;
+    public final static int BUTTONBOARD_JOYSTICK_ID = 1;
 
     //pneumatic definitions
     public final static int COMPRESSOR_PCM_ID = 30;
