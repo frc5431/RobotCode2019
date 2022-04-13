@@ -9,10 +9,14 @@ import java.lang.Integer;
 
 import java.util.function.Function;
 
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
+import frc.team5431.titan.core.joysticks.LogitechExtreme3D;
+import frc.team5431.titan.core.misc.Calc;
 import frc.robot.Robot;
-import frc.robot.util.Titan;
 
 import frc.robot.auto.commands.ElevateToCommand;
 import frc.robot.auto.commands.ArmMoveToCommand.CompletionCondition;
@@ -32,12 +36,12 @@ import frc.robot.auto.SequenceType;
 import frc.robot.auto.ArmDirection;
 import frc.robot.auto.Path;
 
-public class Auton extends Titan.Component<Robot>{
+public class Auton extends SubsystemBase {
     private Titan.CommandQueue<Robot> sequenceCommands, drivebaseCommands, preloadedAutoCommands;
-    private Titan.Joystick buttonBoard;
+    private Joystick buttonBoard;
 
-    private EnumMap<Sequence, Function<Robot, List<Titan.Command<Robot>>>> hatchSequences = new EnumMap<>(Sequence.class);
-    private EnumMap<Sequence, Function<Robot, List<Titan.Command<Robot>>>> ballSequences = new EnumMap<>(Sequence.class);
+    private EnumMap<Sequence, Function<Robot, List<CommandBase>>> hatchSequences = new EnumMap<>(Sequence.class);
+    private EnumMap<Sequence, Function<Robot, List<CommandBase>>> ballSequences = new EnumMap<>(Sequence.class);
     private HashMap<Integer, Sequence> sequences = new HashMap<>();
 
     private Sequence runningSequence = null;
@@ -49,16 +53,16 @@ public class Auton extends Titan.Component<Robot>{
         drivebaseCommands = new Titan.CommandQueue<>();
         preloadedAutoCommands = new Titan.CommandQueue<>();
 
-        buttonBoard = new Titan.LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
+        buttonBoard = new LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
         
         mimicLoaded = true;
 
-        final Function<Robot, List<Titan.Command<Robot>>> stow = (robot)->goToPosition(robot, List.of(new Titan.ConsumerCommand<>((rob)->rob.getIntake().roll(0.0))), 0, Constants.ARM_STOW_ANGLE);
+        final Function<Robot, List<CommandBase>> stow = (robot)->goToPosition(robot, List.of(new Titan.ConsumerCommand<>((rob)->rob.getIntake().roll(0.0))), 0, Constants.ARM_STOW_ANGLE);
 
         hatchSequences.put(Sequence.STOW, stow);
         ballSequences.put(Sequence.STOW, stow);
 
-        final Function<Robot, List<Titan.Command<Robot>>> climb = (robot)->{
+        final Function<Robot, List<CommandBase>> climb = (robot)->{
             if(getArmDirection(robot.getArm().getArmAngle()) == ArmDirection.REVERSE){
                 return goToPosition(robot, 0, 250, List.of(new JayCommand(JayState.DEPLOYED)));
             }else{
@@ -95,7 +99,7 @@ public class Auton extends Titan.Component<Robot>{
         });
 
         hatchSequences.put(Sequence.LOADING_STATION, (robot)->{
-            final List<Titan.Command<Robot>> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
+            final List<CommandBase> deploymentSequence = List.of(new JayCommand(JayState.DEPLOYED), new FingerCommand(FingerState.RETRACTED));
             // if(Titan.approxEquals(robot.getElevator().getEncoderPosition(), hatchLoadingStationPos, 500) && Titan.approxEquals(robot.getArm().getArmAngle(), 95, 5)){
             //     return deploymentSequence;
             // }
@@ -105,7 +109,7 @@ public class Auton extends Titan.Component<Robot>{
         });
 
         //keep the hatch inside when moving the arm for the hatch rocket sequences
-        final List<Titan.Command<Robot>> hatchRocketCustomCommands = List.of(new FingerCommand(FingerState.DEPLOYED));
+        final List<CommandBase> hatchRocketCustomCommands = List.of(new FingerCommand(FingerState.DEPLOYED));
 
         hatchSequences.put(Sequence.ROCKET_FORWARD_1, (robot)->goToPosition(robot, hatchRocketCustomCommands, 0, 120));
         //flush: 8000
@@ -253,7 +257,7 @@ public class Auton extends Titan.Component<Robot>{
         sequenceCommands.done(robot);
         sequenceCommands.clear();
         runningSequence = seq;
-        final Function<Robot, List<Titan.Command<Robot>>> selected = (type == SequenceType.HATCH ? hatchSequences : ballSequences).getOrDefault(seq, (rob)->List.of());
+        final Function<Robot, List<CommandBase>> selected = (type == SequenceType.HATCH ? hatchSequences : ballSequences).getOrDefault(seq, (rob)->List.of());
         if(type == SequenceType.CARGO){
             final Titan.ParallelCommandGroup<Robot> queue = new Titan.ParallelCommandGroup<>();
             queue.addCommand(new FingerCommand(FingerState.RETRACTED));
@@ -266,8 +270,8 @@ public class Auton extends Titan.Component<Robot>{
         sequenceCommands.init(robot);
     }
 
-    private List<Titan.Command<Robot>> getAutoAim(final Sequence preSequence, final Sequence postSequence, final TargetType ttype){
-        final List<Titan.Command<Robot>> out = new ArrayList<>();
+    private List<CommandBase> getAutoAim(final Sequence preSequence, final Sequence postSequence, final TargetType ttype){
+        final List<CommandBase> out = new ArrayList<>();
         if(preSequence != null){
             out.add(new Titan.ConsumerCommand<>((rob)->{
                 runSequence(rob, SequenceType.HATCH, preSequence);
@@ -282,7 +286,7 @@ public class Auton extends Titan.Component<Robot>{
     }
 
     public boolean isArmInStowPosition(final double armPos){
-        return Titan.approxEquals(armPos, Constants.ARM_STOW_ANGLE, 10) || (armPos > 180 && armPos < Constants.ARM_PRESTOW_REVERSE_ANGLE);
+        return Calc.approxEquals(armPos, Constants.ARM_STOW_ANGLE, 10) || (armPos > 180 && armPos < Constants.ARM_PRESTOW_REVERSE_ANGLE);
     }
 
     public boolean isElevatorInStage2(final int elevatorPos){
@@ -305,19 +309,19 @@ public class Auton extends Titan.Component<Robot>{
         return dir == ArmDirection.FORWARD ? Constants.ARM_PRESTOW_FORWARD_ANGLE : Constants.ARM_PRESTOW_REVERSE_ANGLE;
     }
 
-    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final double elevatorPos, final double armPos){
+    public List<CommandBase> goToPosition(final Robot robot, final double elevatorPos, final double armPos){
         return goToPosition(robot, List.of(), elevatorPos, armPos, List.of());
     }
 
-    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final List<Titan.Command<Robot>> preCommands, final double elevatorPos, final double armPos){
+    public List<CommandBase> goToPosition(final Robot robot, final List<CommandBase> preCommands, final double elevatorPos, final double armPos){
         return goToPosition(robot, preCommands, elevatorPos, armPos, List.of());
     }
 
-    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final double elevatorPos, final double armPos, final List<Titan.Command<Robot>> extraCommands){
+    public List<CommandBase> goToPosition(final Robot robot, final double elevatorPos, final double armPos, final List<CommandBase> extraCommands){
         return goToPosition(robot, List.of(), elevatorPos, armPos, extraCommands);
     }
 
-    public List<Titan.Command<Robot>> goToPosition(final Robot robot, final List<Titan.Command<Robot>> preCommands, final double target, final double targetArmPos, final List<Titan.Command<Robot>> postCommands){
+    public List<CommandBase> goToPosition(final Robot robot, final List<CommandBase> preCommands, final double target, final double targetArmPos, final List<CommandBase> postCommands){
         /*
         When reading this code, remember two important constraints for the range of motion of the robot.
         If any of these constraints aren't followed, the robot will break.
@@ -334,7 +338,7 @@ public class Auton extends Titan.Component<Robot>{
         final int currentElevatorPos = robot.getElevator().getEncoderPosition();
         final double currentArmPos = robot.getArm().getArmAngle();
 
-        final List<Titan.Command<Robot>> out = new ArrayList<>();
+        final List<CommandBase> out = new ArrayList<>();
         // can't move the elevator up or down if the arm is in a stowed position
         if((currentElevatorPos > 0 && isArmInStowPosition(targetArmPos) && isArmInStowPosition(currentArmPos)) || (targetElevatorPos > 0 && isArmInStowPosition(currentArmPos)) || (currentArmDirection != targetArmDirection && isArmInStowPosition(currentArmPos))){
             out.add(new ArmMoveToCommand(getStowAngle(currentArmDirection), CompletionCondition.TRAVELLED));

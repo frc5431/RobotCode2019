@@ -1,52 +1,59 @@
 package frc.robot.auto.commands;
 
-import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 import frc.robot.components.Intake;
 
-public class RollerCommand extends Titan.Command<Robot> {
+public class RollerCommand extends CommandBase {
     private final double power;
-    private final long time;
+    private final long seconds;
+	private final Timer timer;
 
-	public RollerCommand(final double power, final long time) {
-		name = "RollerCommand";
+	public RollerCommand(final double power, final long seconds) {
+		// name = "RollerCommand";
 
         this.power = power;
-		this.time = time;
+		this.seconds = seconds;
+		this.timer = new Timer();
 		
-		properties = String.format("Power: %f; Time: %d", power, time);
+		// properties = String.format("Power: %f; Time: %d", power, time);
 	}
 	
 	@Override
-	public void init(final Robot robot) {
-		robot.getIntake().setControlMode(ControlMode.AUTO);
+	public void initialize() {
+		Robot.getRobot().getIntake().setControlMode(ControlMode.AUTO);
+		timer.reset();
+		timer.start();
     }
 
 	@Override
-	public CommandResult update(final Robot robot) {
+	public boolean isFinished() {
+		Robot robot = Robot.getRobot();
 		final Intake intake = robot.getIntake();
-		if(time >= 0 && intake.getControlMode() == ControlMode.MANUAL){
+		if(seconds >= 0 && intake.getControlMode() == ControlMode.MANUAL){
 			robot.getAuton().abort(robot);
-			return CommandResult.CLEAR_QUEUE;
+			return true;
 		}
 
     	intake.roll(power);
 		
-		if(time < 0){
-			return CommandResult.COMPLETE;
-		}else if(System.currentTimeMillis() > startTime + time) {
+		if(seconds < 0){
+			return true;
+		}else if(timer.hasElapsed(seconds)) {
 			intake.roll(0);
-			return CommandResult.COMPLETE;
+			return true;
 		}
 
-		return CommandResult.IN_PROGRESS;
+		return false;
 	}
 
 	@Override
-	public void done(final Robot robot) {
-		if(time >= 0){
-			robot.getIntake().roll(0);
+	public void end(boolean interrupted) {
+		if(seconds >= 0){
+			Robot.getRobot().getIntake().roll(0);
 		}
+		timer.stop();
 	}
 }

@@ -3,8 +3,8 @@ package frc.robot.components;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
-import frc.robot.util.PIDConstants;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.joysticks.Xbox;
+import frc.team5431.titan.core.misc.Calc;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -13,15 +13,13 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
-public class Drivebase extends Titan.Component<Robot>{
+public class Drivebase extends SubsystemBase {
     public static enum AutoType{
         COMMANDS, MIMIC, VISION, POINT_TURN
     };
@@ -35,74 +33,12 @@ public class Drivebase extends Titan.Component<Robot>{
 
     //public PIDController drivePID = new PIDController(0, 0, 0, 0, new DriveBasePIDSource(), new DriveBasePIDOutput());
 
-    private final PIDController leftDistancePID = new PIDController(0, 0, 0, new PIDSource(){
-
-        
-        @Override
-        public void setPIDSourceType(final PIDSourceType pidSource) {
-            //do nothing
-        }
-    
-        @Override
-        public double pidGet() {
-            return leftTarget - getLeftDistance();
-        }
-    
-        @Override
-        public PIDSourceType getPIDSourceType() {
-            return PIDSourceType.kDisplacement;
-        }
-    }, new PIDOutput() {
-		@Override
-		public void pidWrite(final double output) {}
-    }, 0.02);
-
-    private final PIDController rightDistancePID = new PIDController(0, 0, 0, new PIDSource(){
-
-        
-        @Override
-        public void setPIDSourceType(final PIDSourceType pidSource) {
-            //do nothing
-        }
-    
-        @Override
-        public double pidGet() {
-            return rightTarget - getRightDistance();
-        }
-    
-        @Override
-        public PIDSourceType getPIDSourceType() {
-            return PIDSourceType.kDisplacement;
-        }
-    }, new PIDOutput() {
-		@Override
-		public void pidWrite(final double output) {}
-    }, 0.02);
-
-    private final PIDController anglePID = new PIDController(0, 0, 0, new PIDSource(){
-
-        
-        @Override
-        public void setPIDSourceType(final PIDSourceType pidSource) {
-            //do nothing
-        }
-    
-        @Override
-        public double pidGet() {
-            return angleTarget - getAngle();
-        }
-    
-        @Override
-        public PIDSourceType getPIDSourceType() {
-            return PIDSourceType.kDisplacement;
-        }
-    }, new PIDOutput() {
-		@Override
-		public void pidWrite(final double output) {}
-    }, 0.02);
+    // private final PIDController l = new PIDController(1, 0, 0, 0.02);
+    // private final PIDController r = new PIDController(1, 0, 0, 0.02);
+    // private final PIDController a = new PIDController(1, 0, 0, 0.02);
 
     private ControlMode controlMode = ControlMode.MANUAL;
-    private AutoType autoType = AutoType.COMMANDS;
+    // private AutoType autoType = AutoType.COMMANDS;
 
     //private final TitanNavx navx;
     private final ADXRS450_Gyro gyro;
@@ -165,55 +101,33 @@ public class Drivebase extends Titan.Component<Robot>{
         //navx = new TitanNavx();
 
         gyro = new ADXRS450_Gyro();
-    }
-
-    
-    @Override
-    public void init(final Robot robot){
         resetAll();
     }
 
     @Override
-    public void periodic(final Robot robot){
+    public void periodic(){
         //System.out.println(getLeftError() + ", " + getRightError());
         //System.out.println(leftCorrection +", " + leftDistancePID.getError());
         // leftCorrection = 0;
         // rightCorrection = 0;
 
         final double leftCorrection, rightCorrection, angleCorrection;
-        if(leftDistancePID.isEnabled()){
-            leftCorrection = leftDistancePID.get();
-        }else{
-            leftCorrection = 0;
-        }
-        if(rightDistancePID.isEnabled()){
-            rightCorrection = rightDistancePID.get();
-        }else{
-            rightCorrection = 0;
-        }
-        if(anglePID.isEnabled()){
-            angleCorrection = anglePID.get();
-            //System.out.println("SET: " + angleTarget + " ERR: " + anglePID.getError() + " ANG: " + getAngle());
-            //angleCorrection = 0;
-        }else{
-            angleCorrection = 0;
-        }
+        leftCorrection = leftTarget - getLeftDistance();
+        rightCorrection = rightTarget - getRightDistance();
+        angleCorrection = angleTarget - getAngle();
 
-        final double outLeftPower = Titan.clamp(leftPower - leftCorrection - angleCorrection, -1.0, 1.0);
-        final double outRightPower = Titan.clamp(rightPower - rightCorrection + angleCorrection, -1.0, 1.0);
+        final double outLeftPower = MathUtil.clamp(leftPower - leftCorrection - angleCorrection, -1.0, 1.0);
+        final double outRightPower = MathUtil.clamp(rightPower - rightCorrection + angleCorrection, -1.0, 1.0);
         backLeft.set(outLeftPower);
         frontLeft.set(outLeftPower);
         backRight.set(outRightPower);
         frontRight.set(outRightPower);
 
         //System.out.println(getLeftDistance() + ", " + getRightDistance());
-    }
 
-    @Override
-    public void tick(final Robot robot){
         SmartDashboard.putNumber("ADX", gyro.getAngle());
 
-        if(robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.Y)){
+        if(Robot.getRobot().getTeleop().getDriver().getRawButton(Xbox.Button.Y)){
             // navx.enableBoardlevelYawReset(true);
             // navx.reset();
             // navx.resetYaw();
@@ -225,11 +139,6 @@ public class Drivebase extends Titan.Component<Robot>{
 
             gyro.calibrate();
         }
-    }
-
-    @Override
-    public void disabled(final Robot robot){
-        
     }
 
     public double getLeftPower(){
@@ -286,14 +195,14 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 
     public void disableDistancePID(){
-        leftDistancePID.reset();
-        rightDistancePID.reset();
+        // leftDistancePID.reset();
+        // rightDistancePID.reset();
 
         setDistancePIDTarget(0, 0);
     }
 
     public void disableAnglePID(){
-        anglePID.reset();
+        // anglePID.reset();
 
         setAnglePIDTarget(0);
     }
@@ -310,7 +219,7 @@ public class Drivebase extends Titan.Component<Robot>{
 
     public void prepareForAutoControl(final AutoType type){
         setControlMode(ControlMode.AUTO);
-        autoType = type;
+        // autoType = type;
 
         resetEncoders();
         disableAllPID();
@@ -323,67 +232,67 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 
     public void enableDistancePID(){
-        final PIDConstants pid;
-        switch(autoType){
-        case VISION:
-            pid = new PIDConstants(0, 0, 0);
-            break;
-        case MIMIC:
-            pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
-            break;
-        case POINT_TURN:
-        case COMMANDS:
-        default:
-            pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
-        }
+        // final PIDConstants pid;
+        // switch(autoType){
+        // case VISION:
+        //     pid = new PIDConstants(0, 0, 0);
+        //     break;
+        // case MIMIC:
+        //     pid = Constants.DRIVEBASE_DISTANCE_MIMIC_PID;
+        //     break;
+        // case POINT_TURN:
+        // case COMMANDS:
+        // default:
+        //     pid = Constants.DRIVEBASE_DISTANCE_STANDARD_PID;
+        // }
         
-        if(!leftDistancePID.isEnabled()){
-            leftDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
-            leftDistancePID.setInputRange(-1000, 1000);
-            leftDistancePID.setOutputRange(-1.0, 1.0);
-            leftDistancePID.setContinuous(false);
-            leftDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
-            leftDistancePID.setSetpoint(0);
-            leftDistancePID.enable();
-        }
+        // if(!leftDistancePID.isEnabled()){
+        //     leftDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
+        //     leftDistancePID.setInputRange(-1000, 1000);
+        //     leftDistancePID.setOutputRange(-1.0, 1.0);
+        //     leftDistancePID.setContinuous(false);
+        //     leftDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
+        //     leftDistancePID.setSetpoint(0);
+        //     leftDistancePID.enable();
+        // }
 
-        if(!rightDistancePID.isEnabled()){
-            rightDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
-            rightDistancePID.setInputRange(-1000, 1000);
-            rightDistancePID.setOutputRange(-1.0, 1.0);
-            rightDistancePID.setContinuous(false);
-            rightDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
-            rightDistancePID.setSetpoint(0);
-            rightDistancePID.enable();
-        }
+        // if(!rightDistancePID.isEnabled()){
+        //     rightDistancePID.setPID(pid.getP(), pid.getI(), pid.getD());
+        //     rightDistancePID.setInputRange(-1000, 1000);
+        //     rightDistancePID.setOutputRange(-1.0, 1.0);
+        //     rightDistancePID.setContinuous(false);
+        //     rightDistancePID.setAbsoluteTolerance(Constants.DRIVEBASE_DISTANCE_TOLERNACE);
+        //     rightDistancePID.setSetpoint(0);
+        //     rightDistancePID.enable();
+        // }
     }
 
     public void enableAnglePID(){
-        final PIDConstants pid;
-        switch(autoType){
-        case VISION:
-            pid = new PIDConstants(0, 0, 0);
-            break;
-        case POINT_TURN:
-            pid = Constants.DRIVEBASE_ANGLE_POINT_TURN_PID;
-            break;
-        case MIMIC:
-            pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
-            break;
-        case COMMANDS:
-        default:
-            pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
-        }
+        // final PIDConstants pid;
+        // switch(autoType){
+        // case VISION:
+        //     pid = new PIDConstants(0, 0, 0);
+        //     break;
+        // case POINT_TURN:
+        //     pid = Constants.DRIVEBASE_ANGLE_POINT_TURN_PID;
+        //     break;
+        // case MIMIC:
+        //     pid = Constants.DRIVEBASE_ANGLE_MIMIC_PID;
+        //     break;
+        // case COMMANDS:
+        // default:
+        //     pid = Constants.DRIVEBASE_ANGLE_STANDARD_PID;
+        // }
 
-        if(!anglePID.isEnabled()){
-            anglePID.setPID(pid.getP(), pid.getI(), pid.getD());
-            anglePID.setInputRange(-360, 360);
-            anglePID.setOutputRange(-1.0, 1.0);
-            anglePID.setContinuous(false);
-            anglePID.setAbsoluteTolerance(Constants.DRIVEBASE_ANGLE_TOLERANCE);
-            anglePID.setSetpoint(0);
-            anglePID.enable();
-        }
+        // if(!anglePID.isEnabled()){
+        //     anglePID.setPID(pid.getP(), pid.getI(), pid.getD());
+        //     anglePID.setInputRange(-360, 360);
+        //     anglePID.setOutputRange(-1.0, 1.0);
+        //     anglePID.setContinuous(false);
+        //     anglePID.setAbsoluteTolerance(Constants.DRIVEBASE_ANGLE_TOLERANCE);
+        //     anglePID.setSetpoint(0);
+        //     anglePID.enable();
+        // }
     }
 
     public void setDistancePIDTarget(final double[] setpoints){
@@ -405,23 +314,24 @@ public class Drivebase extends Titan.Component<Robot>{
     }
 
     public boolean isAtDistancePIDTarget(){
-        return leftDistancePID.onTarget() && rightDistancePID.onTarget();
+        return Calc.approxEquals(leftTarget, getLeftDistance(), 0.2) 
+            && Calc.approxEquals(rightTarget, getRightDistance(), 0.2);
     }
 
     public boolean isAtAnglePIDTarget(){
-        return anglePID.onTarget();
+        return Calc.approxEquals(angleTarget, getAngle(), 0.1);
     }
 
     public double getLeftError(){
-        return leftDistancePID.getError();
+        return leftTarget - getLeftDistance();
     }
 
     public double getRightError(){
-        return rightDistancePID.getError();
+        return rightTarget - getRightDistance();
     }
 
     public double getAngleError(){
-        return anglePID.getError();
+        return angleTarget - getAngle();
     }
 
     public final boolean hasTravelledLeft(final double leftDistance){

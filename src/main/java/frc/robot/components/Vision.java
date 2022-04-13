@@ -1,15 +1,16 @@
 package frc.robot.components;
 
 import frc.robot.Robot;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.joysticks.Xbox;
 import frc.robot.auto.SequenceType;
 import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Vision extends Titan.Component<Robot>{
+public class Vision extends SubsystemBase {
     public static enum LEDState{
         ON, OFF
     };
@@ -20,37 +21,24 @@ public class Vision extends Titan.Component<Robot>{
 
     public Vision(){
         table = NetworkTableInstance.getDefault().getTable("limelight-front");
-    }
 
-    @Override
-    public void init(final Robot robot){
         ledState = LEDState.OFF;
         ttype = TargetType.FRONT_RIGHT;
     }
 
     @Override
-    public void periodic(final Robot robot){
-    }
-
-    @Override
-    public void tick(final Robot robot){
+    public void periodic() {
         final NetworkTable selectedTable = getSelectedTable();
 
-        final Titan.Xbox controller = robot.getTeleop().getDriver();
-        if(controller.getRawButton(Titan.Xbox.Button.X)){
+        final Xbox controller = Robot.getRobot().getTeleop().getDriver();
+        if(controller.getRawButton(Xbox.Button.X)){
             selectedTable.getEntry("ledMode").setNumber(2);
         }else{
-            selectedTable.getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Titan.Xbox.Button.A) || robot.getAuton().getCurrentSequenceType() == SequenceType.HATCH ? 3 : 1);
+            selectedTable.getEntry("ledMode").setNumber(ledState == LEDState.ON || controller.getRawButton(Xbox.Button.A) || Robot.getRobot().getAuton().getCurrentSequenceType() == SequenceType.HATCH ? 3 : 1);
         }
 
         selectedTable.getEntry("pipeline").setNumber(ttype.getPipeline());
     }
-
-    @Override
-    public void disabled(final Robot robot){
-        ledState = LEDState.OFF;
-    }
-
     
     private NetworkTable getSelectedTable(){
         return table;

@@ -1,22 +1,23 @@
 package frc.robot.components;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.ControlType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.robot.util.PIDConstants;
-import frc.robot.Robot;
-import frc.robot.util.Titan;
 
-public class Arm extends Titan.Component<Robot>{
+public class Arm extends SubsystemBase {
     public static enum BrakeState{
         ENGAGED, DISENGAGED
     };
@@ -26,9 +27,9 @@ public class Arm extends Titan.Component<Robot>{
     };
 
     final CANSparkMax pivot;
-    final CANEncoder pivotEncoder;
-    final CANPIDController pivotPid;
-    final Titan.Solenoid brakePad;
+    final RelativeEncoder pivotEncoder;
+    final SparkMaxPIDController pivotPid;
+    final Solenoid brakePad;
 
     final AnalogInput armEncoder;
 
@@ -68,7 +69,7 @@ public class Arm extends Titan.Component<Robot>{
 
         setBrakeMode(BrakeMode.BREAK);
     
-        brakePad = new Titan.Solenoid(Constants.ARM_BRAKE_PCM_ID, Constants.ARM_BRAKE_ID);
+        brakePad = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
 
@@ -85,12 +86,7 @@ public class Arm extends Titan.Component<Robot>{
     }
 
     @Override
-    public void init(final Robot robot){
-        //pivotEncoder.setPosition(getArmAngle());
-    }
-
-    @Override
-    public void periodic(final Robot robot){
+    public void periodic(){
         if(getControlMode() == ControlMode.MANUAL){
             setBrakeMode(BrakeMode.BREAK);
         }
@@ -116,11 +112,6 @@ public class Arm extends Titan.Component<Robot>{
             pivotPid.setReference(power, ControlType.kDutyCycle, 0, 0);
         }
         //pivot.set(0.3);
-    }
-    
-    @Override
-    public void disabled(final Robot robot){
-        setBrakeMode(BrakeMode.BREAK);
     }
 
     public void pivot(final double in){

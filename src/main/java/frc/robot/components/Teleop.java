@@ -1,5 +1,6 @@
 package frc.robot.components;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.auto.Sequence;
@@ -8,13 +9,15 @@ import frc.robot.components.Climber.ForkState;
 import frc.robot.components.Intake.FingerState;
 import frc.robot.components.Intake.JayState;
 import frc.robot.util.ControlMode;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.joysticks.LogitechExtreme3D;
+import frc.team5431.titan.core.joysticks.Xbox;
+import frc.team5431.titan.core.misc.Toggle;
 
-public class Teleop extends Titan.Component<Robot> {
-	private Titan.Xbox driver;
-	private Titan.LogitechExtreme3D operator;
+public class Teleop extends SubsystemBase {
+	private Xbox driver;
+	private LogitechExtreme3D operator;
 
-	private Titan.Toggle fingers, jay, forks;
+	private Toggle fingers, jay, forks;
 
 	private double powerMatrix[][] = {
         {  0.60,  0.70,  0.80,  0.90,   1.00,   1.00,  1.00,  1.00,  1.00 },
@@ -32,24 +35,20 @@ public class Teleop extends Titan.Component<Robot> {
 
 	private double leftLast = 0, rightLast = 0;
 	public Teleop() {
-		driver = new Titan.Xbox(Constants.DRIVER_JOYSTICK_ID);
+		driver = new Xbox(Constants.DRIVER_JOYSTICK_ID);
 		driver.setDeadzone(Constants.DRIVER_JOYSTICK_DEADZONE);
 
-		operator = new Titan.LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
+		operator = new LogitechExtreme3D(Constants.OPERATOR_JOYSTICK_ID);
 		operator.setDeadzone(Constants.OPERATOR_JOYSTICK_DEADZONE);
 
-		fingers = new Titan.Toggle();
-		jay = new Titan.Toggle();
-		forks = new Titan.Toggle();
+		fingers = new Toggle();
+		jay = new Toggle();
+		forks = new Toggle();
 	}
 
 	@Override
-	public void init(final Robot robot) {
-
-	}
-
-	@Override
-	public void periodic(final Robot robot) {
+	public void periodic() {
+		Robot robot = Robot.getRobot();
 		final Climber climber = robot.getClimber();
 		System.out.printf(driver.getName());
 		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)") || driver.getName().toUpperCase().contains("XBOX")) {
@@ -59,23 +58,12 @@ public class Teleop extends Titan.Component<Robot> {
 			double right;
 
 			if (robot.getDashboard().getTankChooser()) {
-				left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-				right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
+				left = -driver.getRawAxis(Xbox.Axis.LEFT_Y);
+				right = -driver.getRawAxis(Xbox.Axis.RIGHT_Y);
 			} else {
 
-				double joy_x = 0.75*driver.getRawAxis(Titan.Xbox.Axis.LEFT_X);
-				double joy_y = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
-				double leftEncoder = drivebase.leftEncoder.getRate(); 
-				double rightEncoder = drivebase.rightEncoder.getRate();
-				
-				if(drivebase.rightEncoder.getRaw() < 0){
-					
-					rightEncoder*=-1; 
-				}
-				if(!drivebase.leftEncoder.getDirection() )
-				{
-					leftEncoder*=-1;
-				}
+				double joy_x = 0.75*driver.getRawAxis(Xbox.Axis.LEFT_X);
+				double joy_y = -driver.getRawAxis(Xbox.Axis.LEFT_Y);
 
 				int px = (int) Math.round(joy_x * 4);
 				int py = (int) Math.round(joy_y * 4);
@@ -84,8 +72,8 @@ public class Teleop extends Titan.Component<Robot> {
 				right = powerMatrix[4-py][4-px];
 				
 
-				//left = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)+driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
-				//right = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y)-driver.getRawAxis(Titan.Xbox.Axis.LEFT_X)*.5;
+				//left = -driver.getRawAxis(Xbox.Axis.LEFT_Y)+driver.getRawAxis(Xbox.Axis.LEFT_X)*.5;
+				//right = -driver.getRawAxis(Xbox.Axis.LEFT_Y)-driver.getRawAxis(Xbox.Axis.LEFT_X)*.5;
 
 				double zeroleft = left;
 				double zeroright = right;
@@ -150,23 +138,23 @@ public class Teleop extends Titan.Component<Robot> {
 				}
 
 			climber.climb(
-					driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Titan.Xbox.Axis.TRIGGER_RIGHT));
+					driver.getRawAxis(Xbox.Axis.TRIGGER_LEFT) - driver.getRawAxis(Xbox.Axis.TRIGGER_RIGHT));
 		}
 
 		if (operator.getName().equalsIgnoreCase("Logitech Extreme 3D")) {
 			final Elevator elevator = robot.getElevator();
-			final double elevPower = -operator.getRawAxis(Titan.LogitechExtreme3D.Axis.Y);
+			final double elevPower = -operator.getRawAxis(LogitechExtreme3D.Axis.Y);
 			if (elevPower != 0 || (elevPower == 0 && robot.getElevator().getControlMode() == ControlMode.MANUAL)) {
 				elevator.setControlMode(ControlMode.MANUAL);
 				elevator.elevate(elevPower);
 			}
 
 			final Intake intake = robot.getIntake();
-			if (operator.getRawButton(Titan.LogitechExtreme3D.Button.TRIGGER)
+			if (operator.getRawButton(LogitechExtreme3D.Button.TRIGGER)
 					|| robot.getAuton().isSequencePressed(SequenceType.CARGO, Sequence.INTAKE)) {
 				intake.setControlMode(ControlMode.MANUAL);
 				intake.roll(Constants.INTAKE_ROLLER_SPEED);
-			} else if (operator.getRawButton(Titan.LogitechExtreme3D.Button.TWO)
+			} else if (operator.getRawButton(LogitechExtreme3D.Button.TWO)
 					|| robot.getAuton().isSequencePressed(SequenceType.CARGO, Sequence.OUTTAKE)) {
 				intake.setControlMode(ControlMode.MANUAL);
 				intake.roll(-Constants.INTAKE_ROLLER_SPEED);
@@ -175,11 +163,13 @@ public class Teleop extends Titan.Component<Robot> {
 			}
 
 			fingers.setState(intake.getFingerState() == FingerState.DEPLOYED);
+			fingers.update(operator.getRawButton(LogitechExtreme3D.Button.SIX));
 			intake.finger(
-					fingers.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SIX)) ? FingerState.DEPLOYED
+					fingers.getState() ? FingerState.DEPLOYED
 							: FingerState.RETRACTED);
 			jay.setState(intake.getJayState() == JayState.DEPLOYED);
-			intake.jay(jay.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.SEVEN)) ? JayState.DEPLOYED
+			jay.update(operator.getRawButton(LogitechExtreme3D.Button.SEVEN));
+			intake.jay(jay.getState() ? JayState.DEPLOYED
 					: JayState.RETRACTED);
 
 			final Arm arm = robot.getArm();
@@ -194,21 +184,17 @@ public class Teleop extends Titan.Component<Robot> {
 			}
 
 			forks.setState(climber.getForkState() == ForkState.DEPLOYED);
-			climber.fork(forks.isToggled(operator.getRawButton(Titan.LogitechExtreme3D.Button.TEN)) ? ForkState.DEPLOYED
+			forks.update(operator.getRawButton(LogitechExtreme3D.Button.TEN));
+			climber.fork(forks.getState() ? ForkState.DEPLOYED
 					: ForkState.RETRACTED);
 		}
 	}
 
-	@Override
-	public void disabled(final Robot robot) {
-
-	}
-
-	public Titan.Xbox getDriver() {
+	public Xbox getDriver() {
 		return driver;
 	}
 
-	public Titan.LogitechExtreme3D getOperator() {
+	public LogitechExtreme3D getOperator() {
 		return operator;
 	}
 }

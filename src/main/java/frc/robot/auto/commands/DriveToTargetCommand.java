@@ -1,8 +1,10 @@
 package frc.robot.auto.commands;
 
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.joysticks.Xbox;
+import frc.team5431.titan.core.misc.Calc;
 import frc.robot.util.ControlMode;
 import frc.robot.components.Vision;
 import frc.robot.components.Drivebase;
@@ -10,7 +12,7 @@ import frc.robot.components.Drivebase.AutoType;
 import frc.robot.auto.vision.TargetInfo;
 import frc.robot.auto.vision.TargetType;
 
-public class DriveToTargetCommand extends Titan.Command<Robot> {
+public class DriveToTargetCommand extends CommandBase {
 	private final TargetType ttype;
 
 	private double lastDistance = 0;
@@ -26,30 +28,31 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 	public DriveToTargetCommand(final TargetType type){
 		this.ttype = type;
 
-		name = "Drive to vision target";
-		properties = String.format("Type: %s", type.name());
+		// name = "Drive to vision target";
+		// properties = String.format("Type: %s", type.name());
 	}
 
     @Override
-	public void init(final Robot robot) {
-		final Drivebase drivebase = robot.getDrivebase();
+	public void initialize() {
+		final Drivebase drivebase = Robot.getRobot().getDrivebase();
 		drivebase.prepareForAutoControl(AutoType.VISION);
 	
-		robot.getVision().setTargetType(ttype);
+		Robot.getRobot().getVision().setTargetType(ttype);
 
 		lastDistanceChange = System.currentTimeMillis();
 	}
 
 	@Override
-	public CommandResult update(final Robot robot) {
+	public boolean isFinished() {
+		Robot robot = Robot.getRobot();
 		final Drivebase drivebase = robot.getDrivebase();
 		final Vision vision = robot.getVision();
 
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
-			if(!robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_R) && !robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BUMPER_L)){
+			if(!robot.getTeleop().getDriver().getRawButton(Xbox.Button.BUMPER_R) && !robot.getTeleop().getDriver().getRawButton(Xbox.Button.BUMPER_L)){
 				vision.setLEDState(Vision.LEDState.OFF);
 				robot.getAuton().abort(robot);
-				return CommandResult.CLEAR_QUEUE;
+				return true;
 			}else{
 				drivebase.setControlMode(ControlMode.AUTO);
 			}
@@ -60,7 +63,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 		/*
 		When the elevator is running, to avoid breaking the carriage, we want to slow down.
 		*/
-		final boolean isRunningElevator = !Titan.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
+		final boolean isRunningElevator = !Calc.approxEquals(robot.getElevator().getEncoderVelocity(), 0, 200);
 
 		final double currentDistance = (drivebase.getLeftDistance() + drivebase.getRightDistance()) / 2.0;
 		if(currentDistance != lastDistance || !isRunningElevator){
@@ -85,7 +88,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			angleError = lastErrorAngle;
 		}
 		//angleError *= directionSignum;
-		if(Titan.approxEquals(angleError, 1, 0.1)){
+		if(Calc.approxEquals(angleError, 1, 0.1)){
 			angleError = 0;
 		}
 		final double distanceError = target.getYAngle();
@@ -97,7 +100,7 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 			drivebase.disableAutoControl();
 
 			vision.setLEDState(Vision.LEDState.OFF);
-			return CommandResult.COMPLETE;
+			return true;
 		}
 
 		double rawPower = (isRunningElevator ? 0.0 : (Constants.AUTO_AIM_DISTANCE_MIN + (Constants.AUTO_AIM_DISTANCE_P * distanceError)));
@@ -107,10 +110,6 @@ public class DriveToTargetCommand extends Titan.Command<Robot> {
 
 		drivebase.drive(rawPower + angleAdjust, rawPower - angleAdjust);
         //drivebase.drive(rawPower, rawPower);
-		return CommandResult.IN_PROGRESS;
-	}
-
-	@Override
-	public void done(final Robot robot) {
+		return false;
 	}
 }

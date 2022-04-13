@@ -1,14 +1,15 @@
 package frc.robot.auto.commands;
 
-import frc.robot.util.Titan;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.ControlMode;
+import frc.team5431.titan.core.misc.Calc;
 import frc.robot.components.Arm;
 import frc.robot.components.Arm.BrakeMode;
 import frc.robot.components.Arm.BrakeState;
 
-public class ArmMoveToCommand extends Titan.Command<Robot>{
+public class ArmMoveToCommand extends CommandBase{
 	public static enum CompletionCondition{
 		SETPOINT, TRAVELLED, TRAVELLED_NO_BRAKE;
 	}
@@ -26,8 +27,8 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
         this.position = position;
 		this.condition = cond;
 
-		name = "ArmMoveCommand";
-		properties = String.format("Position: %f; CompletionCondition: %s", position, condition.name());
+		// name = "ArmMoveCommand";
+		// properties = String.format("Position: %f; CompletionCondition: %s", position, condition.name());
 	}
 
 	// private double getArmSpeed(final double armAngle){
@@ -60,7 +61,7 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 			}
 		case SETPOINT:
 		default:
-			return Titan.approxEquals(arm.getArmAngle(), position, Constants.ARM_ANGLE_TOLERANCE);
+			return Calc.approxEquals(arm.getArmAngle(), position, Constants.ARM_ANGLE_TOLERANCE);
 		}
 	}
 
@@ -70,28 +71,28 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 	}
 
 	@Override
-	public CommandResult update(final Robot robot) {
-		final Arm arm = robot.getArm();
+	public boolean isFinished() {
+		final Arm arm = Robot.getRobot().getArm();
 
 		if(arm.getControlMode() == ControlMode.MANUAL){
-			robot.getAuton().abort(robot);
-			return CommandResult.CLEAR_QUEUE;
+			Robot.getRobot().getAuton().abort(Robot.getRobot());
+			return true;
 		}
 
 		if (isComplete(arm)) {
 			arm.pivot(0.0, willBrake() ? BrakeState.ENGAGED : BrakeState.DISENGAGED);
 			arm.setBrakeMode(willBrake() ? BrakeMode.BREAK : BrakeMode.COAST);
-			return CommandResult.COMPLETE;
+			return true;
 		}else{
 			runArm(arm);
 		}
 
-		return CommandResult.IN_PROGRESS;
+		return false;
 	}
 
 	@Override
-	public void init(final Robot robot) {
-		final Arm arm = robot.getArm();
+	public void initialize() {
+		final Arm arm = Robot.getRobot().getArm();
 
 		arm.setControlMode(ControlMode.AUTO);
 
@@ -100,9 +101,5 @@ public class ArmMoveToCommand extends Titan.Command<Robot>{
 		if(!isComplete(arm)){
 			runArm(arm);
 		}
-	}
-
-	@Override
-	public void done(final Robot robot) {
 	}
 }

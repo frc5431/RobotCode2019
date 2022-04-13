@@ -10,19 +10,21 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.util.PIDConstants;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.misc.Calc;
 
-public class Elevator extends Titan.Component<Robot>{
+public class Elevator extends SubsystemBase {
     public static enum BrakeState{
         ENGAGED, DISENGAGED
     };
 
     private final WPI_TalonSRX bottom, top;
 
-    private final Titan.Solenoid brakePad;
+    private final Solenoid brakePad;
 
     private final DigitalInput carriageUp;
     private final DigitalInput carriageDown;
@@ -79,7 +81,7 @@ public class Elevator extends Titan.Component<Robot>{
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
         top.setNeutralMode(NeutralMode.Brake);
 
-        brakePad = new Titan.Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
+        brakePad = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.ELEVATOR_BRAKE_ID);
 
         elevatorDown = new DigitalInput(Constants.ELEVATOR_DOWN_PORT);
 
@@ -87,15 +89,11 @@ public class Elevator extends Titan.Component<Robot>{
 
         carriageUp = new DigitalInput(Constants.ELEVATOR_CARRIAGE_UP_PORT);
 
-        //hi tauseef
+        //hi tauseef //hi liav
     }
 
     @Override
-    public void init(final Robot robot){
-    }
-
-    @Override
-    public void periodic(final Robot robot){
+    public void periodic(){
         top.set(ControlMode.Follower, Constants.ELEVATOR_BOTTOM_ID);
 
         //in case of an encoder brownout, restore encoder position
@@ -156,7 +154,7 @@ public class Elevator extends Titan.Component<Robot>{
                 lastBrake = -getEncoderPosition();
             }
             
-            if(controlMode == frc.robot.util.ControlMode.MANUAL || Titan.approxEquals(getEncoderVelocity(), 0, 70)){
+            if(controlMode == frc.robot.util.ControlMode.MANUAL || Calc.approxEquals(getEncoderVelocity(), 0, 70)){
                 bottom.set(0);
             }else{
                 bottom.set(Constants.ELEVATOR_STALL_SPEED);
@@ -171,11 +169,6 @@ public class Elevator extends Titan.Component<Robot>{
         // }
         //brakePad.set(false);
         brakePad.set(brakeState == BrakeState.DISENGAGED);
-    }
-
-    @Override
-    public void disabled(final Robot robot){
-        
     }
 
     public void elevate(final double val){

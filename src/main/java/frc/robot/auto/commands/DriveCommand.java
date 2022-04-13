@@ -1,52 +1,58 @@
 package frc.robot.auto.commands;
 
-import frc.robot.util.Titan;
 import frc.robot.util.ControlMode;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Drivebase.AutoType;
 
-public class DriveCommand extends Titan.Command<Robot> {
+public class DriveCommand extends CommandBase {
 	private final double left, right;
-	private final long time;
+	private final Timer timer;
+	private final long seconds;
 
-	public DriveCommand(final double left, final double right, final long time) {
-		name = "DriveCommand";
+	public DriveCommand(final double left, final double right, final long seconds) {
+		// name = "DriveCommand";
 
 		this.left = left;
 		this.right = right;
 
-		this.time = time;
+		this.timer = new Timer();
+		this.seconds = seconds;
 
-		properties = String.format("Left: %f; Right: %f; Time: %d", left, right, time);
+		// properties = String.format("Left: %f; Right: %f; Time: %d", left, right, time);
 	}
 	
 	@Override
-	public void init(final Robot robot) {
-		final Drivebase drivebase = robot.getDrivebase();
+	public void initialize() {
+		final Drivebase drivebase = Robot.getRobot().getDrivebase();
 		drivebase.prepareForAutoControl(AutoType.COMMANDS);
+		timer.reset();
+		timer.start();
 	}
 
 	@Override
-	public CommandResult update(final Robot robot) {
-		final Drivebase drivebase = robot.getDrivebase();
+	public boolean isFinished() {
+		final Drivebase drivebase = Robot.getRobot().getDrivebase();
 
 		if(drivebase.getControlMode() == ControlMode.MANUAL){
-			robot.getAuton().abort(robot);
-			return CommandResult.CLEAR_QUEUE;
+			Robot.getRobot().getAuton().abort(Robot.getRobot());
+			return true;
 		}
 
 		drivebase.drive(left, right);
 
-		if(System.currentTimeMillis() > startTime + time){
+		if(timer.hasElapsed(seconds)){
 			drivebase.disableAutoControl();
-			return CommandResult.COMPLETE;
+			return true;
 		}else{
-			return CommandResult.IN_PROGRESS;
+			return false;
 		}
 	}
 
 	@Override
-	public void done(final Robot robot) {
+	public void end(boolean interrupted) {
+		timer.stop();
 	}
 }

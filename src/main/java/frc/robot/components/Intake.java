@@ -4,12 +4,13 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.util.ControlMode;
-import frc.robot.util.Titan;
 
-public class Intake extends Titan.Component<Robot>{
+public class Intake extends SubsystemBase {
     public static enum FingerState{
         DEPLOYED, RETRACTED
     };
@@ -20,8 +21,8 @@ public class Intake extends Titan.Component<Robot>{
 
     private final WPI_TalonSRX rollers;
 
-    private final Titan.Solenoid jay;
-    private final Titan.DoubleSolenoid finger;
+    private final Solenoid jay;
+    private final DoubleSolenoid finger;
 
     private ControlMode controlMode = ControlMode.MANUAL;
 
@@ -34,28 +35,18 @@ public class Intake extends Titan.Component<Robot>{
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        finger = new Titan.DoubleSolenoid(Constants.INTAKE_FINGER_PCM_ID, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
+        finger = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 
-        jay = new Titan.Solenoid(Constants.INTAKE_JAY_PCM_ID, Constants.INTAKE_JAY_ID);
+        jay = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.INTAKE_JAY_ID);
     }
 
     @Override
-    public void init(final Robot robot){
-        
-    }
-
-    @Override
-    public void periodic(final Robot robot){
+    public void periodic(){
         rollers.set(rollerSpeed);
         
         finger.set(fingerState == FingerState.DEPLOYED ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
 
         jay.set(jayState == JayState.RETRACTED);
-    }
-
-    @Override
-    public void disabled(final Robot robot){
-        
     }
 
     public void roll(final double val){
@@ -82,7 +73,7 @@ public class Intake extends Titan.Component<Robot>{
     }
 
     public boolean isBallIn(){
-        return rollers.getOutputCurrent() >= Constants.ROLLER_BALL_AMPS;
+        return rollers.getSupplyCurrent() >= Constants.ROLLER_BALL_AMPS;
     }
 
     public boolean isRolling(){

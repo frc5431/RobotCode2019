@@ -1,8 +1,7 @@
 package frc.robot;
 
-import java.util.List;
-
-import frc.robot.util.Titan;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.components.Climber;
 import frc.robot.components.Drivebase;
 import frc.robot.components.Elevator;
@@ -14,7 +13,7 @@ import frc.robot.components.Auton;
 import frc.robot.components.Dashboard;
 import frc.robot.components.Vision;
 
-public class Robot extends Titan.Robot<Robot> {
+public class Robot extends TimedRobot {
   public static enum Mode{
     DISABLED, AUTO, TELEOP, TEST
   }
@@ -36,14 +35,10 @@ public class Robot extends Titan.Robot<Robot> {
 
   private Dashboard dashboard;
 
-  private List<Titan.Component<Robot>> components = List.of();
+  public static Robot instance = null;
 
   @Override
   public void robotInit() {
-    Titan.DEBUG = false;
-    //Titan.DEBUG = Constants.ROBOT_TYPE == Constants.Robot.PRACTICE;
-
-    Titan.DEBUG = true;
 
     //compressor.stop();
 
@@ -61,26 +56,26 @@ public class Robot extends Titan.Robot<Robot> {
     vision = new Vision();
   
     dashboard = new Dashboard();
+  }
 
-    components = List.of(teleop, auton, dashboard, vision, arm, climber, drivebase, elevator, intake, pneumatics);
+  public static Robot getRobot() {
+    if (instance == null) instance = new Robot();
+    return instance;
   }
 
   @Override
   public void robotPeriodic() {
-    components.forEach((com)->com.tick(this));
+    CommandScheduler.getInstance().run();
   }
   
   @Override
   public void teleopInit() {
     mode = Mode.TELEOP;
-    components.forEach((com)->com.init(this));
   }
 
   @Override
   public void teleopPeriodic() {
     //compressor.stop();
-
-    components.forEach((com)->com.periodic(this));
   }
 
   // Since the autonomous period is the sandstorm, and it uses the same code as teleop, to not repeat code, we just call the teleop methods from autonomous.
@@ -88,29 +83,24 @@ public class Robot extends Titan.Robot<Robot> {
   @Override
   public void autonomousInit() {
     mode = Mode.AUTO;
-    components.forEach((com)->com.init(this));
   }
 
   @Override
   public void autonomousPeriodic() {
-    teleopPeriodic();
   }
 
   @Override
   public void testInit(){
     mode = Mode.TEST;
-    components.forEach((com)->com.init(this));
   }
 
   @Override
   public void testPeriodic(){
-    teleopPeriodic();
   }
 
   @Override
   public void disabledInit(){
     mode = Mode.DISABLED;
-    components.forEach((com)->com.disabled(this));
   }
 
   public Mode getMode(){
@@ -151,10 +141,5 @@ public class Robot extends Titan.Robot<Robot> {
 
   public Vision getVision(){
     return vision;
-  }
-
-  @Override
-  public List<Titan.Component<Robot>> getComponents(){
-    return components;
   }
 }

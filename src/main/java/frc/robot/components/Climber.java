@@ -6,18 +6,19 @@ import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Robot;
-import frc.robot.util.Titan;
 
-public class Climber extends Titan.Component<Robot>{
+public class Climber extends SubsystemBase {
     public static enum ForkState{
         DEPLOYED, RETRACTED
     }
 
     private final CANSparkMax left, right;
 
-    private final Titan.Solenoid forks;
+    private final Solenoid forks;
 
     private double climbSpeed = 0.0;
 
@@ -39,16 +40,11 @@ public class Climber extends Titan.Component<Robot>{
         right.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         right.burnFlash();
 
-        forks = new Titan.Solenoid(Constants.CLIMBER_FORK_PCM_ID, Constants.CLIMBER_FORK_ID);
-    }
-    
-    @Override
-    public void init(final Robot robot){
-        
+        forks = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.CLIMBER_FORK_ID);
     }
 
     @Override
-    public void periodic(final Robot robot){
+    public void periodic(){
         if(right.getFault(FaultID.kHasReset)){
             right.follow(right, Constants.CLIMBER_RIGHT_INVERTED);
             right.clearFaults();
@@ -57,11 +53,6 @@ public class Climber extends Titan.Component<Robot>{
         left.set(climbSpeed);
 
         forks.set(forkState == ForkState.DEPLOYED);
-    }
-    
-    @Override
-    public void disabled(final Robot robot){
-        
     }
     
     public void climb(final double val){

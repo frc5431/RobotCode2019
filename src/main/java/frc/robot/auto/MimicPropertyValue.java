@@ -4,19 +4,21 @@ import java.util.function.Function;
 
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
-import frc.robot.util.Titan;
+import frc.team5431.titan.core.joysticks.Xbox;
+import frc.team5431.titan.core.mimic.PropertyType;
+import frc.team5431.titan.core.mimic.PropertyValue;
 
-public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
-        LEFT_DISTANCE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftDistance()),
-		RIGHT_DISTANCE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightDistance()),
-		ANGLE(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getAngle()),
-		LEFT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftPower()),
-		RIGHT_POWER(Titan.Mimic.PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightPower()),
-		HOME(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.START)),
-		BATTERY(Titan.Mimic.PropertyType.DOUBLE, (robot)->RobotController.getBatteryVoltage()),
-		USING_VISION(Titan.Mimic.PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Titan.Xbox.Button.BACK)),
-		SEQUENCE_TYPE(Titan.Mimic.PropertyType.INTEGER, (robot)->robot.getAuton().getCurrentSequenceType().ordinal()),
-		RUNNING_SEQUENCE(Titan.Mimic.PropertyType.INTEGER, (robot)->{
+public enum MimicPropertyValue implements PropertyValue<Robot>{
+        LEFT_DISTANCE(PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftDistance()),
+		RIGHT_DISTANCE(PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightDistance()),
+		ANGLE(PropertyType.DOUBLE, (robot)->robot.getDrivebase().getAngle()),
+		LEFT_POWER(PropertyType.DOUBLE, (robot)->robot.getDrivebase().getLeftPower()),
+		RIGHT_POWER(PropertyType.DOUBLE, (robot)->robot.getDrivebase().getRightPower()),
+		HOME(PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Xbox.Button.START)),
+		BATTERY(PropertyType.DOUBLE, (robot)->RobotController.getBatteryVoltage()),
+		USING_VISION(PropertyType.BOOLEAN, (robot)->robot.getTeleop().getDriver().getRawButton(Xbox.Button.BACK)),
+		SEQUENCE_TYPE(PropertyType.INTEGER, (robot)->robot.getAuton().getCurrentSequenceType().ordinal()),
+		RUNNING_SEQUENCE(PropertyType.INTEGER, (robot)->{
 			final Sequence runningSequence = robot.getAuton().getRunningSequence();
 			if(runningSequence == null){
 				return -1;
@@ -25,16 +27,16 @@ public enum MimicPropertyValue implements Titan.Mimic.PropertyValue<Robot>{
 			}
 		});
 
-		private final Titan.Mimic.PropertyType type;
+		private final PropertyType type;
 		private final Function<Robot, Object> getter;
 
-		private MimicPropertyValue(final Titan.Mimic.PropertyType type, final Function<Robot, Object> getter){
+		private MimicPropertyValue(final PropertyType type, final Function<Robot, Object> getter){
 			this.type = type;
 			this.getter = getter;
 			
 		}
 
-		public Titan.Mimic.PropertyType getType(){
+		public PropertyType getType(){
 			return type;
 		}
 

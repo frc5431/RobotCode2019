@@ -1,16 +1,16 @@
 package frc.robot.components;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import frc.robot.Robot;
 import frc.robot.Robot.Mode;
-import frc.robot.util.Titan;
 import frc.robot.auto.Routine;
 import frc.robot.auto.vision.TargetInfo;
 
-public class Dashboard extends Titan.Component<Robot>{
+public class Dashboard extends SubsystemBase {
     private final SendableChooser<Routine> routineChooser = new SendableChooser<>();
     private final SendableChooser<Long> delayChooser = new SendableChooser<>();
     private final SendableChooser<Boolean> tankChooser = new SendableChooser<>();
@@ -42,28 +42,20 @@ public class Dashboard extends Titan.Component<Robot>{
         LiveWindow.disableAllTelemetry();
     }
 
-    
     @Override
-    public void init(final Robot robot){
+    public void periodic() {
+        Robot robot = Robot.getRobot();
+        final Auton auton = robot.getAuton();
+        auton.setLEDStatus(auton.isRunningSequence() || (auton.isRunningDrivebase() && System.currentTimeMillis() % 1000 > 500));
+
         SmartDashboard.putData("RoutineChooser", routineChooser);
         SmartDashboard.putData("DelayChooser", delayChooser);
         SmartDashboard.putData("tank",tankChooser);
-    }
-
-    @Override
-    public void periodic(final Robot robot){
-        final Auton auton = robot.getAuton();
-        auton.setLEDStatus(auton.isRunningSequence() || (auton.isRunningDrivebase() && System.currentTimeMillis() % 1000 > 500));
-    }
-
-    @Override
-    public void tick(final Robot robot){
         SmartDashboard.putData("RoutineChooser", routineChooser);
 
         final Arm arm = robot.getArm();
         final Elevator elevator = robot.getElevator();
         final Drivebase drivebase = robot.getDrivebase();
-        final Auton auton = robot.getAuton();
 
         SmartDashboard.putNumber("ArmAngle", arm.getAbsoluteAngle());
         SmartDashboard.putNumber("ArmEncoderPosition", arm.getEncoderPosition());
@@ -94,10 +86,6 @@ public class Dashboard extends Titan.Component<Robot>{
             currentRoutine = selectedRoutine;
             auton.preloadRoutine(currentRoutine, getChosenDelay());
         }
-    }
-
-    @Override
-    public void disabled(final Robot robot){
     }
 
     public Routine getChosenRoutine(){

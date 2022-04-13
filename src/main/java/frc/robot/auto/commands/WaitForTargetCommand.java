@@ -1,24 +1,24 @@
 package frc.robot.auto.commands;
 
-import frc.robot.util.Titan;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 
-public class WaitForTargetCommand extends Titan.Command<Robot> {
+public class WaitForTargetCommand extends CommandBase {
 	private long foundTarget = -1;
 
 	public WaitForTargetCommand() {
-		name = "WaitForTargetCommand";
+		// name = "WaitForTargetCommand";
 	}
 
 	@Override
-	public void init(final Robot robot) {
+	public void initialize() {
 		// drivebase.enableDistancePID();
 		// drivebase.setDistancePIDTarget(leftDistance, rightDistance);
 	}
 
 	@Override
-	public CommandResult update(final Robot robot) {
-		if(robot.getVision().getTargetInfo().exists()){
+	public boolean isFinished() {
+		if(Robot.getRobot().getVision().getTargetInfo().exists()){
 			if(foundTarget < 0){
 				foundTarget = System.currentTimeMillis();
 			}
@@ -26,13 +26,9 @@ public class WaitForTargetCommand extends Titan.Command<Robot> {
 			foundTarget = -1;
 		}
 		if(foundTarget >= 0 && System.currentTimeMillis() >= foundTarget + 100){
-			return CommandResult.COMPLETE;
+			return true;
 		}
 
-		return CommandResult.IN_PROGRESS;
-	}
-
-	@Override
-	public void done(final Robot robot) {
+		return false;
 	}
 }
