@@ -11,6 +11,7 @@ import frc.robot.components.Intake.JayState;
 import frc.robot.util.ControlMode;
 import frc.team5431.titan.core.joysticks.LogitechExtreme3D;
 import frc.team5431.titan.core.joysticks.Xbox;
+import frc.team5431.titan.core.misc.Calc;
 import frc.team5431.titan.core.misc.Toggle;
 
 public class Teleop extends SubsystemBase {
@@ -50,7 +51,7 @@ public class Teleop extends SubsystemBase {
 	public void periodic() {
 		Robot robot = Robot.getRobot();
 		final Climber climber = robot.getClimber();
-		System.out.printf(driver.getName());
+		// System.out.printf(driver.getName());
 		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)") || driver.getName().toUpperCase().contains("XBOX")) {
 			final Drivebase drivebase = robot.getDrivebase();
 
@@ -128,8 +129,8 @@ public class Teleop extends SubsystemBase {
 
 			}
 
-			// xbox controllers have inverted controls
-			if (drivebase.getControlMode() == ControlMode.MANUAL || left != 0.0 || right != 0.0) {
+			// xbox controllers have inverted controls 
+			if (drivebase.getControlMode() == ControlMode.MANUAL || !Calc.approxEquals(left, 0, 0.03) || !Calc.approxEquals(right, 0, 0.03)) {
 				drivebase.disableAllPID();
 
 				drivebase.setControlMode(ControlMode.MANUAL);

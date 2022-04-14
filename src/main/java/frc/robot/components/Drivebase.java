@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 public class Drivebase extends SubsystemBase {
@@ -106,18 +105,24 @@ public class Drivebase extends SubsystemBase {
 
     @Override
     public void periodic(){
-        //System.out.println(getLeftError() + ", " + getRightError());
-        //System.out.println(leftCorrection +", " + leftDistancePID.getError());
+        SmartDashboard.putNumber("Left error", getLeftError());
+        SmartDashboard.putNumber("Right error", getRightError());
+        SmartDashboard.putNumber("Left target", leftTarget);
+        SmartDashboard.putNumber("Right target", rightTarget);
+        SmartDashboard.putNumber("Left distance", getLeftDistance());
+        SmartDashboard.putNumber("Right distance", getRightDistance());
         // leftCorrection = 0;
         // rightCorrection = 0;
 
-        final double leftCorrection, rightCorrection, angleCorrection;
-        leftCorrection = leftTarget - getLeftDistance();
-        rightCorrection = rightTarget - getRightDistance();
-        angleCorrection = angleTarget - getAngle();
+        // final double leftCorrection, rightCorrection, angleCorrection;
+        // leftCorrection = leftTarget - getLeftDistance();
+        // rightCorrection = rightTarget - getRightDistance();
+        // angleCorrection = angleTarget - getAngle();
 
-        final double outLeftPower = MathUtil.clamp(leftPower - leftCorrection - angleCorrection, -1.0, 1.0);
-        final double outRightPower = MathUtil.clamp(rightPower - rightCorrection + angleCorrection, -1.0, 1.0);
+        // final double outLeftPower = MathUtil.clamp(leftPower - leftCorrection - angleCorrection, -1.0, 1.0);
+        // final double outRightPower = MathUtil.clamp(rightPower - rightCorrection + angleCorrection, -1.0, 1.0);
+        double outLeftPower = leftPower;
+        double outRightPower = rightPower;
         backLeft.set(outLeftPower);
         frontLeft.set(outLeftPower);
         backRight.set(outRightPower);
