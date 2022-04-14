@@ -142,4 +142,8 @@ public class Robot extends TimedRobot {
   public Vision getVision(){
     return vision;
   }
+
+  public Pneumatics getPneumatics() {
+      return pneumatics;
+  }
 }

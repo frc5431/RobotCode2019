@@ -11,21 +11,25 @@ import java.util.function.Function;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
 import frc.team5431.titan.core.joysticks.LogitechExtreme3D;
+import frc.team5431.titan.core.joysticks.Xbox;
 import frc.team5431.titan.core.misc.Calc;
+import frc.team5431.titan.core.misc.Logger;
 import frc.robot.Robot;
 
 import frc.robot.auto.commands.ElevateToCommand;
 import frc.robot.auto.commands.ArmMoveToCommand.CompletionCondition;
 import frc.robot.auto.commands.ArmMoveToCommand;
 import frc.robot.auto.commands.ArmBrakeCommand;
+import frc.robot.auto.commands.CommandQueue;
 import frc.robot.auto.commands.FingerCommand;
 import frc.robot.auto.commands.GrabBallCommand;
 import frc.robot.auto.commands.JayCommand;
@@ -41,7 +45,7 @@ import frc.robot.auto.ArmDirection;
 import frc.robot.auto.Path;
 
 public class Auton extends SubsystemBase {
-    private SequentialCommandGroup sequenceCommands, drivebaseCommands, preloadedAutoCommands;
+    private CommandQueue sequenceCommands, drivebaseCommands, preloadedAutoCommands;
     private Joystick buttonBoard;
 
     private EnumMap<Sequence, Function<Robot, List<CommandBase>>> hatchSequences = new EnumMap<>(Sequence.class);
@@ -53,9 +57,9 @@ public class Auton extends SubsystemBase {
     private boolean mimicLoaded = false;
 
     public Auton(){
-        sequenceCommands = new SequentialCommandGroup();
-        drivebaseCommands = new SequentialCommandGroup();
-        preloadedAutoCommands = new SequentialCommandGroup();
+        sequenceCommands = new CommandQueue();
+        drivebaseCommands = new CommandQueue();
+        preloadedAutoCommands = new CommandQueue();
 
         buttonBoard = new LogitechExtreme3D(Constants.BUTTONBOARD_JOYSTICK_ID);
         
@@ -201,8 +205,8 @@ public class Auton extends SubsystemBase {
                 break;
         }
         
-        drivebaseCommands.init(robot);
-        sequenceCommands.init(robot);
+        drivebaseCommands.initialize();
+        sequenceCommands.initialize();
     }
 
     @Override
@@ -232,18 +236,18 @@ public class Auton extends SubsystemBase {
             }
             drivebaseCommands.addAll(getAutoAim(preSequence, robot.getIntake().getFingerState() == FingerState.DEPLOYED ? Sequence.OUTTAKE : Sequence.INTAKE, ttype));
             //drivebaseCommands.add(new MoveToTargetCommand());
-            drivebaseCommands.init(robot);
+            drivebaseCommands.initialize();
         }
 
-        sequenceCommands.update(robot);
-        drivebaseCommands.update(robot);
+        sequenceCommands.execute();
+        drivebaseCommands.execute();
     }
 
     public void abort(final Robot robot){
-        sequenceCommands.done(robot);
+        sequenceCommands.end(true);
         sequenceCommands.clear();
 
-        drivebaseCommands.done(robot);
+        drivebaseCommands.end(true);
         drivebaseCommands.clear();
 
         robot.getDrivebase().setControlMode(ControlMode.MANUAL);
@@ -253,20 +257,20 @@ public class Auton extends SubsystemBase {
     }
 
     public void runSequence(final Robot robot, final SequenceType type, final Sequence seq){
-        sequenceCommands.done(robot);
+        sequenceCommands.end(false);
         sequenceCommands.clear();
         runningSequence = seq;
         final Function<Robot, List<CommandBase>> selected = (type == SequenceType.HATCH ? hatchSequences : ballSequences).getOrDefault(seq, (rob)->List.of());
         if(type == SequenceType.CARGO){
-            final ParallelCommandGroup queue = new ParallelCommandGroup<>();
-            queue.addCommand(new FingerCommand(FingerState.RETRACTED));
-            queue.addCommand(new JayCommand(JayState.RETRACTED));
-            queue.addQueue(new SequentialCommandGroup(selected.apply(robot)));
+            final ParallelCommandGroup queue = new ParallelCommandGroup();
+            queue.addCommands(new FingerCommand(FingerState.RETRACTED));
+            queue.addCommands(new JayCommand(JayState.RETRACTED));
+            queue.addCommands(selected.apply(robot).toArray(new CommandBase[0]));
             sequenceCommands.add(queue);
         }else{
             sequenceCommands.addAll(selected.apply(robot));
         }
-        sequenceCommands.init(robot);
+        sequenceCommands.initialize();
     }
 
     private List<CommandBase> getAutoAim(final Sequence preSequence, final Sequence postSequence, final TargetType ttype){
@@ -346,12 +350,12 @@ public class Auton extends SubsystemBase {
         if(currentArmDirection != targetArmDirection){
             if(elevatorAllowsIntakeFlip(currentElevatorPos) && elevatorAllowsIntakeFlip(targetElevatorPos)){
                 final ParallelCommandGroup queue = new ParallelCommandGroup();
-                queue.addCommand(new ElevateToCommand(targetElevatorPos));
-                queue.addCommand(new ArmMoveToCommand(targetArmPos));
+                queue.addCommands(new ElevateToCommand(targetElevatorPos));
+                queue.addCommands(new ArmMoveToCommand(targetArmPos));
                 out.add(queue);
             }else{
                 final ParallelCommandGroup queue = new ParallelCommandGroup();
-                final SequentialCommandGroup subArmQueue = new SequentialCommandGroup();
+                final CommandQueue subArmQueue = new CommandQueue();
                 if(robot.getArm().getArmAngle() < 80){
                     subArmQueue.add(new ArmMoveToCommand(90, CompletionCondition.TRAVELLED));
                 }
@@ -361,13 +365,13 @@ public class Auton extends SubsystemBase {
                 }else{
                     subArmQueue.add(new ArmMoveToCommand(targetArmPos));
                 }
-                queue.addQueue(subArmQueue);
+                queue.addCommands(subArmQueue.getCommands().toArray(new Command[0]));
                 if(elevatorAllowsIntakeFlip(targetElevatorPos)){
-                    queue.addCommand(new ElevateToCommand(targetElevatorPos));
+                    queue.addCommands(new ElevateToCommand(targetElevatorPos));
                 }else/* if(!elevatorAllowsIntakeFlip(currentElevatorPos))*/{
                 //}
                 //if(!elevatorAllowsIntakeFlip(targetElevatorPos)){
-                    final SequentialCommandGroup subElevatorQueue = new SequentialCommandGroup();
+                    final CommandQueue subElevatorQueue = new CommandQueue();
                     subElevatorQueue.add(new ElevateToCommand(Constants.ELEVATOR_INTAKE_FLIP_LIMIT + (int)(0.1000 * Constants.ELEVATOR_ENCODER_CALIBRATION)));                    
                     if(targetArmDirection == ArmDirection.FORWARD){
                         subElevatorQueue.add(new WaitUntilCommand(()->Robot.getRobot().getArm().getArmAngle() <= getStowAngle(targetArmDirection)));
@@ -375,7 +379,7 @@ public class Auton extends SubsystemBase {
                         subElevatorQueue.add(new WaitUntilCommand(()->Robot.getRobot().getArm().getArmAngle() >= getStowAngle(targetArmDirection)));
                     }
                     subElevatorQueue.add(new ElevateToCommand(targetElevatorPos));
-                    queue.addQueue(subElevatorQueue);
+                    queue.addCommands(subElevatorQueue.getCommands().toArray(new Command[0]));
                 }
                 out.add(queue);
                 out.add(new ArmMoveToCommand(targetArmPos));
@@ -383,21 +387,21 @@ public class Auton extends SubsystemBase {
         }else /* if target is in the same direction as current*/{
             final ParallelCommandGroup queue = new ParallelCommandGroup();
             if(isInFloorIntake(targetElevatorPos, targetArmPos) && targetElevatorPos < Constants.ELEVATOR_BOTTOM_LIMIT){
-                queue.addCommand(new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT));
+                queue.addCommands(new ElevateToCommand(Constants.ELEVATOR_FLOOR_INTAKE_HEIGHT));
             }else{
-                final SequentialCommandGroup subQueue = new SequentialCommandGroup();
+                final CommandQueue subQueue = new CommandQueue();
                 if(isElevatorInStage2(targetElevatorPos) && isArmInStowPosition(currentArmPos)){
                     subQueue.add(new WaitUntilCommand(()->!isArmInStowPosition(Robot.getRobot().getArm().getArmAngle())));
                 }
                 subQueue.add(new ElevateToCommand(targetElevatorPos));
-                queue.addQueue(subQueue);
+                queue.addCommands(subQueue.getCommands().toArray(new Command[0]));
             }
             if(currentElevatorPos > 0 && isArmInStowPosition(targetArmPos)){
-                queue.addCommand(new ArmMoveToCommand(getStowAngle(currentArmDirection), CompletionCondition.TRAVELLED));    
+                queue.addCommands(new ArmMoveToCommand(getStowAngle(currentArmDirection), CompletionCondition.TRAVELLED));    
             }else if(isElevatorInStage2(targetElevatorPos) && Calc.approxEquals(90, targetArmPos, Constants.ARM_ANGLE_TOLERANCE) && currentArmPos > 120){
-                queue.addCommand(new ArmMoveToCommand(getStowAngle(currentArmDirection), CompletionCondition.TRAVELLED));    
+                queue.addCommands(new ArmMoveToCommand(getStowAngle(currentArmDirection), CompletionCondition.TRAVELLED));    
             }else{
-                queue.addCommand(new ArmMoveToCommand(targetArmPos));
+                queue.addCommands(new ArmMoveToCommand(targetArmPos));
             }
             out.add(queue);
 
@@ -424,8 +428,8 @@ public class Auton extends SubsystemBase {
             return out;
         }else{
             final ParallelCommandGroup outQueue = new ParallelCommandGroup();
-            outQueue.addQueue(preCommands);
-            outQueue.addQueue(out);
+            outQueue.addCommands(preCommands.toArray(new Command[0]));
+            outQueue.addCommands(out.toArray(new Command[0]));
             return List.of(outQueue);
         }
     }
@@ -467,15 +471,15 @@ public class Auton extends SubsystemBase {
         return runningSequence.getDirection();
     }
 
-    public SequentialCommandGroup getDrivebaseCommands(){
+    public CommandQueue getDrivebaseCommands(){
         return drivebaseCommands;
     }
 
-    public SequentialCommandGroup getSequenceCommands(){
+    public CommandQueue getSequenceCommands(){
         return sequenceCommands;
     }
 
-    public SequentialCommandGroup getPreloadedAutoCommands(){
+    public CommandQueue getPreloadedAutoCommands(){
         return preloadedAutoCommands;
     }
 
