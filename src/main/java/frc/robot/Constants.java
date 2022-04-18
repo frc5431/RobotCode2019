@@ -147,7 +147,7 @@ public final class Constants {
     public final static double ELEVATOR_MM_ACCELERATION = 1.4;
 
     //smart motion
-    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.00001, 0.0, 0.001);
+    public final static PIDConstants ARM_SM_PID = new PIDConstants(0.0001, 0.0, 0.001);
     public final static double ARM_SM_PEAK_SENSOR_VELOCITY = 5000;
     public final static double ARM_SM_CRUISE_VELOCITY = 1.0;
     public final static double ARM_SM_ACCELERATION = 0.7;

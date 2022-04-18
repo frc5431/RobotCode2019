@@ -163,8 +163,9 @@ public class Teleop extends SubsystemBase {
 				intake.roll(0);
 			}
 
-			fingers.setState(intake.getFingerState() == FingerState.DEPLOYED);
+			// fingers.setState(intake.getFingerState() == FingerState.DEPLOYED);
 			fingers.update(operator.getRawButton(LogitechExtreme3D.Button.SIX));
+			// System.out.println(fingers.getState());
 			intake.finger(
 					fingers.getState() ? FingerState.DEPLOYED
 							: FingerState.RETRACTED);

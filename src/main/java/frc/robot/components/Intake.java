@@ -45,6 +45,7 @@ public class Intake extends SubsystemBase {
         rollers.set(rollerSpeed);
         
         finger.set(fingerState == FingerState.DEPLOYED ? DoubleSolenoid.Value.kReverse : DoubleSolenoid.Value.kForward);
+        System.out.println(finger.get());
 
         jay.set(jayState == JayState.RETRACTED);
     }
