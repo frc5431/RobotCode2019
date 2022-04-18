@@ -10,8 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+import frc.robot.wpilib.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.PIDConstants;
@@ -81,7 +80,7 @@ public class Elevator extends SubsystemBase {
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
         top.setNeutralMode(NeutralMode.Brake);
 
-        brakePad = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.ELEVATOR_BRAKE_ID);
+        brakePad = new Solenoid(Constants.ELEVATOR_BRAKE_ID);
 
         elevatorDown = new DigitalInput(Constants.ELEVATOR_DOWN_PORT);
 

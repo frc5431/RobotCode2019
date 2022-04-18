@@ -9,9 +9,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Solenoid;
+import frc.robot.wpilib.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
@@ -69,7 +68,7 @@ public class Arm extends SubsystemBase {
 
         setBrakeMode(BrakeMode.BREAK);
     
-        brakePad = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.ARM_BRAKE_ID);
+        brakePad = new Solenoid(Constants.ARM_BRAKE_ID);
     
         armEncoder = new AnalogInput(Constants.ARM_ENCODER_PORT);
 

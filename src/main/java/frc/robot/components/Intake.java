@@ -3,9 +3,8 @@ package frc.robot.components;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+import frc.robot.wpilib.DoubleSolenoid;
+import frc.robot.wpilib.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.ControlMode;
@@ -35,9 +34,9 @@ public class Intake extends SubsystemBase {
         rollers.setInverted(Constants.INTAKE_ROLLER_INVERTED);
         rollers.setNeutralMode(NeutralMode.Brake);
 
-        finger = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
+        finger = new DoubleSolenoid(Constants.INTAKE_FINGER_FORWARD_ID, Constants.INTAKE_FINGER_REVERSE_ID);
 
-        jay = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.INTAKE_JAY_ID);
+        jay = new Solenoid(Constants.INTAKE_JAY_ID);
     }
 
     @Override

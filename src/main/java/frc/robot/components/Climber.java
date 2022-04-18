@@ -6,8 +6,7 @@ import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+import frc.robot.wpilib.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -40,7 +39,7 @@ public class Climber extends SubsystemBase {
         right.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 500);
         right.burnFlash();
 
-        forks = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.CLIMBER_FORK_ID);
+        forks = new Solenoid(Constants.CLIMBER_FORK_ID);
     }
 
     @Override
