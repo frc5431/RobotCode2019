@@ -52,7 +52,7 @@ public class Teleop extends Titan.Component<Robot> {
 	public void periodic(final Robot robot) {
 		final Climber climber = robot.getClimber();
 		System.out.printf(driver.getName());
-		if (driver.getName().equalsIgnoreCase("XBOX 360 For Windows (Controller)") || driver.getName().toUpperCase().contains("XBOX")) {
+		if (driver.getName().toUpperCase().contains("XBOX")) {
 			final Drivebase drivebase = robot.getDrivebase();
 
 			double left;
@@ -63,7 +63,7 @@ public class Teleop extends Titan.Component<Robot> {
 				right = -driver.getRawAxis(Titan.Xbox.Axis.RIGHT_Y);
 			} else {
 
-				double joy_x = 0.75*driver.getRawAxis(Titan.Xbox.Axis.LEFT_X);
+				double joy_x = 0.75*driver.getRawAxis(Titan.Xbox.Axis.RIGHT_X);
 				double joy_y = -driver.getRawAxis(Titan.Xbox.Axis.LEFT_Y);
 				double leftEncoder = drivebase.leftEncoder.getRate(); 
 				double rightEncoder = drivebase.rightEncoder.getRate();

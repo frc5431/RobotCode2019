@@ -137,6 +137,7 @@ public class Elevator extends Titan.Component<Robot>{
                 if(targetPosition >= 0){
                     bottom.set(ControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, 0.0);//0.35
                 }else{
+                    System.out.println(elevPower);
                     bottom.set(ControlMode.PercentOutput, elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower);
                 }
             }else{
