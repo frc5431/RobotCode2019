@@ -10,6 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.util.PIDConstants;
@@ -41,12 +42,6 @@ public class Elevator extends Titan.Component<Robot>{
     public Elevator(){
         bottom = new WPI_TalonSRX(Constants.ELEVATOR_BOTTOM_ID);
         bottom.setInverted(Constants.ELEVATOR_BOTTOM_INVERTED);
-        bottom.configForwardSoftLimitEnable(false);
-        bottom.configReverseSoftLimitEnable(false);
-        bottom.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
-        bottom.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.Disabled);
-        bottom.configClearPositionOnLimitF(false, 0);
-        bottom.configClearPositionOnLimitR(false, 0);
         bottom.setNeutralMode(NeutralMode.Brake);
         
         bottom.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
@@ -78,6 +73,7 @@ public class Elevator extends Titan.Component<Robot>{
         top = new WPI_TalonSRX(Constants.ELEVATOR_TOP_ID);
         top.setInverted(Constants.ELEVATOR_TOP_INVERTED);
         top.setNeutralMode(NeutralMode.Brake);
+        top.follow(bottom);
 
         brakePad = new Titan.Solenoid(Constants.ELEVATOR_BRAKE_PCM_ID, Constants.ELEVATOR_BRAKE_ID);
 
@@ -96,7 +92,6 @@ public class Elevator extends Titan.Component<Robot>{
 
     @Override
     public void periodic(final Robot robot){
-        top.set(ControlMode.Follower, Constants.ELEVATOR_BOTTOM_ID);
 
         //in case of an encoder brownout, restore encoder position
         //if(bottom.hasResetOccurred()){
@@ -116,6 +111,8 @@ public class Elevator extends Titan.Component<Robot>{
             elevPower = 0;
         }
 
+        double actualPower = 0;
+
         //System.out.println(elevPower + ", " + bottom.getClosedLoopError() + ", " + bottom.getSelectedSensorVelocity());
 
         if(targetPosition < 0 && elevPower == 0 /*|| (val < 0 && Titan.approxEquals(getEncoderPosition(), 0, 3)) || (val > 0 && isUp())*/){
@@ -128,39 +125,49 @@ public class Elevator extends Titan.Component<Robot>{
                 if(isCarriageDown() && elevPower < 0){
                     elevPower = 0;
                     brake(BrakeState.DISENGAGED);
+                    System.out.println("Already down, not moving");
                 }else if((getEncoderPosition() > Constants.ELEVATOR_TOP_LIMIT && elevPower > 0)){
                     elevPower = 0;
                     brake(BrakeState.ENGAGED);
+                    System.out.println("Reached elev top limit");
                 }else{
                     brake(BrakeState.DISENGAGED);
+                    // System.out.print("free to move elev: ");
                 }
                 if(targetPosition >= 0){
+                    System.out.println("Moving elev to target pos " + targetPosition);
                     bottom.set(ControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, 0.0);//0.35
                 }else{
-                    System.out.println(elevPower);
-                    bottom.set(ControlMode.PercentOutput, elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower);
+                    actualPower = elevPower < 0 ? elevPower * Constants.ELEVATOR_DOWN_MULTIPLIER : elevPower;
+                    // System.out.println("Elev power of " + elevPower);
+                    bottom.set(ControlMode.PercentOutput, actualPower);
                 }
             }else{
                 //at this point, the elevater wants to move down but it hasn't disengaged the break yet
                 brake(BrakeState.DISENGAGED);
                 //have to move the elevator slightly up to engage the break
                 bottom.set(Constants.ELEVATOR_BRAKE_UP_SPEED);
+                System.out.println("DISENGAGED, moving slightly up");
             }
         }
 
         if(brakeState == BrakeState.DISENGAGED){
             if(lastBrake < 0){
                 lastBrake = System.currentTimeMillis();
+                System.out.println("Resetting lastBrake");
             }
         }else{
             if(lastBrake >= -1){
                 lastBrake = -getEncoderPosition();
+                System.out.println("Setting engaged lastBrake");
             }
             
             if(controlMode == frc.robot.util.ControlMode.MANUAL || Titan.approxEquals(getEncoderVelocity(), 0, 70)){
                 bottom.set(0);
+                System.out.println("Engaged and not moving, set to 0");
             }else{
                 bottom.set(Constants.ELEVATOR_STALL_SPEED);
+                System.out.println("Elevator stalling while engaged");
                 //bottom.set(ControlMode.Position, -lastBrake);
             }
         }
@@ -172,6 +179,13 @@ public class Elevator extends Titan.Component<Robot>{
         // }
         //brakePad.set(false);
         brakePad.set(brakeState == BrakeState.DISENGAGED);
+
+        SmartDashboard.putNumber("Elevator set power", actualPower);
+        SmartDashboard.putNumber("Elevator elevpower", elevPower);
+        SmartDashboard.putNumber("Elevator speed", bottom.get());
+        SmartDashboard.putBoolean("Elevator canMove", brakePad.get());
+        SmartDashboard.putNumber("Elevator lastBrake", lastBrake);
+        SmartDashboard.putNumber("Elevator targetpos", targetPosition);
     }
 
     @Override

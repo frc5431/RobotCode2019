@@ -51,7 +51,7 @@ public class Teleop extends Titan.Component<Robot> {
 	@Override
 	public void periodic(final Robot robot) {
 		final Climber climber = robot.getClimber();
-		System.out.printf(driver.getName());
+		// System.out.printf(driver.getName());
 		if (driver.getName().toUpperCase().contains("XBOX")) {
 			final Drivebase drivebase = robot.getDrivebase();
 
