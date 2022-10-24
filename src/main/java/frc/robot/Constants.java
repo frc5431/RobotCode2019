@@ -68,7 +68,7 @@ public final class Constants {
     public final static boolean INTAKE_ROLLER_INVERTED = true;
 
     public final static int ELEVATOR_BOTTOM_ID = 2;
-    public final static boolean ELEVATOR_BOTTOM_INVERTED = true;
+    public final static boolean ELEVATOR_BOTTOM_INVERTED = false;
 
     public final static int ELEVATOR_TOP_ID = 3;
     public final static boolean ELEVATOR_TOP_INVERTED = false;
